@@ -1,28 +1,49 @@
 version: '3.8'
 
 services:
-  # Web server configuration (PHP + Apache)
-  web:
-    build: .                  # Build from Dockerfile
-    ports:
-      - "8000:80"             # Access web via 8000 localhost
-    volumes:
-      - ./src:/var/www/html   # Sync code from src/ into container
-    depends_on:
-      - db                    # Request lauching database first
 
-  # Database configuration (MySQL)
-  db:
-    image: mysql:8.0          # Use image MySQL version 8.0
+  # PHP + Apache
+  app:
+    build: .
+    container_name: astral_app
     ports:
-      - "3306:3306"           # Open 3306 to let external software connect (DBeaver, etc)
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}     # Root account password
-      MYSQL_DATABASE: ${MYSQL_DATABASE}               # Automatically generate database
-      MYSQL_USER: ${MYSQL_USER}                       # Automatically generate user account
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}               # User account password
+      - "8080:80"          # Access via http://localhost:8080
     volumes:
-      - db_data:/var/lib/mysql          # DB data will not be lost when turn off Docker
+      - ./src:/var/www/html  # Auto restart
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+
+  # MySQL
+  db:
+    image: mysql:8.0
+    container_name: astral_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Auto create a table
+
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: astral_pma
+    ports:
+      - "8081:80"          # Access via http://localhost:8081
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${DB_USER}
+      PMA_PASSWORD: ${DB_PASS}
+    depends_on:
+      - db
 
 volumes:
   db_data:

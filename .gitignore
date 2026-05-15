@@ -21,3 +21,6 @@ Thumbs.db
 # PHP
 __pycache__/
 *.pyc
+
+src/vendor/
+sql/data_*.sql
