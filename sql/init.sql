@@ -354,8 +354,6 @@ CREATE TABLE notifications (
 
 -- ------------------------------------------------------------
 -- TRIGGER 1A: Tự động set tier khi INSERT user mới
--- [FIX] Bản cũ thiếu trigger này -> user tạo mới với
---       total_spent cao vẫn bị set silver
 -- ------------------------------------------------------------
 DELIMITER $$
 CREATE TRIGGER trg_update_tier_insert
@@ -394,8 +392,6 @@ DELIMITER ;
 
 -- ------------------------------------------------------------
 -- TRIGGER 2: Cập nhật total_spent khi đơn hàng đổi trạng thái
--- [FIX] Xử lý cả case: success -> cancelled (trừ ra)
--- [FIX] Tránh case cộng/trừ trùng lặp
 -- ------------------------------------------------------------
 DELIMITER $$
 CREATE TRIGGER trg_order_status_update_spent
