@@ -80,7 +80,7 @@
 </head>
 
 <body class="bg-dark text-light"> <div class="container mt-5" style="max-width: 500px;">
-        <h2 class="text-center mb-4 text-primary">Tạo tài khoản Astral Cloud</h2>
+        <h2 class="text-center mb-4 text-primary">Create an Astral Cloud account</h2>
 
         <?php if ($error): ?>
             <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
@@ -103,21 +103,21 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Số điện thoại</label>
+                    <label class="form-label">Phone number</label>
                     <input type="text" name="phone" class="form-control bg-dark text-light border-secondary" value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>">
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Mật khẩu *</label>
+                    <label class="form-label">Password *</label>
                     <input type="password" name="password" class="form-control bg-dark text-light border-secondary" required>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label">Xác nhận Mật khẩu *</label>
+                    <label class="form-label">Confirm Password *</label>
                     <input type="password" name="confirm_password" class="form-control bg-dark text-light border-secondary" required>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100">Đăng Ký Khởi Tạo</button>
+                <button type="submit" class="btn btn-primary w-100">Register</button>
             </form>
         </div>
     </div>
