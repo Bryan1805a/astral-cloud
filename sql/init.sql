@@ -496,7 +496,7 @@ INSERT INTO users (name, email, password, role) VALUES
  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
  'staff');
 
--- User demo (tier sẽ được trigger tự set theo total_spent)
+-- User demo
 INSERT INTO users (name, email, password, role, total_spent) VALUES
 ('Tran Thi B', 'user1@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1200000),
 ('Le Van C',   'user2@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 8500000),
@@ -504,34 +504,34 @@ INSERT INTO users (name, email, password, role, total_spent) VALUES
 
 -- Demo VPS products
 INSERT INTO products (name, slug, description, cpu, ram, storage, bandwidth, os_options, price, stock, created_by) VALUES
-('VPS Starter',         'vps-starter',         'Lý tưởng cho các dự án nhỏ, blog, website cá nhân.',
+('VPS Starter',         'vps-starter',         'Ideal for small projects, blogs, and personal websites.',
  '1 vCPU', '1 GB',  '20 GB SSD',       '500 Mbps', 'Ubuntu, Debian, CentOS', 99000,   200, 1),
-('VPS Basic',           'vps-basic',           'Phù hợp cho các ứng dụng web vừa, API backend.',
+('VPS Basic',           'vps-basic',           'Suitable for medium-sized web applications and API backends.',
  '2 vCPU', '2 GB',  '40 GB SSD',       '1 Gbps',   'Ubuntu, Debian, CentOS', 199000,  150, 1),
-('VPS Pro',             'vps-pro',             'Hiệu năng cao cho e-commerce, game server nhỏ.',
+('VPS Pro',             'vps-pro',             'High performance for e-commerce and small game servers.',
  '4 vCPU', '8 GB',  '80 GB SSD NVMe',  '2 Gbps',   'Ubuntu, Debian, CentOS, AlmaLinux', 499000, 100, 1),
-('VPS Business',        'vps-business',        'Tối ưu cho doanh nghiệp, database lớn, CI/CD pipeline.',
+('VPS Business',        'vps-business',        'Optimized for enterprise use, large databases, and CI/CD pipelines.',
  '8 vCPU', '16 GB', '160 GB SSD NVMe', '5 Gbps',   'Ubuntu, Debian, CentOS, AlmaLinux', 999000,  50, 1),
-('Cloud VM Enterprise', 'cloud-vm-enterprise', 'Giải pháp toàn diện cho hệ thống doanh nghiệp quy mô lớn.',
+('Cloud VM Enterprise', 'cloud-vm-enterprise', 'A comprehensive solution for large-scale enterprise systems.',
  '16 vCPU','64 GB', '500 GB NVMe RAID','10 Gbps',  'Ubuntu, Debian, CentOS, AlmaLinux, Windows Server', 2999000, 20, 1),
-('VPS Gaming',          'vps-gaming',          'Tối ưu độ trễ thấp cho game server, Minecraft, CS:GO.',
+('VPS Gaming',          'vps-gaming',          'Optimized for low latency on game servers, Minecraft, and CS:GO.',
  '6 vCPU', '12 GB', '100 GB SSD NVMe', '3 Gbps',   'Ubuntu, Debian, Windows Server', 799000, 80, 1);
 
--- Demo khuyến mãi gắn vào sản phẩm
+-- Promotional demo attached to the product.
 INSERT INTO product_promotions (product_id, label, discount_type, discount_value, start_date, end_date) VALUES
-(1, 'Ưu đãi ra mắt',       'percent', 20.00, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY)),
-(3, 'Flash Sale cuối tháng','percent', 15.00, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7  DAY));
+(1, 'Launch offer',       'percent', 20.00, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY)),
+(3, 'Flash Sale at the end of the month','percent', 15.00, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7  DAY));
 
 -- Demo voucher
 INSERT INTO vouchers (code, description, discount_type, discount_value, min_order_value, max_discount, quantity, usage_limit_per_user, applicable_tier, expiry_date) VALUES
-('WELCOME10',  'Giảm 10% cho đơn đầu tiên',         'percent', 10.00, 100000,  50000,  100, 1, 'all',     DATE_ADD(CURDATE(), INTERVAL 90  DAY)),
-('ASTRAL2025', 'Giảm 50,000đ cho đơn >= 300k',      'fixed',   50000, 300000,  NULL,   50,  3, 'all',     DATE_ADD(CURDATE(), INTERVAL 60  DAY)),
-('DIAMOND20',  'Ưu đãi khách Diamond 20%',          'percent', 20.00, 500000,  200000, 999, 5, 'diamond', DATE_ADD(CURDATE(), INTERVAL 180 DAY)),
-('GOLDUP',     'Ưu đãi khách Gold/Diamond giảm 15%','percent', 15.00, 300000,  150000, 500, 3, 'gold',    DATE_ADD(CURDATE(), INTERVAL 120 DAY));
+('WELCOME10',  '10% discount on your first order.',         'percent', 10.00, 100000,  50000,  100, 1, 'all',     DATE_ADD(CURDATE(), INTERVAL 90  DAY)),
+('ASTRAL2025', 'Get a 50,000 VND discount on orders of 300,000 VND or more.',      'fixed',   50000, 300000,  NULL,   50,  3, 'all',     DATE_ADD(CURDATE(), INTERVAL 60  DAY)),
+('DIAMOND20',  'Diamond customers receive a 20% discount',          'percent', 20.00, 500000,  200000, 999, 5, 'diamond', DATE_ADD(CURDATE(), INTERVAL 180 DAY)),
+('GOLDUP',     'Gold/Diamond customers receive a 15% discount.','percent', 15.00, 300000,  150000, 500, 3, 'gold',    DATE_ADD(CURDATE(), INTERVAL 120 DAY));
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
--- END OF SCHEMA v2
--- Tổng: 14 TABLE + 7 triggers + seed data + đầy đủ index
+-- END OF SCHEMA
+-- Sum: 14 TABLE + 7 triggers
 -- ============================================================
