@@ -11,19 +11,19 @@ USE astral_cloud;
 
 -- ============================================================
 -- TABLE 1: USERS
--- Lưu tất cả tài khoản: user, staff, admin
+-- Save all accounts: user, staff, admin
 -- ============================================================
 CREATE TABLE users (
     id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name          VARCHAR(100)  NOT NULL,
     email         VARCHAR(150)  NOT NULL UNIQUE,
-    password      VARCHAR(255)  NOT NULL,                        -- Hash bằng password_hash()
+    password      VARCHAR(255)  NOT NULL,                        -- Hash using password_hash()
     phone         VARCHAR(20)   DEFAULT NULL,
     avatar        VARCHAR(255)  DEFAULT 'default_avatar.png',
     role          ENUM('user','staff','admin') NOT NULL DEFAULT 'user',
-    -- Hạng khách hàng - tự động update theo total_spent
+    -- Customer tier - automatically updates based on total_spent
     tier          ENUM('silver','gold','diamond') NOT NULL DEFAULT 'silver',
-    total_spent   DECIMAL(15,2) NOT NULL DEFAULT 0.00,           -- Dùng để xếp hạng
+    total_spent   DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     is_locked     TINYINT(1)    NOT NULL DEFAULT 0,              -- 0 = active, 1 = locked
     locked_reason VARCHAR(255)  DEFAULT NULL,
     created_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -34,33 +34,33 @@ CREATE TABLE users (
     INDEX idx_is_locked (is_locked)
 );
 
--- Logic xếp hạng:
---   silver  : total_spent <  5,000,000 VND
---   gold    : total_spent >= 5,000,000 VND
---   diamond : total_spent >= 20,000,000 VND
+-- Ranking logic:
+-- silver : total_spent < 5,000,000 VND
+-- gold : total_spent >= 5,000,000 VND
+-- diamond : total_spent >= 20,000,000 VND
 
 
 -- ============================================================
--- TABLE 2: PRODUCTS (Gói VPS / VM)
+-- TABLE 2: PRODUCTS (VPS Pack / VM)
 -- ============================================================
 CREATE TABLE products (
     id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name          VARCHAR(150)  NOT NULL,                        -- VD: "VPS Starter", "Cloud Pro X2"
     slug          VARCHAR(200)  NOT NULL UNIQUE,                 -- URL: "vps-starter"
     description   TEXT          DEFAULT NULL,
-    -- Thông số kỹ thuật
+    -- Specifications
     cpu           VARCHAR(50)   NOT NULL,                        -- VD: "2 vCPU"
     ram           VARCHAR(50)   NOT NULL,                        -- VD: "4 GB"
     storage       VARCHAR(50)   NOT NULL,                        -- VD: "80 GB SSD"
     bandwidth     VARCHAR(50)   NOT NULL,                        -- VD: "1 Gbps"
     os_options    VARCHAR(255)  DEFAULT NULL,                    -- VD: "Ubuntu, Debian, CentOS"
-    -- Giá và tồn kho
-    price         DECIMAL(15,2) NOT NULL,                        -- VND / tháng
-    stock         INT           NOT NULL DEFAULT 100,            -- Số lượng tối đa có thể cấp phát
+    -- Prices and inventory
+    price         DECIMAL(15,2) NOT NULL,                        -- VND / month
+    stock         INT           NOT NULL DEFAULT 100,            -- Maximum number that can be use
     image         VARCHAR(255)  DEFAULT 'default_product.png',
-    -- Trạng thái
-    is_active     TINYINT(1)    NOT NULL DEFAULT 1,              -- 0 = ẩn, 1 = hiện
-    created_by    INT UNSIGNED  DEFAULT NULL,                    -- Admin/staff tạo
+    -- Status
+    is_active     TINYINT(1)    NOT NULL DEFAULT 1,              -- 0 = hidden, 1 = visible
+    created_by    INT UNSIGNED  DEFAULT NULL,                    -- Admin/staff creation
     created_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -73,14 +73,13 @@ CREATE TABLE products (
 
 -- ============================================================
 -- TABLE 3: PRODUCT_PROMOTIONS
--- Khuyến mãi gắn riêng vào từng sản phẩm
 -- ============================================================
 CREATE TABLE product_promotions (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     product_id      INT UNSIGNED  NOT NULL,
-    label           VARCHAR(100)  NOT NULL,                      -- VD: "Giảm 20% tháng 6"
+    label           VARCHAR(100)  NOT NULL,                      -- VD: "Discount 20% in June"
     discount_type   ENUM('percent','fixed') NOT NULL,
-    discount_value  DECIMAL(10,2) NOT NULL,                      -- % hoặc VND
+    discount_value  DECIMAL(10,2) NOT NULL,                      -- % or VND
     start_date      DATE          NOT NULL,
     end_date        DATE          NOT NULL,
     is_active       TINYINT(1)    NOT NULL DEFAULT 1,
@@ -101,12 +100,12 @@ CREATE TABLE vouchers (
     description          VARCHAR(255)  DEFAULT NULL,
     discount_type        ENUM('percent','fixed') NOT NULL,
     discount_value       DECIMAL(10,2) NOT NULL,
-    min_order_value      DECIMAL(15,2) NOT NULL DEFAULT 0.00,     -- Đơn tối thiểu để áp dụng
-    max_discount         DECIMAL(15,2) DEFAULT NULL,              -- Trần giảm (cho voucher percent)
-    quantity             INT           NOT NULL DEFAULT 1,        -- Tổng số lượt dùng
-    used_count           INT           NOT NULL DEFAULT 0,        -- Đã dùng bao nhiêu lần
-    usage_limit_per_user INT           NOT NULL DEFAULT 1,        -- [NEW] Mỗi user dùng tối đa bao nhiêu lần
-    applicable_tier      ENUM('all','silver','gold','diamond') NOT NULL DEFAULT 'all', -- [NEW] Áp dụng cho tier nào
+    min_order_value      DECIMAL(15,2) NOT NULL DEFAULT 0.00,     -- Minimum order amount to apply the discount code
+    max_discount         DECIMAL(15,2) DEFAULT NULL,              -- Ceiling voucher percent
+    quantity             INT           NOT NULL DEFAULT 1,
+    used_count           INT           NOT NULL DEFAULT 0,
+    usage_limit_per_user INT           NOT NULL DEFAULT 1,
+    applicable_tier      ENUM('all','silver','gold','diamond') NOT NULL DEFAULT 'all',
     expiry_date          DATE          NOT NULL,
     is_active            TINYINT(1)    NOT NULL DEFAULT 1,
     created_at           TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -117,7 +116,7 @@ CREATE TABLE vouchers (
 
 
 -- ============================================================
--- TABLE 5: CART (Giỏ hàng - lưu DB thay vì session)
+-- TABLE 5: CART (save DB instead of session)
 -- ============================================================
 CREATE TABLE cart (
     id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -126,7 +125,7 @@ CREATE TABLE cart (
     quantity    INT          NOT NULL DEFAULT 1,
     added_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    UNIQUE KEY uq_cart_item (user_id, product_id),               -- 1 sản phẩm chỉ có 1 dòng/user
+    UNIQUE KEY uq_cart_item (user_id, product_id),
     FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     INDEX idx_user (user_id)
@@ -140,20 +139,20 @@ CREATE TABLE orders (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id         INT UNSIGNED  NOT NULL,
     voucher_id      INT UNSIGNED  DEFAULT NULL,
-    voucher_code    VARCHAR(50)   DEFAULT NULL,                  -- Snapshot code lúc đặt
-    subtotal        DECIMAL(15,2) NOT NULL,                      -- Tổng trước giảm
-    discount_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,         -- Số tiền đã giảm
-    total_price     DECIMAL(15,2) NOT NULL,                      -- Tổng sau giảm (thực thu)
+    voucher_code    VARCHAR(50)   DEFAULT NULL,
+    subtotal        DECIMAL(15,2) NOT NULL,                      -- Total before reduction
+    discount_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,         -- The amount has been reduced.
+    total_price     DECIMAL(15,2) NOT NULL,                      -- Total after reduction (actual revenue)
     -- Trạng thái đơn hàng
     status          ENUM(
-                        'pending',         -- Chờ thanh toán
-                        'confirmed',       -- Đã xác nhận thanh toán
-                        'provisioning',    -- Đang cấp phát VPS
-                        'active',          -- VPS đang chạy
-                        'success',         -- Hoàn tất (đã tính vào total_spent)
-                        'cancelled'        -- Đã huỷ
+                        'pending',
+                        'confirmed',
+                        'provisioning',
+                        'active',
+                        'success',
+                        'cancelled'
                     ) NOT NULL DEFAULT 'pending',
-    note            TEXT          DEFAULT NULL,                  -- Ghi chú của khách
+    note            TEXT          DEFAULT NULL,                  -- Customer's note
     cancel_reason   VARCHAR(255)  DEFAULT NULL,
     created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -168,13 +167,13 @@ CREATE TABLE orders (
 
 -- ============================================================
 -- TABLE 7: ORDER_ITEMS
--- Mỗi đơn có thể chứa nhiều gói VPS
+-- Each order can contain multiple VPS packages.
 -- ============================================================
 CREATE TABLE order_items (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     order_id        INT UNSIGNED  NOT NULL,
-    product_id      INT UNSIGNED  DEFAULT NULL,                  -- NULL nếu sản phẩm bị xoá sau
-    -- Snapshot thông tin lúc đặt (chuẩn hoá để giữ lịch sử)
+    product_id      INT UNSIGNED  DEFAULT NULL,                  -- NULL if the product is deleted later
+    -- Snapshot of booking information (standardized to preserve history)
     product_name    VARCHAR(150)  NOT NULL,
     product_cpu     VARCHAR(50)   NOT NULL,
     product_ram     VARCHAR(50)   NOT NULL,
@@ -192,14 +191,14 @@ CREATE TABLE order_items (
 
 -- ============================================================
 -- TABLE 8: ORDER_STATUS_HISTORY
--- Dùng để hiển thị timeline trên trang "Xem tiến trình giao hàng"
+-- Used to display the timeline on the "View delivery progress" page.
 -- ============================================================
 CREATE TABLE order_status_history (
     id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     order_id    INT UNSIGNED  NOT NULL,
     status      ENUM('pending','confirmed','provisioning','active','success','cancelled') NOT NULL,
-    note        VARCHAR(255)  DEFAULT NULL,                      -- VD: "Kỹ thuật viên đang cấu hình server"
-    changed_by  INT UNSIGNED  DEFAULT NULL,                      -- Staff/admin đổi (NULL = hệ thống)
+    note        VARCHAR(255)  DEFAULT NULL,                      -- Example: "The technician is configuring the server"
+    changed_by  INT UNSIGNED  DEFAULT NULL,                      -- Staff/admin change (NULL = system)
     changed_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (order_id)  REFERENCES orders(id) ON DELETE CASCADE,
@@ -210,7 +209,7 @@ CREATE TABLE order_status_history (
 
 -- ============================================================
 -- TABLE 9: VOUCHER_USAGES
--- Log lại mỗi lần voucher được dùng
+-- Log each time a voucher is used.
 -- ============================================================
 CREATE TABLE voucher_usages (
     id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -223,26 +222,25 @@ CREATE TABLE voucher_usages (
     FOREIGN KEY (voucher_id) REFERENCES vouchers(id)  ON DELETE CASCADE,
     FOREIGN KEY (user_id)    REFERENCES users(id)     ON DELETE CASCADE,
     FOREIGN KEY (order_id)   REFERENCES orders(id)    ON DELETE CASCADE,
-    INDEX idx_voucher_user (voucher_id, user_id)               -- Phục vụ check usage_limit_per_user
+    INDEX idx_voucher_user (voucher_id, user_id)
 );
 
 
 -- ============================================================
 -- TABLE 10: REVIEWS
--- Đánh giá sản phẩm sau khi mua
 -- ============================================================
 CREATE TABLE reviews (
     id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id     INT UNSIGNED  NOT NULL,
     product_id  INT UNSIGNED  NOT NULL,
-    order_id    INT UNSIGNED  NOT NULL,                          -- [FIX] Bắt buộc, không cho NULL
+    order_id    INT UNSIGNED  NOT NULL,
     rating      TINYINT(1)    NOT NULL CHECK (rating BETWEEN 1 AND 5),
     comment     TEXT          NOT NULL,
-    is_visible  TINYINT(1)    NOT NULL DEFAULT 1,                -- Admin ẩn được review
+    is_visible  TINYINT(1)    NOT NULL DEFAULT 1,
     created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    UNIQUE KEY uq_review_per_order (user_id, order_id),          -- 1 review / order
+    UNIQUE KEY uq_review_per_order (user_id, order_id),
     FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     FOREIGN KEY (order_id)   REFERENCES orders(id)   ON DELETE CASCADE,
@@ -253,12 +251,12 @@ CREATE TABLE reviews (
 
 -- ============================================================
 -- TABLE 11: ADMIN_EMAILS
--- Email gửi từ Admin tới User (giao tiếp nội bộ)
+-- Email sent from Admin to User (internal communication)
 -- ============================================================
 CREATE TABLE admin_emails (
     id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    sender_id    INT UNSIGNED  NOT NULL,                         -- Admin/Staff gửi
-    recipient_id INT UNSIGNED  DEFAULT NULL,                     -- NULL = broadcast cho tất cả
+    sender_id    INT UNSIGNED  NOT NULL,                         -- Admin/Staff send
+    recipient_id INT UNSIGNED  DEFAULT NULL,                     -- NULL = broadcast to all
     subject      VARCHAR(255)  NOT NULL,
     body         TEXT          NOT NULL,
     is_read      TINYINT(1)    NOT NULL DEFAULT 0,
@@ -273,18 +271,17 @@ CREATE TABLE admin_emails (
 
 -- ============================================================
 -- TABLE 12: PAYMENTS [NEW]
--- Lưu các giao dịch thanh toán của đơn hàng
--- Một đơn có thể có nhiều payment (fail rồi retry, hoàn tiền...)
+-- Save the payment transactions for the order.
 -- ============================================================
 CREATE TABLE payments (
     id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     order_id         INT UNSIGNED  NOT NULL,
     amount           DECIMAL(15,2) NOT NULL,
     method           ENUM('bank_transfer','momo','vnpay','zalopay','cash') NOT NULL,
-    transaction_code VARCHAR(100)  DEFAULT NULL,                 -- Mã giao dịch từ cổng thanh toán
+    transaction_code VARCHAR(100)  DEFAULT NULL,                 -- Transaction code from the payment gateway
     status           ENUM('pending','success','failed','refunded') NOT NULL DEFAULT 'pending',
     note             VARCHAR(255)  DEFAULT NULL,
-    paid_at          TIMESTAMP     NULL DEFAULT NULL,            -- Thời điểm thanh toán thành công
+    paid_at          TIMESTAMP     NULL DEFAULT NULL,            -- Time of successful payment
     created_at       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -297,24 +294,24 @@ CREATE TABLE payments (
 
 -- ============================================================
 -- TABLE 13: SERVICES [NEW]
--- VPS instance thực tế được cấp phát cho khách
--- Đây là "hàng" khách nhận sau khi mua thành công
+-- The actual VPS instance is allocated to the client.
+-- This is the "item" the customer receives after a successful purchase.
 -- ============================================================
 CREATE TABLE services (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     order_item_id   INT UNSIGNED  NOT NULL,
     user_id         INT UNSIGNED  NOT NULL,
     -- Thông tin VPS
-    hostname        VARCHAR(100)  DEFAULT NULL,                  -- VD: vps-user123.astral.cloud
-    ip_address      VARCHAR(45)   DEFAULT NULL,                  -- Hỗ trợ cả IPv4 và IPv6
-    root_password   VARCHAR(255)  DEFAULT NULL,                  -- Nên mã hoá ở tầng app
-    os              VARCHAR(50)   DEFAULT NULL,                  -- VD: "Ubuntu 22.04"
+    hostname        VARCHAR(100)  DEFAULT NULL,                  -- Example: vps-user123.astral.cloud
+    ip_address      VARCHAR(45)   DEFAULT NULL,                  -- Supports both IPv4 and IPv6.
+    root_password   VARCHAR(255)  DEFAULT NULL,
+    os              VARCHAR(50)   DEFAULT NULL,                  -- Example: "Ubuntu 22.04"
     -- Trạng thái và vòng đời
     status          ENUM('provisioning','running','stopped','suspended','terminated')
                     NOT NULL DEFAULT 'provisioning',
     start_date      DATE          NOT NULL,
-    expiry_date     DATE          NOT NULL,                      -- Ngày hết hạn dịch vụ
-    auto_renew      TINYINT(1)    NOT NULL DEFAULT 0,            -- Có tự động gia hạn không
+    expiry_date     DATE          NOT NULL,                      -- Service expiration date
+    auto_renew      TINYINT(1)    NOT NULL DEFAULT 0,            -- Does it automatically renew?
     last_renewed_at TIMESTAMP     NULL DEFAULT NULL,
     created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -330,7 +327,7 @@ CREATE TABLE services (
 
 -- ============================================================
 -- TABLE 14: NOTIFICATIONS [NEW]
--- Thông báo hệ thống cho user (khác email - đây là in-app notify)
+-- System notifications for users (other than email - these are in-app notifications)
 -- ============================================================
 CREATE TABLE notifications (
     id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -338,7 +335,7 @@ CREATE TABLE notifications (
     type        ENUM('order','payment','service','voucher','system') NOT NULL,
     title       VARCHAR(255)  NOT NULL,
     message     TEXT          NOT NULL,
-    link        VARCHAR(255)  DEFAULT NULL,                      -- URL liên quan (VD: /orders/123)
+    link        VARCHAR(255)  DEFAULT NULL,                      -- Relate URL (VD: /orders/123)
     is_read     TINYINT(1)    NOT NULL DEFAULT 0,
     created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -353,7 +350,7 @@ CREATE TABLE notifications (
 -- ============================================================
 
 -- ------------------------------------------------------------
--- TRIGGER 1A: Tự động set tier khi INSERT user mới
+-- TRIGGER 1A: Automatically set tier when a new user is INSERTED.
 -- ------------------------------------------------------------
 DELIMITER $$
 CREATE TRIGGER trg_update_tier_insert
@@ -371,7 +368,7 @@ END$$
 DELIMITER ;
 
 -- ------------------------------------------------------------
--- TRIGGER 1B: Tự động update tier khi UPDATE total_spent
+-- TRIGGER 1B: Automatically update tier when updating total_spent
 -- ------------------------------------------------------------
 DELIMITER $$
 CREATE TRIGGER trg_update_tier_update
@@ -391,7 +388,7 @@ END$$
 DELIMITER ;
 
 -- ------------------------------------------------------------
--- TRIGGER 2: Cập nhật total_spent khi đơn hàng đổi trạng thái
+-- TRIGGER 2: Update total_spent when the order status changes.
 -- ------------------------------------------------------------
 DELIMITER $$
 CREATE TRIGGER trg_order_status_update_spent
@@ -413,7 +410,7 @@ END$$
 DELIMITER ;
 
 -- ------------------------------------------------------------
--- TRIGGER 3: Tăng used_count của voucher khi được dùng
+-- TRIGGER 3: Increase the voucher's used_count when it is used.
 -- ------------------------------------------------------------
 DELIMITER $$
 CREATE TRIGGER trg_voucher_used_count
@@ -427,7 +424,7 @@ END$$
 DELIMITER ;
 
 -- ------------------------------------------------------------
--- TRIGGER 4: Tự động ghi log khi đơn hàng đổi trạng thái
+-- TRIGGER 4: Automatically log when an order changes status.
 -- ------------------------------------------------------------
 DELIMITER $$
 CREATE TRIGGER trg_order_status_history
@@ -442,8 +439,7 @@ END$$
 DELIMITER ;
 
 -- ------------------------------------------------------------
--- TRIGGER 5: Khi payment thành công -> tự động chuyển order sang confirmed
--- [NEW] Tự động hoá luồng thanh toán
+-- TRIGGER 5: When payment is successful, the order will automatically be changed to confirmed.
 -- ------------------------------------------------------------
 DELIMITER $$
 CREATE TRIGGER trg_payment_success_confirm_order
@@ -459,7 +455,7 @@ END$$
 DELIMITER ;
 
 -- ------------------------------------------------------------
--- TRIGGER 6: Khi tạo notification -> gửi đến user (placeholder hook)
+-- TRIGGER 6: When creating a notification -> sending it to the user (placeholder hook)
 -- ------------------------------------------------------------
 DELIMITER $$
 CREATE TRIGGER trg_order_status_notify
