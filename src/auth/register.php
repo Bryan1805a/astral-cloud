@@ -58,7 +58,7 @@
                     ]);
 
                     $success = "Registration successful! You can now proceed to the login page.";
-                    header("Location: ../admin/index.php");
+                    header("Location: login.php");
 
                     // =======================================
                     // ADD FRONTEND HERE
