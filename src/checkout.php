@@ -82,5 +82,51 @@
     $total_price = $subtotal - $discount_amount;
     if ($total_price < 0) $total_price = 0;
 
-    // Place Order processing
+    // Place Order processing (when user press Confirm)
+    if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["place_order"])) {
+        $note = trim($_POST["note"] ?? "");
+
+        try {
+            $pdo->beginTransaction();
+
+            // Save to Orders table
+            $stmtOrder = $pdo->prepare("
+                INSERT INTO orders (user_id, voucher_id, voucher_code, subtotal, discount_amount, total_price, note, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
+            ");
+            $stmtOrder->execute([$user_id, $voucher_id, $voucher_code ?: null, $subtotal, $discount_amount, $total_price, $note]);
+            $new_order_id = $pdo->lastInsertId(); // Get the ID of the order just created
+
+            // Save to order_items table (Snapshot data of CPU/RAM/Price at purchase)
+            $stmtItem = $pdo->prepare("
+                INSERT INTO order_items (order_id, product_id, product_name, product_cpu, product_ram, product_storage, unit_price, quantity, subtotal) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            foreach ($cart_items as $item) {
+                $item_sub = $item["price"] * $item["quantity"];
+                $stmtItem->execute([
+                    $new_order_id, $item["product_id"], $item["name"], $item["cpu"],
+                    $item["ram"], $item["storage"], $item["quantity"], $item_sub
+                ]);
+            }
+
+            // Save voucher usage history
+            if ($voucher_id) {
+                $stmtVUsage = $pdo->prepare("INSERT INTO voucher_usages (voucher_id, user_id, order_id) VALUES (?, ?, ?)");
+                $stmtVUsage->execute([$voucher_id, $user_id, $new_order_id]);
+            }
+
+            // Remove all items in the cart
+            $stmtClearCart = $pdo->prepare("DELETE FROM cart WHERE user_id = ?");
+            $stmtClearCart->execute([$user_id]);
+
+            $pdo->commit();
+
+            header("Location: checkout_success.php?order_id=" . $new_order_id);
+            exit;
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            die("<h3 style='color:red;'>Order error: " . $e->getMessage() . "</h3>");
+        }
+    }
 ?>
