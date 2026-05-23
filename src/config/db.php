@@ -1,31 +1,27 @@
 <?php
-    // debug mode
-    // only for dev
-    ini_set("display_errors", 1);
-    ini_set("display_startup_errors", 1);
-    error_reporting(E_ALL);
 
-    // Get data from env
-    $host = getenv("DB_HOST") ?: "db";
-    $db = getenv("DB_NAME") ?: "astral_cloud";
-    $user = getenv("DB_USER") ?: "astral_user";
-    $pass = getenv("DB_PASS") ?: "astral_pass_123";
-    $charset = "utf8mb4";
+class Database {
+    private static ?PDO $instance = null;
 
-    // Data Source Name configuration
-    $dsn = "mysql:host=$host;
-            dbname=$db;
-            charset=$charset";
+    public static function getConnection(): PDO {
+        if (self::$instance === null) {
+            $host = getenv("DB_HOST") ?: "db";
+            $db   = getenv("DB_NAME") ?: "astral_cloud";
+            $user = getenv("DB_USER") ?: "astral_user";
+            $pass = getenv("DB_PASS");
 
-    $option = [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Try catch
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, // return key - value
-        PDO::ATTR_EMULATE_PREPARES => false, // Prevent SQL injection
-    ];
+            if (!$pass) {
+                die("DB_PASS not set in environment. Copy .env.example to .env and configure your credentials.");
+            }
 
-    try {
-        $pdo = new PDO($dsn, $user, $pass, $option);
-    } catch (\PDOException $e) {
-        die("<h2 style='color:red;'>Database connected failed:" . $e->getMessage() . "</h2>");
+            $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
+
+            self::$instance = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ]);
+        }
+        return self::$instance;
     }
-?>
+}

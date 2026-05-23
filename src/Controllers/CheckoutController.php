@@ -1,0 +1,180 @@
+<?php
+
+class CheckoutController {
+    public function index(): void {
+        if (!isset($_SESSION["user_id"])) {
+            header("Location: /login");
+            exit;
+        }
+
+        $user_id     = $_SESSION["user_id"];
+        $currentUser = User::findById($user_id);
+        $cart_items  = Cart::getUserCart($user_id);
+
+        if (empty($cart_items)) {
+            header("Location: /cart");
+            exit;
+        }
+
+        $subtotal = 0;
+        foreach ($cart_items as $item) {
+            $subtotal += $item["price"] * $item["quantity"];
+        }
+
+        $voucher_code    = trim($_GET["voucher"] ?? "");
+        $discount_amount = 0;
+        $voucher_id      = null;
+        $voucher_error   = "";
+        $voucher_success = "";
+
+        if ($voucher_code) {
+            $voucher = Voucher::findByCode($voucher_code);
+
+            if ($voucher) {
+                if (strtotime($voucher["expiry_date"]) < strtotime("today")) {
+                    $voucher_error = "The voucher has expired.";
+                } elseif ($voucher["quantity"] <= $voucher["used_count"]) {
+                    $voucher_error = "The voucher has run out.";
+                } elseif ($subtotal < $voucher["min_order_value"]) {
+                    $voucher_error = "The order has not met the minimum order requirement " . number_format($voucher["min_order_value"], 0, ",", ".") . "VND.";
+                } elseif ($voucher["applicable_tier"] !== "all" && $voucher["applicable_tier"] !== $currentUser["tier"]) {
+                    $voucher_error = "This code is only for customer tier " . strtoupper($voucher["applicable_tier"]) . ".";
+                } else {
+                    $voucher_id = $voucher["id"];
+                    if ($voucher["discount_type"] === "fixed") {
+                        $discount_amount = $voucher["discount_value"];
+                    } else {
+                        $discount_amount = $subtotal * ($voucher["discount_value"] / 100);
+                        if (!empty($voucher["max_discount"]) && $discount_amount > $voucher["max_discount"]) {
+                            $discount_amount = $voucher["max_discount"];
+                        }
+                    }
+                    $voucher_success = "The code [ $voucher_code ] has been successfully applied.";
+                }
+            } else {
+                $voucher_error = "The discount code does not exist.";
+            }
+        }
+
+        $total_price = max(0, $subtotal - $discount_amount);
+
+        view('checkout/index', [
+            'currentUser'     => $currentUser,
+            'cart_items'      => $cart_items,
+            'subtotal'        => $subtotal,
+            'discount_amount' => $discount_amount,
+            'total_price'     => $total_price,
+            'voucher_code'    => $voucher_code,
+            'voucher_error'   => $voucher_error,
+            'voucher_success' => $voucher_success,
+            'voucher_id'      => $voucher_id,
+            'styles'          => '',
+            'title'           => 'Payment page | Astral Cloud',
+        ]);
+    }
+
+    public function placeOrder(): void {
+        if (!isset($_SESSION["user_id"])) {
+            header("Location: /login");
+            exit;
+        }
+
+        if ($_SERVER["REQUEST_METHOD"] !== "POST" || !isset($_POST["place_order"])) {
+            header("Location: /checkout");
+            exit;
+        }
+
+        $user_id     = $_SESSION["user_id"];
+        $currentUser = User::findById($user_id);
+        $cart_items  = Cart::getUserCart($user_id);
+
+        if (empty($cart_items)) {
+            header("Location: /cart");
+            exit;
+        }
+
+        $subtotal = 0;
+        foreach ($cart_items as $item) {
+            $subtotal += $item["price"] * $item["quantity"];
+        }
+
+        $voucher_code    = trim($_GET["voucher"] ?? "");
+        $voucher_id      = null;
+        $discount_amount = 0;
+
+        if ($voucher_code) {
+            $voucher = Voucher::findByCode($voucher_code);
+            if ($voucher) {
+                $voucher_id = $voucher["id"];
+                if ($voucher["discount_type"] === "fixed") {
+                    $discount_amount = $voucher["discount_value"];
+                } else {
+                    $discount_amount = $subtotal * ($voucher["discount_value"] / 100);
+                    if (!empty($voucher["max_discount"]) && $discount_amount > $voucher["max_discount"]) {
+                        $discount_amount = $voucher["max_discount"];
+                    }
+                }
+            }
+        }
+
+        $total_price = max(0, $subtotal - $discount_amount);
+        $note        = trim($_POST["note"] ?? "");
+
+        try {
+            $pdo = Database::getConnection();
+            $pdo->beginTransaction();
+
+            $new_order_id = Order::create($user_id, $voucher_id, $voucher_code ?: null, $subtotal, $discount_amount, $total_price, $note);
+
+            foreach ($cart_items as $item) {
+                $item_sub = $item["price"] * $item["quantity"];
+                Order::addItem(
+                    $new_order_id,
+                    $item["product_id"],
+                    $item["name"],
+                    $item["cpu"],
+                    $item["ram"],
+                    $item["storage"],
+                    $item["price"],
+                    $item["quantity"],
+                    $item_sub
+                );
+            }
+
+            if ($voucher_id) {
+                Order::recordVoucherUsage($voucher_id, $user_id, $new_order_id);
+            }
+
+            Cart::clear($user_id);
+
+            $pdo->commit();
+
+            header("Location: /checkout/success?order_id=" . $new_order_id);
+            exit;
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            die("<h3 style='color:red;'>Order error: " . $e->getMessage() . "</h3>");
+        }
+    }
+
+    public function success(): void {
+        if (!isset($_SESSION["user_id"])) {
+            header("Location: /login");
+            exit;
+        }
+
+        $order_id = (int) ($_GET["order_id"] ?? 0);
+        $order    = Order::findById($order_id);
+
+        if (!$order || $order["user_id"] != $_SESSION["user_id"]) {
+            header("Location: /");
+            exit;
+        }
+
+        view('checkout/success', [
+            'order'  => $order,
+            'styles' => '',
+            'title'  => 'Order Success | Astral Cloud',
+        ]);
+    }
+}
