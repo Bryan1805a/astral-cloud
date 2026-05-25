@@ -32,4 +32,26 @@ class Order {
         $stmt->execute(['id' => $orderId]);
         return $stmt->fetch() ?: null;
     }
+
+    // Get user's order information
+    public static function getUserOrders(int $userId): array {
+        $pdo = Database::getConnection();
+        $sql = "
+            SELECT 
+                o.id AS order_id, 
+                o.total_price, 
+                o.status AS order_status, 
+                o.created_at,
+                oi.product_name, 
+                oi.product_cpu, 
+                oi.product_ram
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            WHERE o.user_id = :user_id
+            ORDER BY o.created_at DESC
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(["user_id" => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
