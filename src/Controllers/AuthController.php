@@ -1,6 +1,7 @@
 <?php
 
 class AuthController {
+    // LOGIN
     public function login(): void {
         // Redirect user to unique page base on role
         if (isset($_SESSION["user_id"])) {
@@ -9,6 +10,7 @@ class AuthController {
 
         $error = "";
 
+        // Check method post
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $email    = trim($_POST["email"] ?? "");
             $password = $_POST["password"] ?? "";
@@ -18,10 +20,12 @@ class AuthController {
             } else {
                 $user = User::findByEmail($email);
 
+                // Check email and verify password from database
                 if ($user && password_verify($password, $user["password"])) {
                     if ($user["is_locked"] == 1) {
-                        $error = "Your account has been locked. Please contact the administrators.";
-                    } else {
+                        $error = "Your account has been locked. Please contact the administrators."; // The account locked by administrator or BOT
+                    }
+                    else {
                         $_SESSION["user_id"]    = $user["id"];
                         $_SESSION["user_name"]  = $user["name"];
                         $_SESSION["user_role"]  = $user["role"];
@@ -29,7 +33,8 @@ class AuthController {
 
                         $this->redirectBasedOnRole();
                     }
-                } else {
+                }
+                else {
                     $error = "Incorrect email or password.";
                 }
             }
@@ -42,6 +47,7 @@ class AuthController {
         ]);
     }
 
+    // REGISTRATION
     public function register(): void {
         $error   = "";
         $success = "";
@@ -94,6 +100,7 @@ class AuthController {
     }
 
     // Logout
+    // just delete session
     public function logout(): void {
         session_destroy();
         header("Location: /");

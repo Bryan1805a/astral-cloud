@@ -2,19 +2,22 @@
 
 class CartController {
     public function index(): void {
+        // Redirect to login page if user not login
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");
             exit;
         }
 
         $user_id    = $_SESSION["user_id"];
-        $cart_items = Cart::getUserCart($user_id);
+        $cart_items = Cart::getUserCart($user_id); // Get user cart information
 
+        // Calculate total price (price *  quantity)
         $total_price = 0;
         foreach ($cart_items as $item) {
             $total_price += $item["price"] * $item["quantity"];
         }
 
+        // Update view
         view('cart/index', [
             'cart_items'  => $cart_items,
             'total_price' => $total_price,
@@ -31,12 +34,15 @@ class CartController {
         ]);
     }
 
+    // Add item to cart
     public function add(): void {
+        // Redirect user to login page if user not login
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login?msg=login_required");
             exit;
         }
 
+        // Check request method
         if ($_SERVER["REQUEST_METHOD"] !== "POST") {
             header("Location: /");
             exit;
@@ -44,6 +50,7 @@ class CartController {
 
         $product_id = (int) ($_POST["product_id"] ?? 0);
 
+        // Check if product is empty
         if ($product_id <= 0) {
             header("Location: /");
             exit;
@@ -59,6 +66,7 @@ class CartController {
         exit;
     }
 
+    // remove item
     public function remove(): void {
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");
