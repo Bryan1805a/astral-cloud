@@ -2,44 +2,56 @@
 
 class CheckoutController {
     public function index(): void {
+        // Redirect user to login page if they are not login
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");
             exit;
         }
 
         $user_id     = $_SESSION["user_id"];
-        $currentUser = User::findById($user_id);
-        $cart_items  = Cart::getUserCart($user_id);
+        $currentUser = User::findById($user_id); // Get user information from database
+        $cart_items  = Cart::getUserCart($user_id); // Get cart information from database
 
         if (empty($cart_items)) {
             header("Location: /cart");
             exit;
         }
 
+        // Calculate sub total of all items
         $subtotal = 0;
         foreach ($cart_items as $item) {
             $subtotal += $item["price"] * $item["quantity"];
         }
 
+        // Recalculate if user uses voucher
         $voucher_code    = trim($_GET["voucher"] ?? "");
         $discount_amount = 0;
         $voucher_id      = null;
         $voucher_error   = "";
         $voucher_success = "";
 
+        // Check if the voucher code exists
         if ($voucher_code) {
             $voucher = Voucher::findByCode($voucher_code);
 
             if ($voucher) {
+                // Check expire date
                 if (strtotime($voucher["expiry_date"]) < strtotime("today")) {
                     $voucher_error = "The voucher has expired.";
-                } elseif ($voucher["quantity"] <= $voucher["used_count"]) {
+                }
+                // Check quantity
+                elseif ($voucher["quantity"] <= $voucher["used_count"]) {
                     $voucher_error = "The voucher has run out.";
-                } elseif ($subtotal < $voucher["min_order_value"]) {
+                }
+                // Check minimum order quantity to apply voucher
+                elseif ($subtotal < $voucher["min_order_value"]) {
                     $voucher_error = "The order has not met the minimum order requirement " . number_format($voucher["min_order_value"], 0, ",", ".") . "VND.";
-                } elseif ($voucher["applicable_tier"] !== "all" && $voucher["applicable_tier"] !== $currentUser["tier"]) {
+                }
+                // Check user tier
+                elseif ($voucher["applicable_tier"] !== "all" && $voucher["applicable_tier"] !== $currentUser["tier"]) {
                     $voucher_error = "This code is only for customer tier " . strtoupper($voucher["applicable_tier"]) . ".";
-                } else {
+                }
+                else {
                     $voucher_id = $voucher["id"];
                     if ($voucher["discount_type"] === "fixed") {
                         $discount_amount = $voucher["discount_value"];
@@ -73,7 +85,9 @@ class CheckoutController {
         ]);
     }
 
+    // 
     public function placeOrder(): void {
+        // Redirect user to login page if user not login
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");
             exit;
@@ -88,6 +102,7 @@ class CheckoutController {
         $currentUser = User::findById($user_id);
         $cart_items  = Cart::getUserCart($user_id);
 
+        // Redirect if empty
         if (empty($cart_items)) {
             header("Location: /cart");
             exit;
@@ -141,6 +156,7 @@ class CheckoutController {
                 );
             }
 
+            // Save voucher usage history
             if ($voucher_id) {
                 Order::recordVoucherUsage($voucher_id, $user_id, $new_order_id);
             }
@@ -156,7 +172,8 @@ class CheckoutController {
             die("<h3 style='color:red;'>Order error: " . $e->getMessage() . "</h3>");
         }
     }
-
+    
+    // Success notification
     public function success(): void {
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");
