@@ -2,6 +2,7 @@
 
 class AuthController {
     public function login(): void {
+        // Redirect user to unique page base on role
         if (isset($_SESSION["user_id"])) {
             $this->redirectBasedOnRole();
         }
@@ -45,6 +46,7 @@ class AuthController {
         $error   = "";
         $success = "";
 
+        // Check the request method
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $name             = trim($_POST["name"] ?? "");
             $email            = trim($_POST["email"] ?? "");
@@ -52,19 +54,27 @@ class AuthController {
             $password         = $_POST["password"] ?? "";
             $confirm_password = $_POST["confirm_password"] ?? "";
 
+            // Check valid registing data
             if (empty($name) || empty($email) || empty($password)) {
                 $error = "Please fill in all required fields (Name, Email, Password).";
-            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            }
+            elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $error = "Invalid email format.";
-            } elseif ($password !== $confirm_password) {
+            }
+            elseif ($password !== $confirm_password) {
                 $error = "The confirm password doesn't match.";
-            } elseif (strlen($password) < 6) {
+            }
+            elseif (strlen($password) < 6) {
                 $error = "The password must have at least 6 characters.";
-            } else {
+            }
+            else {
                 try {
+                    // Check if email exists in the database
                     if (User::emailExists($email)) {
                         $error = "This email address is already registered. Please use a different email address.";
-                    } else {
+                    }
+                    // Call create function and save to database
+                    else {
                         User::create($name, $email, $password, $phone ?: null);
                         header("Location: /login?registered=success");
                         exit;
@@ -83,12 +93,14 @@ class AuthController {
         ]);
     }
 
+    // Logout
     public function logout(): void {
         session_destroy();
         header("Location: /");
         exit;
     }
 
+    // Redirect user to unique page base on role
     private function redirectBasedOnRole(): void {
         if ($_SESSION["user_role"] === "admin" || $_SESSION["user_role"] === "staff") {
             header("Location: /admin");
