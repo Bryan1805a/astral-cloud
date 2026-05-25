@@ -1,6 +1,7 @@
 <?php
 
 class Order {
+    // Create order and save to database
     public static function create(int $userId, ?int $voucherId, ?string $voucherCode, float $subtotal, float $discount, float $total, string $note): int {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("
@@ -11,6 +12,7 @@ class Order {
         return (int) $pdo->lastInsertId();
     }
 
+    // Add items to existing order
     public static function addItem(int $orderId, int $productId, string $name, string $cpu, string $ram, string $storage, float $price, int $quantity, float $subtotal): void {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("
@@ -20,12 +22,14 @@ class Order {
         $stmt->execute([$orderId, $productId, $name, $cpu, $ram, $storage, $price, $quantity, $subtotal]);
     }
 
+    // Save voucher usage history
     public static function recordVoucherUsage(int $voucherId, int $userId, int $orderId): void {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("INSERT INTO voucher_usages (voucher_id, user_id, order_id) VALUES (?, ?, ?)");
         $stmt->execute([$voucherId, $userId, $orderId]);
     }
 
+    // Find order by ID
     public static function findById(int $orderId): ?array {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("SELECT * FROM orders WHERE id = :id");
