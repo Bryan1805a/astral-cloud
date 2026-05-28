@@ -143,7 +143,7 @@ CREATE TABLE orders (
     subtotal        DECIMAL(15,2) NOT NULL,                      -- Total before reduction
     discount_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,         -- The amount has been reduced.
     total_price     DECIMAL(15,2) NOT NULL,                      -- Total after reduction (actual revenue)
-    -- Trạng thái đơn hàng
+    -- Order status
     status          ENUM(
                         'pending',
                         'confirmed',
@@ -301,12 +301,12 @@ CREATE TABLE services (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     order_item_id   INT UNSIGNED  NOT NULL,
     user_id         INT UNSIGNED  NOT NULL,
-    -- Thông tin VPS
+    -- VPS information
     hostname        VARCHAR(100)  DEFAULT NULL,                  -- Example: vps-user123.astral.cloud
     ip_address      VARCHAR(45)   DEFAULT NULL,                  -- Supports both IPv4 and IPv6.
     root_password   VARCHAR(255)  DEFAULT NULL,
     os              VARCHAR(50)   DEFAULT NULL,                  -- Example: "Ubuntu 22.04"
-    -- Trạng thái và vòng đời
+    -- Status and lifecycle
     status          ENUM('provisioning','running','stopped','suspended','terminated')
                     NOT NULL DEFAULT 'provisioning',
     start_date      DATE          NOT NULL,
@@ -395,12 +395,12 @@ CREATE TRIGGER trg_order_status_update_spent
 AFTER UPDATE ON orders
 FOR EACH ROW
 BEGIN
-    -- Cộng vào khi chuyển sang success
+    -- Add when moving to success
     IF NEW.status = 'success' AND OLD.status != 'success' THEN
         UPDATE users
         SET total_spent = total_spent + NEW.total_price
         WHERE id = NEW.user_id;
-    -- Trừ ra khi từ success chuyển sang cancelled
+    -- Subtract when moving from success to cancelled
     ELSEIF OLD.status = 'success' AND NEW.status = 'cancelled' THEN
         UPDATE users
         SET total_spent = GREATEST(total_spent - NEW.total_price, 0)
@@ -467,8 +467,8 @@ BEGIN
         VALUES (
             NEW.user_id,
             'order',
-            CONCAT('Đơn hàng #', NEW.id, ' cập nhật'),
-            CONCAT('Trạng thái đơn hàng của bạn đã chuyển sang: ', NEW.status),
+            CONCAT('Order #', NEW.id, ' updated'),
+            CONCAT('Your order status has changed to: ', NEW.status),
             CONCAT('/orders/', NEW.id)
         );
     END IF;

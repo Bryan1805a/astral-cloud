@@ -47,10 +47,10 @@
                                         <span class="badge bg-secondary fs-6"><?= $item['quantity'] ?></span>
                                     </td>
                                     <td class="text-end text-secondary">
-                                        <?= number_format($item['price'], 0, ',', '.') ?>đ
+                                        <?= number_format($item['price'], 0, ',', '.') ?> VND
                                     </td>
                                     <td class="text-end fw-bold">
-                                        <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?>đ
+                                        <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?> VND
                                     </td>
                                     <td class="text-center">
                                         <form action="/cart/remove" method="POST" class="d-inline">

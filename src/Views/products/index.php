@@ -16,8 +16,8 @@
                     <ul class="list-unstyled mt-3 mb-4">
                         <li class="mb-2"><i class="bi bi-cpu text-primary me-2"></i> <strong>CPU:</strong> <?= htmlspecialchars($plan['cpu']) ?></li>
                         <li class="mb-2"><i class="bi bi-memory text-primary me-2"></i> <strong>RAM:</strong> <?= htmlspecialchars($plan['ram']) ?></li>
-                        <li class="mb-2"><i class="bi bi-hdd-network text-primary me-2"></i> <strong>Lưu trữ:</strong> <?= htmlspecialchars($plan['storage']) ?></li>
-                        <li class="mb-2"><i class="bi bi-speedometer2 text-primary me-2"></i> <strong>Mạng:</strong> <?= htmlspecialchars($plan['bandwidth']) ?></li>
+                        <li class="mb-2"><i class="bi bi-hdd-network text-primary me-2"></i> <strong>Storage:</strong> <?= htmlspecialchars($plan['storage']) ?></li>
+                        <li class="mb-2"><i class="bi bi-speedometer2 text-primary me-2"></i> <strong>Network:</strong> <?= htmlspecialchars($plan['bandwidth']) ?></li>
                     </ul>
 
                     <div class="mt-auto border-top border-secondary pt-3 text-center">
