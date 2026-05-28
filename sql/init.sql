@@ -45,15 +45,15 @@ CREATE TABLE users (
 -- ============================================================
 CREATE TABLE products (
     id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name          VARCHAR(150)  NOT NULL,                        -- VD: "VPS Starter", "Cloud Pro X2"
+    name          VARCHAR(150)  NOT NULL,                        -- e.g.: "VPS Starter", "Cloud Pro X2"
     slug          VARCHAR(200)  NOT NULL UNIQUE,                 -- URL: "vps-starter"
     description   TEXT          DEFAULT NULL,
     -- Specifications
-    cpu           VARCHAR(50)   NOT NULL,                        -- VD: "2 vCPU"
-    ram           VARCHAR(50)   NOT NULL,                        -- VD: "4 GB"
-    storage       VARCHAR(50)   NOT NULL,                        -- VD: "80 GB SSD"
-    bandwidth     VARCHAR(50)   NOT NULL,                        -- VD: "1 Gbps"
-    os_options    VARCHAR(255)  DEFAULT NULL,                    -- VD: "Ubuntu, Debian, CentOS"
+    cpu           VARCHAR(50)   NOT NULL,                        -- e.g.: "2 vCPU"
+    ram           VARCHAR(50)   NOT NULL,                        -- e.g.: "4 GB"
+    storage       VARCHAR(50)   NOT NULL,                        -- e.g.: "80 GB SSD"
+    bandwidth     VARCHAR(50)   NOT NULL,                        -- e.g.: "1 Gbps"
+    os_options    VARCHAR(255)  DEFAULT NULL,                    -- e.g.: "Ubuntu, Debian, CentOS"
     -- Prices and inventory
     price         DECIMAL(15,2) NOT NULL,                        -- VND / month
     stock         INT           NOT NULL DEFAULT 100,            -- Maximum number that can be use
@@ -77,7 +77,7 @@ CREATE TABLE products (
 CREATE TABLE product_promotions (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     product_id      INT UNSIGNED  NOT NULL,
-    label           VARCHAR(100)  NOT NULL,                      -- VD: "Discount 20% in June"
+    label           VARCHAR(100)  NOT NULL,                      -- e.g.: "Discount 20% in June"
     discount_type   ENUM('percent','fixed') NOT NULL,
     discount_value  DECIMAL(10,2) NOT NULL,                      -- % or VND
     start_date      DATE          NOT NULL,
@@ -96,7 +96,7 @@ CREATE TABLE product_promotions (
 -- ============================================================
 CREATE TABLE vouchers (
     id                   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    code                 VARCHAR(50)   NOT NULL UNIQUE,           -- VD: "ASTRAL2025"
+    code                 VARCHAR(50)   NOT NULL UNIQUE,           -- e.g.: "ASTRAL2025"
     description          VARCHAR(255)  DEFAULT NULL,
     discount_type        ENUM('percent','fixed') NOT NULL,
     discount_value       DECIMAL(10,2) NOT NULL,
@@ -335,7 +335,7 @@ CREATE TABLE notifications (
     type        ENUM('order','payment','service','voucher','system') NOT NULL,
     title       VARCHAR(255)  NOT NULL,
     message     TEXT          NOT NULL,
-    link        VARCHAR(255)  DEFAULT NULL,                      -- Relate URL (VD: /orders/123)
+    link        VARCHAR(255)  DEFAULT NULL,                      -- Related URL (e.g.: /orders/123)
     is_read     TINYINT(1)    NOT NULL DEFAULT 0,
     created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -488,15 +488,15 @@ INSERT INTO users (name, email, password, role, total_spent) VALUES
 
 -- Staff demo
 INSERT INTO users (name, email, password, role) VALUES
-('Nguyen Van A', 'staff@astralcloud.com',
+('Staff User', 'staff@astralcloud.com',
  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
  'staff');
 
 -- User demo
 INSERT INTO users (name, email, password, role, total_spent) VALUES
-('Tran Thi B', 'user1@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1200000),
-('Le Van C',   'user2@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 8500000),
-('Pham Thi D', 'user3@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 25000000);
+('Alice Johnson', 'user1@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1200000),
+('Bob Smith', 'user2@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 8500000),
+('Carol Davis', 'user3@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 25000000);
 
 -- Demo VPS products
 INSERT INTO products (name, slug, description, cpu, ram, storage, bandwidth, os_options, price, stock, created_by) VALUES
