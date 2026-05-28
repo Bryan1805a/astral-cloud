@@ -43,5 +43,6 @@
     $router->get('/checkout',       ['CheckoutController', 'index']);
     $router->post('/checkout/place-order', ['CheckoutController', 'placeOrder']);
     $router->get('/checkout/success', ['CheckoutController', 'success']);
+    $router->get('/orders', ["OrderController", "index"]);
 
     $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
