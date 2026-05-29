@@ -58,4 +58,31 @@ class Order {
         $stmt->execute(["user_id" => $userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // Get all order information (Only for Admin)
+    public static function getAllOrders(): array {
+        $pdo = Database::getConnection();
+        $sql = "
+            SELECT 
+                o.id AS order_id, 
+                o.total_price, 
+                o.status AS order_status, 
+                o.created_at,
+                u.name AS customer_name,
+                u.email AS customer_email,
+                oi.product_name
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            JOIN order_items oi ON o.id = oi.order_id
+            ORDER BY o.created_at DESC
+        ";
+        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Update order status
+    public static function updateStatus(int $orderId, string $status): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
+        $stmt->execute([$status, $orderId]);
+    }
 }
