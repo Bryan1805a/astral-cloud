@@ -45,4 +45,8 @@
     $router->get('/checkout/success', ['CheckoutController', 'success']);
     $router->get('/orders', ["OrderController", "index"]);
 
+    // Routes for admin
+    $router->get("/admin/orders", [AdminOrderController::class, "index"]);
+    $router->post("/admin/orders/update", [AdminOrderController::class, "update"]);
+
     $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
