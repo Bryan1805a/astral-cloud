@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "../Models/Order.php";
+require_once __DIR__ . "/../Models/Order.php";
 
 class OrderController {
     public function index() {

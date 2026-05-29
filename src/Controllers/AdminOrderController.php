@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "../Models/Order.php";
+require_once __DIR__ . "/../Models/Order.php";
 
 class AdminOrderController {
     // Check if user has admin role
@@ -19,7 +19,7 @@ class AdminOrderController {
 
     public function index() {
         $this->checkAdmin();
-        $order = Order::getAllOrders();
+        $orders = Order::getAllOrders();
         require_once __DIR__ . "/../Views/admin/orders/index.php";
     }
 
@@ -39,7 +39,7 @@ class AdminOrderController {
             }
 
             // Redirect when done
-            header("Location: /admin/orders/msg=updated");
+            header("Location: /admin/orders?msg=updated");
             exit;
         }
     }
