@@ -31,22 +31,28 @@
 
     $router = new Router();
 
-    $router->get('/',               ['ProductController', 'index']);
-    $router->get('/login',          ['AuthController', 'login']);
-    $router->post('/login',         ['AuthController', 'login']);
-    $router->get('/register',       ['AuthController', 'register']);
-    $router->post('/register',      ['AuthController', 'register']);
-    $router->get('/logout',         ['AuthController', 'logout']);
-    $router->get('/cart',           ['CartController', 'index']);
-    $router->post('/cart/add',      ['CartController', 'add']);
-    $router->post('/cart/remove',   ['CartController', 'remove']);
-    $router->get('/checkout',       ['CheckoutController', 'index']);
-    $router->post('/checkout/place-order', ['CheckoutController', 'placeOrder']);
-    $router->get('/checkout/success', ['CheckoutController', 'success']);
-    $router->get('/orders', ["OrderController", "index"]);
+    // Routes for user
+    $router->get('/',                               [ProductController::class, 'index']);
+
+    $router->get('/login',                          [AuthController::class, 'login']);
+    $router->post('/login',                         [AuthController::class, 'login']);
+
+    $router->get('/register',                       [AuthController::class, 'register']);
+    $router->post('/register',                      [AuthController::class, 'register']);
+
+    $router->get('/logout',                         [AuthController::class, 'logout']);
+
+    $router->get('/cart',                           [CartController::class, 'index']);
+    $router->post('/cart/add',                      [CartController::class, 'add']);
+    $router->post('/cart/remove',                   [CartController::class, 'remove']);
+
+    $router->get('/checkout',                       [CheckoutController::class, 'index']);
+    $router->post('/checkout/place-order',          [CheckoutController::class, 'placeOrder']);
+    $router->get('/checkout/success',               [CheckoutController::class, 'success']);
+    $router->get('/orders',                         [OrderController::class, "index"]);
 
     // Routes for admin
-    $router->get("/admin/orders", [AdminOrderController::class, "index"]);
-    $router->post("/admin/orders/update", [AdminOrderController::class, "update"]);
+    $router->get("/admin/orders",                   [AdminOrderController::class, "index"]);
+    $router->post("/admin/orders/update",           [AdminOrderController::class, "update"]);
 
     $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
