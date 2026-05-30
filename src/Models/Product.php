@@ -49,4 +49,12 @@ class Product {
         $data["id"] = $id;
         $stmt->execute($data);
     }
+
+    // Soft delete
+    // Only toggle active status to keep Order History
+    public static function toggleActive(int $id): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE products SET is_active = NOT is_active WHERE id = ?");
+        $stmt->execute([$id]);
+    }
 }
