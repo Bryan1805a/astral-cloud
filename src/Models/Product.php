@@ -23,4 +23,30 @@ class Product {
         $stmt = $pdo->query("SELECT * FROM products ORDER BY id DESC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // Add the new VPS Pack (New product)
+    public static function create(array $data): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("
+            INSERT INTO products (name, slug, description, cpu, ram, storage, bandwidth, price, stock, is_active, created_by)
+            VALUES (:name, :slug, :description, :cpu, :ram, :storage, :bandwidth, :price, :stock, :is_active, :created_by)
+        ");
+
+        $stmt->execute($data);
+    }
+
+    // Update VPS package (Update product information)
+    public static function update(int $id, array $data): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("
+            UPDATE products 
+            SET name = :name, description = :description, cpu = :cpu, ram = :ram, 
+                storage = :storage, bandwidth = :bandwidth, price = :price, 
+                stock = :stock, is_active = :is_active
+            WHERE id = :id
+        ");
+
+        $data["id"] = $id;
+        $stmt->execute($data);
+    }
 }
