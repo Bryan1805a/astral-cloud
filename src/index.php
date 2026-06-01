@@ -36,10 +36,8 @@
 
     $router->get('/login',                          [AuthController::class, 'login']);
     $router->post('/login',                         [AuthController::class, 'login']);
-
     $router->get('/register',                       [AuthController::class, 'register']);
     $router->post('/register',                      [AuthController::class, 'register']);
-
     $router->get('/logout',                         [AuthController::class, 'logout']);
 
     $router->get('/cart',                           [CartController::class, 'index']);
@@ -49,10 +47,16 @@
     $router->get('/checkout',                       [CheckoutController::class, 'index']);
     $router->post('/checkout/place-order',          [CheckoutController::class, 'placeOrder']);
     $router->get('/checkout/success',               [CheckoutController::class, 'success']);
+
     $router->get('/orders',                         [OrderController::class, "index"]);
 
     // Routes for admin
     $router->get("/admin/orders",                   [AdminOrderController::class, "index"]);
     $router->post("/admin/orders/update",           [AdminOrderController::class, "update"]);
+
+    $router->get("/admin/products",                 [AdminProductController::class, "index"]);
+    $router->post("/admin/products/store",          [AdminProductController::class, "store"]);
+    $router->post("/admin/products/update",         [AdminProductController::class, "update"]);
+    $router->post("/admin/products/toggle",         [AdminProductController::class, "toggle"]);
 
     $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
