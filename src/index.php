@@ -59,4 +59,7 @@
     $router->post("/admin/products/update",         [AdminProductController::class, "update"]);
     $router->post("/admin/products/toggle",         [AdminProductController::class, "toggle"]);
 
+    $router->get("/admin",                          [AdminDashboardController::class, "index"]);
+    $router->get("/admin/dashboard",                [AdminDashboardController::class, "index"]);
+
     $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
