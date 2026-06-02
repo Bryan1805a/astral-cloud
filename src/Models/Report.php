@@ -62,12 +62,12 @@ class Report {
     public static function getSummaryStats(): array {
         $pdo = Database::getConnection();
 
-        $stat = [];
+        $stats = [];
 
-        $stats['total_users'] = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'user'")->fetchColumn();
-        $stats['total_orders'] = $pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();
-        $stats['total_revenue'] = $pdo->query("SELECT SUM(total_price) FROM orders WHERE status = 'success'")->fetchColumn() ?: 0;
+        $stats['total_users'] = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'user'")->fetchColumn();
+        $stats['total_orders'] = (int) $pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();
+        $stats['total_revenue'] = (float) $pdo->query("SELECT SUM(total_price) FROM orders WHERE status = 'success'")->fetchColumn() ?: 0;
 
-        return $stat;
+        return $stats;
     }
 }
