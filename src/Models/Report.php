@@ -58,7 +58,7 @@ class Report {
         return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Summary stat
+    // Get Summary stat
     public static function getSummaryStats(): array {
         $pdo = Database::getConnection();
 
