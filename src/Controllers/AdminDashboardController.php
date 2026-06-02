@@ -3,7 +3,7 @@ require_once __DIR__ . "/../Models/Report.php";
 
 class AdminDashboardController {
     private function checkAdmin() {
-        if (session_start() !== PHP_SESSION_NONE) {
+        if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
@@ -31,14 +31,14 @@ class AdminDashboardController {
         $monthlyRevenue = Report::getMonthlyRevenue();
         $chartLabels = [];
         $chartData = [];
-        foreach($monthlyRevenue as $row) {
-            $chartLabels = $row["month"];
-            $chartData = (float)$row["revenue"];
+        foreach ($monthlyRevenue as $row) {
+            $chartLabels[] = $row["month"];
+            $chartData[] = (float)$row["revenue"];
         }
 
-        // Convert PHP to JSON array
-        $chartLabelsJSON = json_encode($chartLabels);
-        $chartDataJSON = json_encode($chartData);
+        // Convert PHP arrays to JSON for the view
+        $chartLabelsJson = json_encode($chartLabels);
+        $chartDataJson = json_encode($chartData);
 
         require_once __DIR__ . "/../Views/admin/dashboard/index.php";
     }
