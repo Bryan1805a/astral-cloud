@@ -69,4 +69,7 @@
     $router->post("/admin/vouchers/store",          [AdminVoucherController::class, "store"]);
     $router->post("/admin/vouchers/toggle",         [AdminVoucherController::class, "toggle"]);
 
+    $router->get("/admin/reviews",                  [AdminReviewController::class, "index"]);
+    $router->post("/admin/reviews/toggle",           [AdminReviewController::class, "toggle"]);
+
     $router->dispatch($_SERVER["REQUEST_URI"], $_SERVER["REQUEST_METHOD"]);
