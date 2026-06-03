@@ -50,6 +50,9 @@
 
     $router->get("/orders",                         [OrderController::class, "index"]);
 
+    $router->get("/inbox",                          [InboxController::class, "index"]);
+    $router->post("/inbox/read",                    [InboxController::class, "markRead"]);
+
     // Routes for admin
     $router->get("/admin/orders",                   [AdminOrderController::class, "index"]);
     $router->post("/admin/orders/update",           [AdminOrderController::class, "update"]);
