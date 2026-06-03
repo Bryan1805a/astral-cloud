@@ -28,4 +28,12 @@ class Voucher {
 
         $stmt->execute($data);
     }
+
+    // Change voucher status
+    // turn on / off
+    public static function toggleActive(int $id): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE vouchers SET is_active = NOT is_active WHERE id = ?");
+        $stmt->execute([$id]);
+    }
 }
