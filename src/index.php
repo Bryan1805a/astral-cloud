@@ -65,4 +65,8 @@
     $router->get("/admin/users",                    [AdminUserController::class, "index"]);
     $router->post("/admin/users/toggle-lock",       [AdminUserController::class, "toggleLock"]);
 
+    $router->get("/admin/vouchers",                 [AdminVoucherController::class, "index"]);
+    $router->post("/admin/vouchers/store",          [AdminVoucherController::class, "store"]);
+    $router->post("/admin/vouchers/toggle",         [AdminVoucherController::class, "toggle"]);
+
     $router->dispatch($_SERVER["REQUEST_URI"], $_SERVER["REQUEST_METHOD"]);
