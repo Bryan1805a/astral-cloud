@@ -2,8 +2,6 @@
 require_once __DIR__ . "/../Models/Review.php";
 class AdminReviewController {
     private function checkAdmin() {
-        if (session_status() === PHP_SESSION_NONE) session_start();
-
         if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {
             header("Location: /login");
             exit;
@@ -25,7 +23,7 @@ class AdminReviewController {
     public function toggle() {
         $this->checkAdmin();
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            $id = (int)$_SERVER["id"];
+            $id = (int)($_POST["id"] ?? 0);
             if ($id > 0) {
                 Review::toggleVisibility($id);
             }
