@@ -19,5 +19,16 @@ class AdminUserController {
         require_once __DIR__ . "/../Views/admin/users/index.php";
     }
 
-    
+    public function toggleLock() {
+        $this->checkAdmin();
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            $id = (int)$_POST["id"];
+            if ($id > 0) {
+                User::toggleLock($id);
+            }
+
+            header("Location: /admin/users?msg=status_changed");
+            exit;
+        }
+    }
 }
