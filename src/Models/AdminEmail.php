@@ -23,7 +23,7 @@ class AdminEmail {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // User seen status
+    // User mark read status
     public static function markAsRead(int $emailId, int $userId): void {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("UPDATE admin_emails SET is_read = 1 WHERE id = ? AND (recipient_id = ? OR recipient_id IS NULL)");
