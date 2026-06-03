@@ -3,10 +3,6 @@ require_once __DIR__ . "/../Models/Report.php";
 
 class AdminDashboardController {
     private function checkAdmin() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
         // Redirect to login page if user not login
         if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {
             header("Location: /login");
