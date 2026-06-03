@@ -17,4 +17,15 @@ class Voucher {
     }
 
     // Add new voucher and save to datase
+    public static function create(array $data): array {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("
+            INSERT INTO vouchers 
+            (code, description, discount_type, discount_value, min_order_value, max_discount, quantity, applicable_tier, expiry_date, is_active)
+            VALUES 
+            (:code, :description, :discount_type, :discount_value, :min_order_value, :max_discount, :quantity, :applicable_tier, :expiry_date, :is_active)
+        ");
+
+        $stmt->execute($data);
+    }
 }
