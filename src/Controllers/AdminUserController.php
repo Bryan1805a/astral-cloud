@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../Models/User.php";
 class AdminUserController {
     private function checkAdmin() {
         if (session_status() === PHP_SESSION_NONE) session_start();

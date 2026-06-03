@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../Models/Review.php";
 class AdminReviewController {
     private function checkAdmin() {
         if (session_status() === PHP_SESSION_NONE) session_start();
