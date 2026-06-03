@@ -5,12 +5,12 @@
 
     session_start();
 
-    require_once __DIR__ . '/config/db.php';
+    require_once __DIR__ . "/config/db.php";
 
     spl_autoload_register(function ($class) {
         $paths = [
-            __DIR__ . '/Controllers/' . $class . '.php',
-            __DIR__ . '/Models/' . $class . '.php',
+            __DIR__ . "/Controllers/" . $class . ".php",
+            __DIR__ . "/Models/" . $class . ".php",
         ];
         foreach ($paths as $path) {
             if (file_exists($path)) {
@@ -22,33 +22,33 @@
 
     function view(string $view, array $data = []): void {
         extract($data);
-        require __DIR__ . '/Views/layouts/header.php';
+        require __DIR__ . "/Views/layouts/header.php";
         require __DIR__ . "/Views/{$view}.php";
-        require __DIR__ . '/Views/layouts/footer.php';
+        require __DIR__ . "/Views/layouts/footer.php";
     }
 
-    require_once __DIR__ . '/Router.php';
+    require_once __DIR__ . "/Router.php";
 
     $router = new Router();
 
     // Routes for user
-    $router->get('/',                               [ProductController::class, 'index']);
+    $router->get("/",                               [ProductController::class, "index"]);
 
-    $router->get('/login',                          [AuthController::class, 'login']);
-    $router->post('/login',                         [AuthController::class, 'login']);
-    $router->get('/register',                       [AuthController::class, 'register']);
-    $router->post('/register',                      [AuthController::class, 'register']);
-    $router->get('/logout',                         [AuthController::class, 'logout']);
+    $router->get("/login",                          [AuthController::class, "login"]);
+    $router->post("/login",                         [AuthController::class, "login"]);
+    $router->get("/register",                       [AuthController::class, "register"]);
+    $router->post("/register",                      [AuthController::class, "register"]);
+    $router->get("/logout",                         [AuthController::class, "logout"]);
 
-    $router->get('/cart',                           [CartController::class, 'index']);
-    $router->post('/cart/add',                      [CartController::class, 'add']);
-    $router->post('/cart/remove',                   [CartController::class, 'remove']);
+    $router->get("/cart",                           [CartController::class, "index"]);
+    $router->post("/cart/add",                      [CartController::class, "add"]);
+    $router->post("/cart/remove",                   [CartController::class, "remove"]);
 
-    $router->get('/checkout',                       [CheckoutController::class, 'index']);
-    $router->post('/checkout/place-order',          [CheckoutController::class, 'placeOrder']);
-    $router->get('/checkout/success',               [CheckoutController::class, 'success']);
+    $router->get("/checkout",                       [CheckoutController::class, "index"]);
+    $router->post("/checkout/place-order",          [CheckoutController::class, "placeOrder"]);
+    $router->get("/checkout/success",               [CheckoutController::class, "success"]);
 
-    $router->get('/orders',                         [OrderController::class, "index"]);
+    $router->get("/orders",                         [OrderController::class, "index"]);
 
     // Routes for admin
     $router->get("/admin/orders",                   [AdminOrderController::class, "index"]);
@@ -62,4 +62,7 @@
     $router->get("/admin",                          [AdminDashboardController::class, "index"]);
     $router->get("/admin/dashboard",                [AdminDashboardController::class, "index"]);
 
-    $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+    $router->get("/admin/users",                    [AdminUserController::class, "index"]);
+    $router->post("/admin/users/toggle-lock",       [AdminUserController::class, "toggleLock"]);
+
+    $router->dispatch($_SERVER["REQUEST_URI"], $_SERVER["REQUEST_METHOD"]);
