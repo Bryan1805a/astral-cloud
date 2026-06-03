@@ -50,4 +50,12 @@ class User {
         
         return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // Change user account status
+    // Lock / Unlock account
+    public static function toggleLock(int $id): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE users SET is_locked = NOT is_locked WHERE id = ? AND role = 'user'");
+        $stmt->execute([$id]);
+    }
 }
