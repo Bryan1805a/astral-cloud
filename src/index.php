@@ -72,4 +72,7 @@
     $router->get("/admin/reviews",                  [AdminReviewController::class, "index"]);
     $router->post("/admin/reviews/toggle",           [AdminReviewController::class, "toggle"]);
 
+    $router->get("/admin/emails",                   [AdminEmailController::class, "index"]);
+    $router->post("/admin/emails/send",             [AdminEmailController::class, "send"]);
+
     $router->dispatch($_SERVER["REQUEST_URI"], $_SERVER["REQUEST_METHOD"]);
