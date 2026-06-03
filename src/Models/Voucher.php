@@ -17,7 +17,7 @@ class Voucher {
     }
 
     // Add new voucher and save to datase
-    public static function create(array $data): array {
+    public static function create(array $data): void {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("
             INSERT INTO vouchers 
