@@ -81,14 +81,21 @@
                             </div>
 
                             <div class="mt-auto d-flex gap-2">
-                                <button class="btn btn-sm btn-outline-info flex-grow-1" onclick="alert('The progress detail feature is under development!')">
-                                    <i class="bi bi-info-circle"></i> Details
+                                <button class="btn btn-sm btn-outline-info flex-grow-1" onclick="alert('Tính năng xem chi tiết tiến trình đang phát triển!')">
+                                    <i class="bi bi-info-circle"></i> Detail
                                 </button>
                                 
                                 <?php if ($order['order_status'] === 'success' || $order['order_status'] === 'running'): ?>
                                     <button class="btn btn-sm btn-success flex-grow-1" onclick="openConsole('<?= htmlspecialchars($order['product_name']) ?>')">
                                         <i class="bi bi-terminal"></i> Console
                                     </button>
+                                <?php elseif ($order['order_status'] === 'pending'): ?>
+                                    <form action="/orders/cancel" method="POST" class="flex-grow-1 d-flex" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                                        <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                            <i class="bi bi-x-circle"></i> Cancel
+                                        </button>
+                                    </form>
                                 <?php else: ?>
                                     <button class="btn btn-sm btn-secondary flex-grow-1" disabled>
                                         <i class="bi bi-terminal"></i> Waiting...
