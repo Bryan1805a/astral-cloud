@@ -31,6 +31,19 @@
             <a href="/" class="btn btn-outline-light"><i class="bi bi-house-door"></i> Back to Home</a>
         </div>
 
+        <?php if (isset($_GET['msg']) && $_GET['msg'] === 'cancelled'): ?>
+            <div class="alert alert-success bg-success text-light border-0 alert-dismissible fade show mb-4">
+                Order cancelled successfully! Voucher code (if any) has been refunded.
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+        <?php if (isset($_GET['err']) && $_GET['err'] === 'cannot_cancel'): ?>
+            <div class="alert alert-danger bg-danger text-light border-0 alert-dismissible fade show mb-4">
+                This order cannot be canceled (it has been processed or does not exist).
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
         <?php if (empty($orders)): ?>
             <div class="glass-panel p-5 text-center">
                 <i class="bi bi-hdd-network text-secondary" style="font-size: 4rem;"></i>
