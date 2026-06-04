@@ -111,8 +111,8 @@
 
     <script>
         function openConsole(serverName) {
-            let hostname = serverName.toLowerCase().replace(/\s+/g, '-');
-            alert("Initializing a secure SSH connection to: " + serverName + "\n\nroot@" + hostname + ":~# _");
+            // Redirect to the Console page with the VPS name
+            window.location.href = '/console?name=' + encodeURIComponent(serverName);
         }
     </script>
 </body>
