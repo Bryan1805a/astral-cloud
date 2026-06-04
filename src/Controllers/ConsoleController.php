@@ -9,7 +9,7 @@ class ConsoleController {
         }
 
         $serverName = $_GET["name"] ?? "astral-vps";
-        $hostName = strtolower(trim(preg_replace("/[^A-Za-z0-9-]+/", "-", $serverName)));
+        $hostname = strtolower(trim(preg_replace("/[^A-Za-z0-9-]+/", "-", $serverName)));
 
         require_once __DIR__ . "/../Views/console/index.php";
     }

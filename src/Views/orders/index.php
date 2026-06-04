@@ -64,8 +64,9 @@
                                 <?php
                                     $bgClass = 'bg-secondary';
                                     if ($order['order_status'] === 'pending') $bgClass = 'bg-warning text-dark';
+                                    if ($order['order_status'] === 'confirmed') $bgClass = 'bg-info text-dark';
                                     if ($order['order_status'] === 'provisioning') $bgClass = 'bg-info text-dark';
-                                    if ($order['order_status'] === 'running' || $order['order_status'] === 'success') $bgClass = 'bg-success';
+                                    if ($order['order_status'] === 'active' || $order['order_status'] === 'success') $bgClass = 'bg-success';
                                     if ($order['order_status'] === 'cancelled') $bgClass = 'bg-danger';
                                 ?>
                                 <span class="badge rounded-pill <?= $bgClass ?> status-badge">
@@ -85,7 +86,7 @@
                                     <i class="bi bi-info-circle"></i> Detail
                                 </button>
                                 
-                                <?php if ($order['order_status'] === 'success' || $order['order_status'] === 'running'): ?>
+                                <?php if ($order['order_status'] === 'success' || $order['order_status'] === 'active'): ?>
                                     <button class="btn btn-sm btn-success flex-grow-1" onclick="openConsole('<?= htmlspecialchars($order['product_name']) ?>')">
                                         <i class="bi bi-terminal"></i> Console
                                     </button>

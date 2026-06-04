@@ -7,7 +7,7 @@
     <style>
         body {
             background-color: #0c0c0c;
-            color: #10b981; /* Terminal standard green */
+            color: #ffffff; /* Terminal standard green */
             font-family: 'Courier New', Courier, monospace;
             font-size: 16px;
             margin: 0;
@@ -26,14 +26,14 @@
             margin-top: 5px;
         }
         .prompt {
-            color: #38bdf8; /* Cyan for prompt */
+            color: #10b981;; /* Cyan for prompt */
             font-weight: bold;
             white-space: nowrap;
         }
         .cmd-input {
             background: transparent;
             border: none;
-            color: #10b981;
+            color: #ffffff;
             font-family: inherit;
             font-size: inherit;
             outline: none;

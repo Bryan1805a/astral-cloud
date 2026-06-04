@@ -74,7 +74,9 @@
                                     <?php
                                         $bgClass = 'bg-secondary';
                                         if ($order['order_status'] === 'pending') $bgClass = 'bg-warning text-dark';
-                                        if ($order['order_status'] === 'success' || $order['order_status'] === 'running') $bgClass = 'bg-success';
+                                        if ($order['order_status'] === 'confirmed') $bgClass = 'bg-info text-dark';
+                                        if ($order['order_status'] === 'provisioning') $bgClass = 'bg-info text-dark';
+                                        if ($order['order_status'] === 'active' || $order['order_status'] === 'success') $bgClass = 'bg-success';
                                         if ($order['order_status'] === 'cancelled') $bgClass = 'bg-danger';
                                     ?>
                                     <span class="badge <?= $bgClass ?>"><?= strtoupper($order['order_status']) ?></span>
@@ -84,8 +86,9 @@
                                         <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
                                         <select name="status" class="form-select form-select-sm bg-dark text-light border-secondary" style="width: 130px;">
                                             <option value="pending" <?= $order['order_status'] == 'pending' ? 'selected' : '' ?>>Pending</option>
+                                            <option value="confirmed" <?= $order['order_status'] == 'confirmed' ? 'selected' : '' ?>>Confirmed</option>
                                             <option value="provisioning" <?= $order['order_status'] == 'provisioning' ? 'selected' : '' ?>>Provisioning</option>
-                                            <option value="running" <?= $order['order_status'] == 'running' ? 'selected' : '' ?>>Running</option>
+                                            <option value="active" <?= $order['order_status'] == 'active' ? 'selected' : '' ?>>Active</option>
                                             <option value="success" <?= $order['order_status'] == 'success' ? 'selected' : '' ?>>Success</option>
                                             <option value="cancelled" <?= $order['order_status'] == 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
                                         </select>
