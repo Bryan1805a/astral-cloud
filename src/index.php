@@ -49,6 +49,7 @@
     $router->get("/checkout/success",               [CheckoutController::class, "success"]);
 
     $router->get("/orders",                         [OrderController::class, "index"]);
+    $router->post("/orders/cancel",                 [OrderController::class, "cancel"]);
 
     $router->get("/inbox",                          [InboxController::class, "index"]);
     $router->post("/inbox/read",                    [InboxController::class, "markRead"]);
