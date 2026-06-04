@@ -59,6 +59,44 @@ class Order {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Cancel order
+    public static function cancelOrder(int $orderId, int $userId): bool {
+        $pdo = Database::getConnection();
+        try {
+            $pdo->beginTransaction();
+
+            $stmt = $pdo->prepare("SELECT voucher_id, status FROM orders WHERE id = ? AND user_id = ? FOR UPDATE");
+            $stmt->execute([$orderId, $userId]);
+            $order = $stmt->fetch();
+            
+            // Check if order exists and status is pending
+            if (!$order || $order["status"] !== "pending") {
+                $pdo->rollBack();
+                return false;
+            }
+
+            // Update status to cancelled
+            $stmtUpdate = $pdo->prepare("UPDATE orders SET status = 'cancelled' WHERE id = ?");
+            $stmtUpdate->execute([$orderId]);
+
+            // Return vouchers if user applies vouchers
+            if (!empty($order["voucher_id"])) {
+                // Delete voucher usage history for this order
+                $stmtDelVoucher = $pdo->prepare("DELETE FROM voucher_usages WHERE voucher_id = ? AND user_id = ? AND order_id = ?");
+                $stmtDelVoucher->execute([$order["voucher_id"], $userId, $orderId]);
+
+                $stmtRestoreVoucher = $pdo->prepare("UPDATE vouchers SET used_count = used_count - 1 WHERE id = ?");
+                $stmtRestoreVoucher->execute([$order["voucher_id"]]);
+            }
+
+            $pdo->commit();
+            return True;
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            return false;
+        }
+    }
+
     // Get all order information (Only for Admin)
     public static function getAllOrders(): array {
         $pdo = Database::getConnection();
@@ -79,7 +117,7 @@ class Order {
         return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Update order status
+    // Update order status (Only for admin)
     public static function updateStatus(int $orderId, string $status): void {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
