@@ -1,7 +1,11 @@
 FROM php:8.2-apache
 
-# Install extensions
-RUN docker-php-ext-install pdo pdo_mysql mysqli
+# Install system dependencies and PHP extensions
+RUN apt-get update && apt-get install -y \
+    unzip \
+    libzip-dev \
+    && docker-php-ext-install pdo pdo_mysql mysqli zip \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite
 
