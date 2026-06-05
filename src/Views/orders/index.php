@@ -79,10 +79,45 @@
                                 <p class="mb-1 text-secondary small"><i class="bi bi-cpu"></i> CPU: <?= htmlspecialchars($order['product_cpu']) ?></p>
                                 <p class="mb-1 text-secondary small"><i class="bi bi-memory"></i> RAM: <?= htmlspecialchars($order['product_ram']) ?></p>
                                 <p class="mb-0 text-info fw-bold mt-2"><?= number_format($order['total_price'], 0, ',', '.') ?> VND / period</p>
+
+                                <?php 
+                                $currentService = null;
+                                foreach ($services as $srv) {
+                                    if ($srv['order_item_id'] == $order['order_item_id']) {
+                                        $currentService = $srv;
+                                        break;
+                                    }
+                                }
+                            ?>
+
+                                <?php if ($currentService): ?>
+                                    <div class="mt-3 p-3 bg-dark bg-opacity-50 rounded border border-secondary">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-secondary small">IP Address:</span>
+                                            <span class="text-success fw-bold font-monospace"><?= htmlspecialchars($currentService['ip_address']) ?></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-secondary small">OS:</span>
+                                            <span class="text-light small"><?= htmlspecialchars($currentService['os']) ?></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-secondary small">Root Password:</span>
+                                            <div class="input-group input-group-sm" style="width: 150px;">
+                                                <input type="password" class="form-control bg-transparent text-warning border-secondary font-monospace" value="<?= htmlspecialchars($currentService['root_password']) ?>" readonly id="pwd-<?= $currentService['id'] ?>">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="const p = document.getElementById('pwd-<?= $currentService['id'] ?>'); p.type = p.type === 'password' ? 'text' : 'password';">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="text-end mt-2">
+                                            <small class="text-secondary">Expires: <?= date('d/m/Y', strtotime($currentService['expiry_date'])) ?></small>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                             <div class="mt-auto d-flex gap-2">
-                                <button class="btn btn-sm btn-outline-info flex-grow-1" onclick="alert('Tính năng xem chi tiết tiến trình đang phát triển!')">
+                                <button class="btn btn-sm btn-outline-info flex-grow-1" onclick="alert('Detail view feature is under development!')">
                                     <i class="bi bi-info-circle"></i> Detail
                                 </button>
                                 
@@ -91,7 +126,7 @@
                                         <i class="bi bi-terminal"></i> Console
                                     </button>
                                 <?php elseif ($order['order_status'] === 'pending'): ?>
-                                    <form action="/orders/cancel" method="POST" class="flex-grow-1 d-flex" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                                    <form action="/orders/cancel" method="POST" class="flex-grow-1 d-flex" onsubmit="return confirm('Are you sure you want to cancel this order?');">
                                         <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger w-100">
                                             <i class="bi bi-x-circle"></i> Cancel
