@@ -13,6 +13,10 @@ class OrderController {
 
         $orders = Order::getUserOrders($userId);
 
+        require_once __DIR__ . "/../Models/Service.php";
+
+        $services = Service::getUserServices($userId);
+
         require_once __DIR__ . "/../Views/orders/index.php";
     }
 
