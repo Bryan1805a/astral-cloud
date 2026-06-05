@@ -58,4 +58,22 @@ class User {
         $stmt = $pdo->prepare("UPDATE users SET is_locked = NOT is_locked WHERE id = ? AND role = 'user'");
         $stmt->execute([$id]);
     }
+
+    // Create account with token
+    // Save token and set is_verified = 0
+    public static function createWithToken(array $data, string $token): void {
+        $pdo = Database::getConnection();
+
+        $stmt = $pdo->prepare("
+            INSERT INTO users (name, email, password, verification_token, is_verified) 
+            VALUES (:name, :email, :password, :token, 0)
+        ");
+        
+        $stmt->execute([
+            "name" => $data["name"],
+            "email" => $data["email"],
+            "password" => password_hash($data["password"], PASSWORD_DEFAULT),
+            "token" => $token
+        ]);
+    }
 }
