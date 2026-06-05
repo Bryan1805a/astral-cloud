@@ -8,3 +8,7 @@ RUN a2enmod rewrite
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
+
+# Copy composer files and install dependencies
+COPY composer.json composer.lock* ./
+RUN composer install --no-dev --no-interaction --prefer-dist
