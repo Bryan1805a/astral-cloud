@@ -32,7 +32,17 @@ class AdminOrderController {
             $validStatuses = ['pending', 'confirmed', 'provisioning', 'active', 'success', 'cancelled'];
 
             if ($orderId > 0 && in_array($status, $validStatuses)) {
+                // Get user id
+                require_once __DIR__ . "/../Models/Order.php";
+                $order = Order::findById($orderId);
+
                 Order::updateStatus($orderId, $status);
+
+                // If order success, auto provision VPS
+                if ($status == "success" && $order) {
+                    require_once __DIR__ . "/../Models/Service.php";
+                    Service::provisionForOrder($orderId, $order["user_id"]);
+                }
             }
 
             // Redirect when done
