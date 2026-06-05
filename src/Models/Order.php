@@ -46,6 +46,7 @@ class Order {
                 o.total_price, 
                 o.status AS order_status, 
                 o.created_at,
+                oi.id AS order_item_id,
                 oi.product_name, 
                 oi.product_cpu, 
                 oi.product_ram
