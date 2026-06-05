@@ -84,4 +84,11 @@ class User {
         $stmt->execute([$token]);
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
+
+    // Activate account
+    public static function verifyEmail(int $userId): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?");
+        $stmt->execute([$userId]);
+    }
 }
