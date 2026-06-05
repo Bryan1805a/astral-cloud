@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . "/../Models/Product.php";
 
 class AdminProductController {
     private function checkAdmin() {

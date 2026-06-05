@@ -33,10 +33,10 @@
             <h5 class="text-cyan mb-3">Voucher</h5>
 
             <?php if ($voucher_error): ?>
-                <div class="alert alert-danger py-2 fs-6"><?= $voucher_error ?></div>
+                <div class="alert alert-danger py-2 fs-6"><?= htmlspecialchars($voucher_error) ?></div>
             <?php endif; ?>
             <?php if ($voucher_success): ?>
-                <div class="alert alert-success py-2 fs-6"><?= $voucher_success ?></div>
+                <div class="alert alert-success py-2 fs-6"><?= htmlspecialchars($voucher_success) ?></div>
             <?php endif; ?>
 
             <form action="/checkout" method="GET" class="d-flex">

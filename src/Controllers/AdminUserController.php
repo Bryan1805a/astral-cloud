@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/../Models/User.php";
+
 class AdminUserController {
     private function checkAdmin() {
         if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {

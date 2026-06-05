@@ -1,6 +1,5 @@
 <?php
-require_once __DIR__ . "/../Models/AdminEmail.php";
-require_once __DIR__ . "/../Models/User.php";
+
 class AdminEmailController {
     private function checkAdmin() {
         if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {

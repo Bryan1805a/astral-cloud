@@ -62,7 +62,7 @@
                     <tbody>
                         <?php foreach ($orders as $order): ?>
                             <tr>
-                                <td class="fw-bold text-cyan">#<?= $order['order_id'] ?></td>
+                                <td class="fw-bold text-cyan">#<?= htmlspecialchars($order['order_id']) ?></td>
                                 <td>
                                     <?= htmlspecialchars($order['customer_name']) ?><br>
                                     <small class="text-secondary"><?= htmlspecialchars($order['customer_email']) ?></small>
@@ -83,7 +83,7 @@
                                 </td>
                                 <td>
                                     <form action="/admin/orders/update" method="POST" class="d-flex gap-2">
-                                        <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
+                                        <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['order_id']) ?>">
                                         <select name="status" class="form-select form-select-sm bg-dark text-light border-secondary" style="width: 130px;">
                                             <option value="pending" <?= $order['order_status'] == 'pending' ? 'selected' : '' ?>>Pending</option>
                                             <option value="confirmed" <?= $order['order_status'] == 'confirmed' ? 'selected' : '' ?>>Confirmed</option>

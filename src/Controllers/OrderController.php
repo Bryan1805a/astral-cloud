@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . "/../Models/Order.php";
 
 class OrderController {
     public function index() {
@@ -12,9 +11,6 @@ class OrderController {
         $userId = $_SESSION["user_id"];
 
         $orders = Order::getUserOrders($userId);
-
-        require_once __DIR__ . "/../Models/Service.php";
-
         $services = Service::getUserServices($userId);
 
         require_once __DIR__ . "/../Views/orders/index.php";

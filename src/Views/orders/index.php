@@ -57,7 +57,7 @@
                         <div class="glass-panel p-4 h-100 d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
                                 <div>
-                                    <h5 class="mb-0 text-cyan">Order #<?= $order['order_id'] ?></h5>
+                                    <h5 class="mb-0 text-cyan">Order #<?= htmlspecialchars($order['order_id']) ?></h5>
                                     <small class="text-secondary"><?= date('d/m/Y H:i', strtotime($order['created_at'])) ?></small>
                                 </div>
                                 
@@ -127,7 +127,7 @@
                                     </button>
                                 <?php elseif ($order['order_status'] === 'pending'): ?>
                                     <form action="/orders/cancel" method="POST" class="flex-grow-1 d-flex" onsubmit="return confirm('Are you sure you want to cancel this order?');">
-                                        <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
+                                        <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['order_id']) ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger w-100">
                                             <i class="bi bi-x-circle"></i> Cancel
                                         </button>

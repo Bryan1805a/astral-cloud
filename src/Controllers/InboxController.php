@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . "/../Models/AdminEmail.php";
 
 class InboxController {
     // Fetch all email data from database for user who want to read it

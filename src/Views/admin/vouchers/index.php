@@ -77,7 +77,7 @@
                         <tr>
                             <td class="fw-bold text-warning fs-5"><?= htmlspecialchars($v['code']) ?></td>
                             <td class="fw-bold text-info">
-                                <?= $v['discount_type'] === 'percent' ? $v['discount_value'].'%' : number_format($v['discount_value'], 0, ',', '.').'VND' ?>
+                                <?= htmlspecialchars($v['discount_type'] === 'percent' ? $v['discount_value'].'%' : number_format($v['discount_value'], 0, ',', '.').'VND') ?>
                             </td>
                             <td>
                                 Min order: <?= number_format($v['min_order_value'], 0, ',', '.') ?>VND<br>
