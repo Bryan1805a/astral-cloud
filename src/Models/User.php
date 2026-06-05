@@ -76,4 +76,12 @@ class User {
             "token" => $token
         ]);
     }
+
+    // Find user by token
+    public static function findByToken(string $token): ?array {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE verification_token = ? AND is_verified = 0");
+        $stmt->execute([$token]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
 }
