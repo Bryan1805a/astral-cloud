@@ -494,9 +494,9 @@ INSERT INTO users (name, email, password, role) VALUES
 
 -- User demo
 INSERT INTO users (name, email, password, role, total_spent) VALUES
-('Alice Johnson', 'user1@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1200000),
-('Bob Smith', 'user2@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 8500000),
-('Carol Davis', 'user3@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 25000000);
+('Nguyen Van A', 'user1@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1200000),
+('Nguyen Van B', 'user2@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 8500000),
+('Nguyen Van C', 'user3@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 25000000);
 
 -- Demo VPS products
 INSERT INTO products (name, slug, description, cpu, ram, storage, bandwidth, os_options, price, stock, created_by) VALUES
