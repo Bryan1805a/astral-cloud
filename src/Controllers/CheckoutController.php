@@ -27,7 +27,7 @@ class CheckoutController {
         $voucher_code    = trim($_GET["voucher"] ?? "");
         $discount_amount = 0;
         $voucher_id      = null;
-        $voucher_error   = "";
+        $voucher_error   = $_GET["error"] ?? "";
         $voucher_success = "";
 
         // Check if the voucher code exists
@@ -52,6 +52,7 @@ class CheckoutController {
                     $voucher_error = "This code is only for customer tier " . strtoupper($voucher["applicable_tier"]) . ".";
                 }
                 else {
+                    $voucher_error = "";
                     $voucher_id = $voucher["id"];
                     if ($voucher["discount_type"] === "fixed") {
                         $discount_amount = $voucher["discount_value"];
@@ -117,23 +118,55 @@ class CheckoutController {
         $voucher_id      = null;
         $discount_amount = 0;
 
+        $voucher_error = "";
         if ($voucher_code) {
             $voucher = Voucher::findByCode($voucher_code);
             if ($voucher) {
-                $voucher_id = $voucher["id"];
-                if ($voucher["discount_type"] === "fixed") {
-                    $discount_amount = $voucher["discount_value"];
+                if (strtotime($voucher["expiry_date"]) < strtotime("today")) {
+                    $voucher_error = "The voucher has expired.";
+                } elseif ($voucher["quantity"] <= $voucher["used_count"]) {
+                    $voucher_error = "The voucher has run out.";
+                } elseif ($subtotal < $voucher["min_order_value"]) {
+                    $voucher_error = "Minimum order not met.";
+                } elseif ($voucher["applicable_tier"] !== "all" && $voucher["applicable_tier"] !== $currentUser["tier"]) {
+                    $voucher_error = "This code is not for your tier.";
                 } else {
-                    $discount_amount = $subtotal * ($voucher["discount_value"] / 100);
-                    if (!empty($voucher["max_discount"]) && $discount_amount > $voucher["max_discount"]) {
-                        $discount_amount = $voucher["max_discount"];
+                    $voucher_id = $voucher["id"];
+                    if ($voucher["discount_type"] === "fixed") {
+                        $discount_amount = $voucher["discount_value"];
+                    } else {
+                        $discount_amount = $subtotal * ($voucher["discount_value"] / 100);
+                        if (!empty($voucher["max_discount"]) && $discount_amount > $voucher["max_discount"]) {
+                            $discount_amount = $voucher["max_discount"];
+                        }
                     }
                 }
+            } else {
+                $voucher_error = "The discount code does not exist.";
             }
+        }
+
+        if ($voucher_error) {
+            $error_message = urlencode($voucher_error);
+            header("Location: /checkout?voucher=" . urlencode($voucher_code) . "&error=$error_message");
+            exit;
         }
 
         $total_price = max(0, $subtotal - $discount_amount);
         $note        = trim($_POST["note"] ?? "");
+
+        // Check stock for each item before placing order
+        foreach ($cart_items as $item) {
+            $stmt = Database::getConnection()->prepare(
+                "SELECT stock FROM products WHERE id = ? AND is_active = 1 FOR UPDATE"
+            );
+            $stmt->execute([$item["product_id"]]);
+            $product = $stmt->fetch();
+            if (!$product || $product["stock"] < $item["quantity"]) {
+                header("Location: /cart?err=insufficient_stock");
+                exit;
+            }
+        }
 
         try {
             $pdo = Database::getConnection();
@@ -159,6 +192,12 @@ class CheckoutController {
             // Save voucher usage history
             if ($voucher_id) {
                 Order::recordVoucherUsage($voucher_id, $user_id, $new_order_id);
+            }
+
+            // Decrement stock for each item
+            foreach ($cart_items as $item) {
+                $stmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+                $stmt->execute([$item["quantity"], $item["product_id"]]);
             }
 
             Cart::clear($user_id);

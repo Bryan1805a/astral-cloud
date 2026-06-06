@@ -74,6 +74,20 @@
                                 <?php endif; ?>
                             </td>
                             <td>
+                                <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Edit"
+                                    data-bs-toggle="modal" data-bs-target="#editProductModal"
+                                    data-id="<?= $p['id'] ?>"
+                                    data-name="<?= htmlspecialchars($p['name']) ?>"
+                                    data-description="<?= htmlspecialchars($p['description'] ?? '') ?>"
+                                    data-cpu="<?= htmlspecialchars($p['cpu']) ?>"
+                                    data-ram="<?= htmlspecialchars($p['ram']) ?>"
+                                    data-storage="<?= htmlspecialchars($p['storage']) ?>"
+                                    data-bandwidth="<?= htmlspecialchars($p['bandwidth']) ?>"
+                                    data-price="<?= $p['price'] ?>"
+                                    data-stock="<?= $p['stock'] ?>"
+                                    data-active="<?= $p['is_active'] ?>">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
                                 <form action="/admin/products/toggle" method="POST" class="d-inline">
                                     <input type="hidden" name="id" value="<?= $p['id'] ?>">
                                     <button type="submit" class="btn btn-sm <?= $p['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>">
@@ -143,6 +157,81 @@
         </div>
     </div>
 
+    <div class="modal fade" id="editProductModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content glass-modal">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-info">Edit VPS Package</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/admin/products/update" method="POST">
+                    <input type="hidden" name="id" id="edit-id">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">VPS Package Name</label>
+                                <input type="text" name="name" id="edit-name" class="form-control bg-dark text-light border-secondary" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Price (VND/Month)</label>
+                                <input type="number" name="price" id="edit-price" class="form-control bg-dark text-light border-secondary" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">CPU</label>
+                                <input type="text" name="cpu" id="edit-cpu" class="form-control bg-dark text-light border-secondary" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">RAM</label>
+                                <input type="text" name="ram" id="edit-ram" class="form-control bg-dark text-light border-secondary" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Storage</label>
+                                <input type="text" name="storage" id="edit-storage" class="form-control bg-dark text-light border-secondary" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Bandwidth</label>
+                                <input type="text" name="bandwidth" id="edit-bandwidth" class="form-control bg-dark text-light border-secondary" required>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check form-switch fs-5 mb-1">
+                                    <input class="form-check-input" type="checkbox" name="is_active" id="edit-is_active">
+                                    <label class="form-check-label fs-6 ms-2" for="edit-is_active">Active</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Stock</label>
+                                <input type="number" name="stock" id="edit-stock" class="form-control bg-dark text-light border-secondary" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Short Description</label>
+                                <textarea name="description" id="edit-description" class="form-control bg-dark text-light border-secondary" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning"><i class="bi bi-save"></i> Update Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('editProductModal').addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            document.getElementById('edit-id').value = button.getAttribute('data-id');
+            document.getElementById('edit-name').value = button.getAttribute('data-name');
+            document.getElementById('edit-description').value = button.getAttribute('data-description');
+            document.getElementById('edit-cpu').value = button.getAttribute('data-cpu');
+            document.getElementById('edit-ram').value = button.getAttribute('data-ram');
+            document.getElementById('edit-storage').value = button.getAttribute('data-storage');
+            document.getElementById('edit-bandwidth').value = button.getAttribute('data-bandwidth');
+            document.getElementById('edit-price').value = button.getAttribute('data-price');
+            document.getElementById('edit-stock').value = button.getAttribute('data-stock');
+            document.getElementById('edit-is_active').checked = button.getAttribute('data-active') === '1';
+        });
+    </script>
 </body>
 </html>

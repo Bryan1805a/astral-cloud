@@ -26,6 +26,8 @@ CREATE TABLE users (
     total_spent   DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     is_locked     TINYINT(1)    NOT NULL DEFAULT 0,              -- 0 = active, 1 = locked
     locked_reason VARCHAR(255)  DEFAULT NULL,
+    is_verified   TINYINT(1)    NOT NULL DEFAULT 1,              -- 1 = verified (default 1 for existing seed), 0 = pending
+    verification_token VARCHAR(64) DEFAULT NULL,
     created_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 

@@ -4,7 +4,7 @@ class User {
     // Find user by Email
     public static function findByEmail(string $email): ?array {
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare("SELECT id, name, email, password, role, tier, is_locked FROM users WHERE email = :email LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, name, email, password, role, tier, is_locked, is_verified FROM users WHERE email = :email LIMIT 1");
         $stmt->execute(['email' => $email]);
         return $stmt->fetch() ?: null;
     }

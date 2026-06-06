@@ -1,5 +1,12 @@
 <h2 class="mb-4 fw-bold text-cyan"><i class="bi bi-cart3"></i> Your shopping cart</h2>
 
+<?php if (isset($_GET['err']) && $_GET['err'] === 'insufficient_stock'): ?>
+    <div class="alert alert-danger bg-danger text-light border-0 alert-dismissible fade show">
+        Some items in your cart have insufficient stock. Please adjust your order.
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
 <?php if (isset($_GET['msg']) && $_GET['msg'] === 'added_success'): ?>
     <div class="alert alert-success bg-success text-light border-0 alert-dismissible fade show">
         VPS added to cart successfully!

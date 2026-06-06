@@ -17,6 +17,7 @@
                         <th>Subject</th>
                         <th>Date</th>
                         <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,10 +33,20 @@
                                     <span class="badge bg-info text-dark">New</span>
                                 <?php endif; ?>
                             </td>
+                            <td>
+                                <?php if (!$msg['is_read']): ?>
+                                    <form action="/inbox/read" method="POST" class="d-inline">
+                                        <input type="hidden" name="id" value="<?= $msg['id'] ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-envelope-open"></i> Mark Read
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                         <?php if (!empty($msg['body'])): ?>
                             <tr>
-                                <td colspan="4" class="bg-dark bg-opacity-25">
+                                <td colspan="5" class="bg-dark bg-opacity-25">
                                     <div class="p-3 text-secondary"><?= nl2br(htmlspecialchars($msg['body'])) ?></div>
                                 </td>
                             </tr>

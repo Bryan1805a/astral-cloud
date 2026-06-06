@@ -39,6 +39,7 @@
     $router->get("/register",                       [AuthController::class, "register"]);
     $router->post("/register",                      [AuthController::class, "register"]);
     $router->get("/logout",                         [AuthController::class, "logout"]);
+    $router->get("/verify",                         [AuthController::class, "verify"]);
 
     $router->get("/cart",                           [CartController::class, "index"]);
     $router->post("/cart/add",                      [CartController::class, "add"]);
