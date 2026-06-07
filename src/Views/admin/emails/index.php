@@ -13,12 +13,13 @@
         <div class="container-fluid px-4">
             <a class="navbar-brand fw-bold text-warning" href="/admin"><i class="bi bi-shield-lock-fill"></i> ASTRAL ADMIN</a>
             <div class="navbar-nav">
-                <a class="nav-link" href="/admin/orders">Orders</a>
-                <a class="nav-link" href="/admin/products">Products</a>
-                <a class="nav-link" href="/admin/users">Customers</a>
-                <a class="nav-link" href="/admin/vouchers">Promotions</a>
-                <a class="nav-link" href="/admin/reviews">Reviews</a>
-                <a class="nav-link active text-info" href="/admin/emails">Send Email</a>
+                    <a class="nav-link active text-info" href="/admin">Overview</a>
+                    <a class="nav-link" href="/admin/orders">Orders</a>
+                    <a class="nav-link" href="/admin/products">Products</a>
+                    <a class="nav-link" href="/admin/users">Users</a>
+                    <a class="nav-link" href="/admin/vouchers">Vouchers</a>
+                    <a class="nav-link" href="/admin/reviews">Reviews</a>
+                    <a class="nav-link" href="/admin/emails">Emails</a>
             </div>
         </div>
     </nav>

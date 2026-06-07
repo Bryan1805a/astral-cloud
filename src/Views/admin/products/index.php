@@ -11,10 +11,15 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark bg-opacity-50 border-bottom border-secondary mb-4">
         <div class="container-fluid px-4">
-            <a class="navbar-brand fw-bold text-warning" href="/admin/orders"><i class="bi bi-shield-lock-fill"></i> ASTRAL ADMIN</a>
+            <a class="navbar-brand fw-bold text-warning" href="/admin"><i class="bi bi-shield-lock-fill"></i> ASTRAL ADMIN</a>
             <div class="navbar-nav">
-                <a class="nav-link" href="/admin/orders">Orders</a>
-                <a class="nav-link active text-info" href="/admin/products">Products</a>
+                    <a class="nav-link active text-info" href="/admin">Overview</a>
+                    <a class="nav-link" href="/admin/orders">Orders</a>
+                    <a class="nav-link" href="/admin/products">Products</a>
+                    <a class="nav-link" href="/admin/users">Users</a>
+                    <a class="nav-link" href="/admin/vouchers">Vouchers</a>
+                    <a class="nav-link" href="/admin/reviews">Reviews</a>
+                    <a class="nav-link" href="/admin/emails">Emails</a>
             </div>
         </div>
     </nav>

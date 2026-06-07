@@ -17,6 +17,10 @@
                     <a class="nav-link active text-info" href="/admin">Overview</a>
                     <a class="nav-link" href="/admin/orders">Orders</a>
                     <a class="nav-link" href="/admin/products">Products</a>
+                    <a class="nav-link" href="/admin/users">Users</a>
+                    <a class="nav-link" href="/admin/vouchers">Vouchers</a>
+                    <a class="nav-link" href="/admin/reviews">Reviews</a>
+                    <a class="nav-link" href="/admin/emails">Emails</a>
             </div>
         </div>
     </nav>
