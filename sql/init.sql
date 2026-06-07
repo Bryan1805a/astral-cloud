@@ -1,8 +1,14 @@
+-- ============================================================
+-- Astral Cloud database rebuild script
+-- Run this script after `docker compose down -v` to recreate the
+-- `astral_cloud` database, all tables, triggers, and seed data.
+-- ============================================================
+
 SET FOREIGN_KEY_CHECKS = 0;
 SET NAMES utf8mb4;
 
 DROP DATABASE IF EXISTS astral_cloud;
-CREATE DATABASE astral_cloud
+CREATE DATABASE IF NOT EXISTS astral_cloud
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
