@@ -25,6 +25,7 @@ class AdminEmailController {
 
         // Prepare email data 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             $senderId = $_SESSION["user_id"];
             $recipientId = empty($_POST["recipient_id"]) ? null : (int)$_POST["recipient_id"];
             $subject = trim($_POST["subject"]);

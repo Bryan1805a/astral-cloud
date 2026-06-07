@@ -23,6 +23,7 @@ class AdminReviewController {
     public function toggle() {
         $this->checkAdmin();
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             $id = (int)($_POST["id"] ?? 0);
             if ($id > 0) {
                 Review::toggleVisibility($id);

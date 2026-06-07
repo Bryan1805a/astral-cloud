@@ -100,6 +100,7 @@
                                 <td>
                                     <form action="/admin/users/toggle-lock" method="POST" class="d-inline" 
                                           onsubmit="return confirm('Are you sure you want to <?= $user['is_locked'] ? 'UNLOCK' : 'LOCK' ?> this account?');">
+                                        <?= csrfField() ?>
                                         <input type="hidden" name="id" value="<?= $user['id'] ?>">
                                         <button type="submit" class="btn btn-sm <?= $user['is_locked'] ? 'btn-outline-success' : 'btn-outline-danger' ?>">
                                             <i class="bi <?= $user['is_locked'] ? 'bi-unlock' : 'bi-lock' ?>"></i>

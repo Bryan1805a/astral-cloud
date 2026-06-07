@@ -127,6 +127,7 @@
                                     </button>
                                 <?php elseif ($order['order_status'] === 'pending'): ?>
                                     <form action="/orders/cancel" method="POST" class="flex-grow-1 d-flex" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                                        <?= csrfField() ?>
                                         <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['order_id']) ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger w-100">
                                             <i class="bi bi-x-circle"></i> Cancel

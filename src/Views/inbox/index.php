@@ -36,6 +36,7 @@
                             <td>
                                 <?php if (!$msg['is_read']): ?>
                                     <form action="/inbox/read" method="POST" class="d-inline">
+                                        <?= csrfField() ?>
                                         <input type="hidden" name="id" value="<?= $msg['id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-info">
                                             <i class="bi bi-envelope-open"></i> Mark Read

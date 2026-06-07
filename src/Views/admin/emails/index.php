@@ -42,6 +42,7 @@
 
         <div class="glass-panel p-4">
             <form action="/admin/emails/send" method="POST">
+                <?= csrfField() ?>
                 <div class="mb-3">
                     <label class="form-label">Recipient</label>
                     <select name="recipient_id" class="form-select bg-dark text-light border-secondary">

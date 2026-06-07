@@ -24,6 +24,7 @@ class AdminOrderController {
         $this->checkAdmin();
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             $orderId = (int)$_POST["order_id"];
             $status = $_POST["status"];
 

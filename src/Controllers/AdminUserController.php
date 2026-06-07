@@ -21,6 +21,7 @@ class AdminUserController {
     public function toggleLock() {
         $this->checkAdmin();
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             $id = (int)$_POST["id"];
             if ($id > 0) {
                 User::toggleLock($id);

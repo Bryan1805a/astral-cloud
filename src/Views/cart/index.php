@@ -61,6 +61,7 @@
                                     </td>
                                     <td class="text-center">
                                         <form action="/cart/remove" method="POST" class="d-inline">
+                                            <?= csrfField() ?>
                                             <input type="hidden" name="product_id" value="<?= $item['product_id'] ?>">
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove" onclick="return confirm('Do you want to remove this package from your cart?');">
                                                 <i class="bi bi-trash"></i>

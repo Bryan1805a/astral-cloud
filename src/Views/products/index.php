@@ -26,6 +26,7 @@
                         </div>
 
                         <form action="/cart/add" method="POST">
+                            <?= csrfField() ?>
                             <input type="hidden" name="product_id" value="<?= $plan['id'] ?>">
                             <button type="submit" class="btn btn-info w-100 fw-bold">
                                 <i class="bi bi-cart-plus"></i> Register configuration

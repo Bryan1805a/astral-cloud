@@ -12,6 +12,7 @@
 
         <div class="card bg-secondary text-light p-4 shadow">
             <form action="/login" method="POST">
+                <?= csrfField() ?>
                 <div class="mb-3">
                     <label class="form-label">Email</label>
                     <input type="email" name="email" class="form-control bg-dark text-light border-secondary" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">

@@ -108,6 +108,7 @@
                             </td>
                             <td>
                                 <form action="/admin/vouchers/toggle" method="POST" class="d-inline">
+                                    <?= csrfField() ?>
                                     <input type="hidden" name="id" value="<?= $v['id'] ?>">
                                     <button type="submit" class="btn btn-sm <?= $v['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>">
                                         <i class="bi <?= $v['is_active'] ? 'bi-power' : 'bi-check2-circle' ?>"></i>
@@ -129,6 +130,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form action="/admin/vouchers/store" method="POST">
+                    <?= csrfField() ?>
                     <div class="modal-body row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Code (Auto-uppercased)</label>

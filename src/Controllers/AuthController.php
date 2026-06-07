@@ -23,6 +23,7 @@ class AuthController {
 
         // Check method post
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             $email    = trim($_POST["email"] ?? "");
             $password = $_POST["password"] ?? "";
 
@@ -69,6 +70,7 @@ class AuthController {
 
         // Check the request method
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             $name             = trim($_POST["name"] ?? "");
             $email            = trim($_POST["email"] ?? "");
             $phone            = trim($_POST["phone"] ?? "");

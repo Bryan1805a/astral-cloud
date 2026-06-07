@@ -23,6 +23,7 @@ class AdminVoucherController {
         $this->checkAdmin();
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             // Prepare data
             $data = [
                 'code' => strtoupper(trim($_POST['code'])),
@@ -53,6 +54,7 @@ class AdminVoucherController {
         $this->checkAdmin();
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             Voucher::toggleActive((int)$_POST["id"]);
             header("Location: /admin/vouchers?msg=toggled");
             exit;

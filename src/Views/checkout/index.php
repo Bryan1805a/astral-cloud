@@ -69,6 +69,7 @@
             </div>
 
             <form action="/checkout/place-order<?= $voucher_code ? '?voucher=' . urlencode($voucher_code) : '' ?>" method="POST">
+                <?= csrfField() ?>
                 <div class="mb-3">
                     <label class="form-label text-secondary">Order notes (Optional)</label>
                     <textarea name="note" class="form-control bg-dark text-light border-secondary" rows="2" placeholder="Example: Please install Ubuntu 22.04 for me..."></textarea>

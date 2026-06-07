@@ -21,6 +21,7 @@ class InboxController {
     // Mark read
     public function markRead() {
         if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"])) {
+            verifyCsrfToken();
             AdminEmail::markAsRead((int)$_POST["id"], $_SESSION["user_id"]);
             header("Location: /inbox");
             exit;

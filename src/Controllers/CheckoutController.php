@@ -99,6 +99,8 @@ class CheckoutController {
             exit;
         }
 
+        verifyCsrfToken();
+
         $user_id     = $_SESSION["user_id"];
         $currentUser = User::findById($user_id);
         $cart_items  = Cart::getUserCart($user_id);

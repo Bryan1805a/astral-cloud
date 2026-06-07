@@ -12,6 +12,7 @@
 
         <div class="card bg-secondary text-light p-4 shadow">
             <form action="/register" method="POST">
+                <?= csrfField() ?>
                 <div class="mb-3">
                     <label class="form-label">Full Name *</label>
                     <input type="text" name="name" class="form-control bg-dark text-light border-secondary" required value="<?= htmlspecialchars($_POST['name'] ?? '') ?>">

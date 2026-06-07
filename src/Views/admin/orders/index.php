@@ -83,6 +83,7 @@
                                 </td>
                                 <td>
                                     <form action="/admin/orders/update" method="POST" class="d-flex gap-2">
+                                        <?= csrfField() ?>
                                         <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['order_id']) ?>">
                                         <select name="status" class="form-select form-select-sm bg-dark text-light border-secondary" style="width: 130px;">
                                             <option value="pending" <?= $order['order_status'] == 'pending' ? 'selected' : '' ?>>Pending</option>

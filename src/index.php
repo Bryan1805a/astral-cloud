@@ -27,6 +27,25 @@
         require __DIR__ . "/Views/layouts/footer.php";
     }
 
+    function generateCsrfToken(): string {
+        if (empty($_SESSION['_csrf_token'])) {
+            $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['_csrf_token'];
+    }
+
+    function csrfField(): string {
+        return '<input type="hidden" name="_csrf_token" value="' . generateCsrfToken() . '">';
+    }
+
+    function verifyCsrfToken(): void {
+        $token = $_POST['_csrf_token'] ?? '';
+        if (empty($token) || !hash_equals($_SESSION['_csrf_token'] ?? '', $token)) {
+            http_response_code(419);
+            die("<h2 style='color:red;text-align:center;margin-top:50px;'>419 - CSRF token validation failed. Please go back and try again.</h2>");
+        }
+    }
+
     require_once __DIR__ . "/Router.php";
 
     $router = new Router();

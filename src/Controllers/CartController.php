@@ -48,6 +48,8 @@ class CartController {
             exit;
         }
 
+        verifyCsrfToken();
+
         $product_id = (int) ($_POST["product_id"] ?? 0);
 
         // Check if product is empty
@@ -77,6 +79,8 @@ class CartController {
             header("Location: /");
             exit;
         }
+
+        verifyCsrfToken();
 
         $product_id = (int) ($_POST["product_id"] ?? 0);
         if ($product_id > 0) {

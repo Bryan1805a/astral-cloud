@@ -89,6 +89,7 @@
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <form action="/admin/products/toggle" method="POST" class="d-inline">
+                                    <?= csrfField() ?>
                                     <input type="hidden" name="id" value="<?= $p['id'] ?>">
                                     <button type="submit" class="btn btn-sm <?= $p['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?>">
                                         <i class="bi <?= $p['is_active'] ? 'bi-eye-slash' : 'bi-eye' ?>"></i>
@@ -110,6 +111,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form action="/admin/products/store" method="POST">
+                    <?= csrfField() ?>
                     <div class="modal-body">
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -165,6 +167,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form action="/admin/products/update" method="POST">
+                    <?= csrfField() ?>
                     <input type="hidden" name="id" id="edit-id">
                     <div class="modal-body">
                         <div class="row g-3">

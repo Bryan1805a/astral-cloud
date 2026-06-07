@@ -24,6 +24,7 @@ class AdminProductController {
         $this->checkAdmin();
         
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             // create slug
             $slug = strtolower(trim(preg_replace("/[^A-Za-z0-9-]+/", "-", $_POST["name"])));
             $slug .= "-" . time(); // add timestamp for indetifying
@@ -53,6 +54,7 @@ class AdminProductController {
         $this->checkAdmin();
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             $id = (int)$_POST["id"];
             $data = [
                 'name' => $_POST['name'],
@@ -77,6 +79,7 @@ class AdminProductController {
         $this->checkAdmin();
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             Product::toggleActive((int)$_POST["id"]);
             header("Location: /admin/products?msg=toggled");
             exit;

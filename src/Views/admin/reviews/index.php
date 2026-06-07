@@ -80,6 +80,7 @@
                                     </td>
                                     <td>
                                         <form action="/admin/reviews/toggle" method="POST" class="d-inline">
+                                            <?= csrfField() ?>
                                             <input type="hidden" name="id" value="<?= $r['id'] ?>">
                                             <button type="submit" class="btn btn-sm <?= $r['is_visible'] ? 'btn-outline-danger' : 'btn-outline-success' ?>" title="Toggle visibility">
                                                 <i class="bi <?= $r['is_visible'] ? 'bi-eye-slash' : 'bi-eye' ?>"></i>

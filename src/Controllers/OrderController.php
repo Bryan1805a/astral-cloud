@@ -25,6 +25,7 @@ class OrderController {
         }
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
             $orderId = (int)$_POST["order_id"];
             $userId = $_SESSION["user_id"];
 
