@@ -2,7 +2,7 @@
 
 <?php if (empty($emails)): ?>
     <div class="glass-panel p-5 text-center">
-        <i class="bi bi-inbox text-secondary" style="font-size: 4rem;"></i>
+        <i class="bi bi-inbox text-secondary icon-xl"></i>
         <h4 class="mt-3 text-secondary">No messages yet.</h4>
         <p>You will receive notifications and announcements here.</p>
         <a href="/" class="btn btn-primary mt-2">Back to Home</a>

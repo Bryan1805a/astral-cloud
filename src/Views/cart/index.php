@@ -23,7 +23,7 @@
 
 <?php if (empty($cart_items)): ?>
     <div class="glass-panel p-5 text-center">
-        <i class="bi bi-cart-x text-secondary" style="font-size: 4rem;"></i>
+        <i class="bi bi-cart-x text-secondary icon-xl"></i>
         <h4 class="mt-3 text-secondary">The shopping cart is empty.</h4>
         <p>You haven't selected a server configuration to initialize yet.</p>
         <a href="/" class="btn btn-primary mt-2">View VPS packages</a>
@@ -77,7 +77,7 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="glass-panel p-4 position-sticky" style="top: 20px;">
+            <div class="glass-panel p-4 sticky-summary">
                 <h4 class="mb-4 text-cyan border-bottom border-secondary pb-2">Order Summary</h4>
                 <div class="d-flex justify-content-between mb-3">
                     <span class="text-secondary">Estimated price:</span>

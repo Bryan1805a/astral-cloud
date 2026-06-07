@@ -4,45 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Console | Astral Cloud</title>
-    <style>
-        body {
-            background-color: #0c0c0c;
-            color: #ffffff; /* Terminal standard green */
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 16px;
-            margin: 0;
-            padding: 20px;
-            height: 100vh;
-            box-sizing: border-box;
-            overflow-x: hidden;
-        }
-        #terminal-output {
-            white-space: pre-wrap;
-            line-height: 1.5;
-        }
-        .input-line {
-            display: flex;
-            align-items: center;
-            margin-top: 5px;
-        }
-        .prompt {
-            color: #10b981;; /* Cyan for prompt */
-            font-weight: bold;
-            white-space: nowrap;
-        }
-        .cmd-input {
-            background: transparent;
-            border: none;
-            color: #ffffff;
-            font-family: inherit;
-            font-size: inherit;
-            outline: none;
-            flex-grow: 1;
-            margin-left: 8px;
-        }
-        /* Cursor blinking effect (optional) */
-        .cmd-input::placeholder { color: transparent; }
-    </style>
+    <link rel="stylesheet" href="/css/console.css">
 </head>
 <body>
 

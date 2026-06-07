@@ -1,0 +1,19 @@
+.sticky-summary {
+    position: sticky;
+    top: 20px;
+}
+
+.text-cyan {
+    color: #38bdf8;
+}
+
+.table-glass {
+    color: #f8fafc;
+}
+
+.table-glass th,
+.table-glass td {
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    vertical-align: middle;
+}

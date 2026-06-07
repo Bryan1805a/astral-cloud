@@ -1,0 +1,9 @@
+.pwd-input-group {
+    width: 150px;
+}
+
+.status-badge {
+    width: 100px;
+    display: inline-block;
+    text-align: center;
+}

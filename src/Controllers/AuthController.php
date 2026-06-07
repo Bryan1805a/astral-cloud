@@ -58,7 +58,6 @@ class AuthController {
         view("auth/login", [
             "error"  => $error,
             "success" => $success,
-            "styles" => "",
             "title"  => "Log in | Astral Cloud",
         ]);
     }
@@ -154,7 +153,6 @@ class AuthController {
         view("auth/register", [
             "error"   => $error,
             "success" => $success,
-            "styles"  => "",
             "title"   => "Registration | Astral Cloud",
         ]);
     }

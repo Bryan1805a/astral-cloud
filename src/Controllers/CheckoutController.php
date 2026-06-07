@@ -81,7 +81,6 @@ class CheckoutController {
             'voucher_error'   => $voucher_error,
             'voucher_success' => $voucher_success,
             'voucher_id'      => $voucher_id,
-            'styles'          => '',
             'title'           => 'Payment page | Astral Cloud',
         ]);
     }
@@ -231,7 +230,6 @@ class CheckoutController {
 
         view('checkout/success', [
             'order'  => $order,
-            'styles' => '',
             'title'  => 'Order Success | Astral Cloud',
         ]);
     }

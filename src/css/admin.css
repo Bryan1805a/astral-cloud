@@ -1,0 +1,43 @@
+.comment-max-width {
+    max-width: 300px;
+}
+
+.status-select-width {
+    width: 130px;
+}
+
+.table-glass {
+    color: #f8fafc;
+}
+
+.table-glass th,
+.table-glass td {
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    vertical-align: middle;
+}
+
+.modal-content.glass-modal {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: white;
+}
+
+.tier-silver {
+    background-color: #94a3b8;
+    color: #0f172a;
+}
+
+.tier-gold {
+    background-color: #fbbf24;
+    color: #0f172a;
+}
+
+.tier-diamond {
+    background-color: #22d3ee;
+    color: #0f172a;
+}
+
+.star-rating {
+    color: #fbbf24;
+}

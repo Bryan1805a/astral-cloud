@@ -13,7 +13,6 @@ class InboxController {
 
         view('inbox/index', [
             'emails' => $email,
-            'styles' => '',
             'title'  => 'Inbox | Astral Cloud',
         ]);
     }

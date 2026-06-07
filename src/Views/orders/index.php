@@ -5,24 +5,8 @@
     <title>Service Management | Astral Cloud</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        body { 
-            background-color: #0f172a; 
-            color: #f8fafc; 
-        }
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-        }
-        .status-badge {
-            width: 100px;
-            display: inline-block;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/orders.css">
 </head>
 <body>
     <div class="container mt-5">
@@ -46,7 +30,7 @@
 
         <?php if (empty($orders)): ?>
             <div class="glass-panel p-5 text-center">
-                <i class="bi bi-hdd-network text-secondary" style="font-size: 4rem;"></i>
+                <i class="bi bi-hdd-network text-secondary icon-xl"></i>
                 <h4 class="text-secondary mt-3">You have no active services yet</h4>
                 <a href="/" class="btn btn-primary mt-3">Create a VPS now</a>
             </div>
@@ -102,7 +86,7 @@
                                         </div>
                                         <div class="d-flex justify-content-between mb-2">
                                             <span class="text-secondary small">Root Password:</span>
-                                            <div class="input-group input-group-sm" style="width: 150px;">
+                                            <div class="input-group input-group-sm pwd-input-group">
                                                 <input type="password" class="form-control bg-transparent text-warning border-secondary font-monospace" value="<?= htmlspecialchars($currentService['root_password']) ?>" readonly id="pwd-<?= $currentService['id'] ?>">
                                                 <button class="btn btn-outline-secondary" type="button" onclick="const p = document.getElementById('pwd-<?= $currentService['id'] ?>'); p.type = p.type === 'password' ? 'text' : 'password';">
                                                     <i class="bi bi-eye"></i>

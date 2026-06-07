@@ -21,15 +21,7 @@ class CartController {
         view('cart/index', [
             'cart_items'  => $cart_items,
             'total_price' => $total_price,
-            'styles'      => '
-                .text-cyan { color: #38bdf8; }
-                .table-glass { color: #f8fafc; }
-                .table-glass th, .table-glass td {
-                    background: transparent;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                    vertical-align: middle;
-                }
-            ',
+            'css'         => ['cart'],
             'title' => 'Cart | Astral Cloud',
         ]);
     }

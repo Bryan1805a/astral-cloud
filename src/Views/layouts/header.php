@@ -6,17 +6,12 @@
     <title><?= htmlspecialchars($title ?? 'Astral Cloud') ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <style>
-        body { background-color: #0f172a; color: #f8fafc; }
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-        }
-        <?= $styles ?? '' ?>
-    </style>
+    <link rel="stylesheet" href="/css/base.css">
+    <?php if (!empty($css)): ?>
+        <?php foreach ((array)$css as $file): ?>
+            <link rel="stylesheet" href="/css/<?= $file ?>.css">
+        <?php endforeach; ?>
+    <?php endif; ?>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark bg-opacity-50 border-bottom border-secondary mb-5">

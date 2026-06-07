@@ -5,21 +5,8 @@
     <title>Order Management | Astral Cloud Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        body { background-color: #0f172a; color: #f8fafc; }
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-        }
-        .table-glass { color: #f8fafc; }
-        .table-glass th, .table-glass td {
-            background: transparent;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            vertical-align: middle;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark bg-opacity-50 border-bottom border-secondary mb-4">
@@ -85,7 +72,7 @@
                                     <form action="/admin/orders/update" method="POST" class="d-flex gap-2">
                                         <?= csrfField() ?>
                                         <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['order_id']) ?>">
-                                        <select name="status" class="form-select form-select-sm bg-dark text-light border-secondary" style="width: 130px;">
+                                        <select name="status" class="form-select form-select-sm bg-dark text-light border-secondary status-select-width">
                                             <option value="pending" <?= $order['order_status'] == 'pending' ? 'selected' : '' ?>>Pending</option>
                                             <option value="confirmed" <?= $order['order_status'] == 'confirmed' ? 'selected' : '' ?>>Confirmed</option>
                                             <option value="provisioning" <?= $order['order_status'] == 'provisioning' ? 'selected' : '' ?>>Provisioning</option>
