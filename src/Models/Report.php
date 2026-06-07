@@ -10,8 +10,8 @@ class Report {
                 SUM(total_price) AS revenue
             FROM orders
             WHERE status = 'success'
-            GROUP BY DATE_FORMAT(created_at, '%Y-%m')
-            ORDER BY DATE_FORMAT(created_at, '%Y-%m') ASC
+            GROUP BY YEAR(created_at), MONTH(created_at)
+            ORDER BY YEAR(created_at), MONTH(created_at) ASC
             LIMIT 12
         ";
 
