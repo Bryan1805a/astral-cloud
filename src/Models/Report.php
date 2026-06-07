@@ -6,12 +6,18 @@ class Report {
 
         $sql = "
             SELECT 
-                DATE_FORMAT(created_at, '%m/%Y') AS month,
-                SUM(total_price) AS revenue
-            FROM orders
-            WHERE status = 'success'
-            GROUP BY YEAR(created_at), MONTH(created_at)
-            ORDER BY YEAR(created_at), MONTH(created_at) ASC
+                CONCAT(LPAD(month, 2, '0'), '/', year) AS month,
+                revenue
+            FROM (
+                SELECT 
+                    YEAR(created_at) AS year,
+                    MONTH(created_at) AS month,
+                    SUM(total_price) AS revenue
+                FROM orders
+                WHERE status = 'success'
+                GROUP BY YEAR(created_at), MONTH(created_at)
+            ) AS monthly
+            ORDER BY year, month ASC
             LIMIT 12
         ";
 
