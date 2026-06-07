@@ -25,7 +25,7 @@
                             <?= number_format($plan['price'], 0, ',', '.') ?> VND <span class="fs-6 text-secondary fw-normal">/month</span>
                         </div>
 
-                        <form action="/cart/add" method="POST">
+                        <form action="/cart/add" method="POST" class="js-add-cart">
                             <?= csrfField() ?>
                             <input type="hidden" name="product_id" value="<?= $plan['id'] ?>">
                             <button type="submit" class="btn btn-info w-100 fw-bold">

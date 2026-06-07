@@ -14,6 +14,7 @@
     <?php endif; ?>
 </head>
 <body>
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark bg-opacity-50 border-bottom border-secondary mb-5">
         <div class="container">
             <a class="navbar-brand fw-bold text-info" href="/">
@@ -25,7 +26,10 @@
                         Hello, <strong><?= htmlspecialchars($_SESSION['user_name']) ?></strong>
                         (Rank: <?= htmlspecialchars($_SESSION['user_tier'] ?? 'Silver') ?>)
                     </span>
-                    <a href="/cart" class="btn btn-outline-info btn-sm me-2">Cart</a>
+                    <a href="/cart" class="btn btn-outline-info btn-sm me-2 position-relative">
+                        <i class="bi bi-cart3"></i> Cart
+                        <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;font-size:0.6rem;">0</span>
+                    </a>
                     <?php if ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'staff'): ?>
                         <a href="/admin" class="btn btn-outline-warning btn-sm me-2">Admin Panel</a>
                     <?php endif; ?>

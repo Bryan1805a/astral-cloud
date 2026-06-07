@@ -32,15 +32,12 @@
         <div class="glass-panel p-4 mb-4">
             <h5 class="text-cyan mb-3">Voucher</h5>
 
-            <?php if ($voucher_error): ?>
-                <div class="alert alert-danger py-2 fs-6"><?= htmlspecialchars($voucher_error) ?></div>
-            <?php endif; ?>
-            <?php if ($voucher_success): ?>
-                <div class="alert alert-success py-2 fs-6"><?= htmlspecialchars($voucher_success) ?></div>
-            <?php endif; ?>
+            <div id="voucher-error" class="alert alert-danger py-2 fs-6" style="display:<?= $voucher_error ? 'block' : 'none' ?>;"><?= htmlspecialchars($voucher_error) ?></div>
+            <div id="voucher-success" class="alert alert-success py-2 fs-6" style="display:<?= $voucher_success ? 'block' : 'none' ?>;"><?= htmlspecialchars($voucher_success) ?></div>
 
-            <form action="/checkout" method="GET" class="d-flex">
-                <input type="text" name="voucher" class="form-control bg-dark text-light border-secondary me-2"
+            <form id="voucher-form" action="/checkout" method="GET" class="d-flex">
+                <input type="hidden" name="_csrf_token" value="<?= generateCsrfToken() ?>">
+                <input type="text" id="voucher-input" name="voucher" class="form-control bg-dark text-light border-secondary me-2"
                        placeholder="Enter discount code..." value="<?= htmlspecialchars($voucher_code) ?>">
                 <button type="submit" class="btn btn-outline-info">Apply</button>
             </form>
@@ -53,19 +50,17 @@
 
             <div class="d-flex justify-content-between mb-2 text-secondary">
                 <span>Estimated:</span>
-                <span><?= number_format($subtotal, 0, ',', '.') ?>VND</span>
+                <span id="checkout-subtotal"><?= number_format($subtotal, 0, ',', '.') ?>VND</span>
             </div>
 
-            <?php if ($discount_amount > 0): ?>
-                <div class="d-flex justify-content-between mb-2 text-success">
-                    <span>Discount (<?= htmlspecialchars($voucher_code) ?>):</span>
-                    <span>- <?= number_format($discount_amount, 0, ',', '.') ?>VND</span>
-                </div>
-            <?php endif; ?>
+            <div id="discount-row" class="d-flex justify-content-between mb-2 text-success" style="display:<?= $discount_amount > 0 ? 'flex' : 'none' ?>;">
+                <span>Discount (<span id="discount-code"><?= htmlspecialchars($voucher_code) ?></span>):</span>
+                <span id="discount-amount">- <?= number_format($discount_amount, 0, ',', '.') ?>VND</span>
+            </div>
 
             <div class="d-flex justify-content-between mb-4 border-top border-secondary pt-3">
                 <span class="fs-5">Total amount:</span>
-                <span class="fs-4 fw-bold text-info"><?= number_format($total_price, 0, ',', '.') ?>VND</span>
+                <span class="fs-4 fw-bold text-info" id="checkout-total"><?= number_format($total_price, 0, ',', '.') ?>VND</span>
             </div>
 
             <form action="/checkout/place-order<?= $voucher_code ? '?voucher=' . urlencode($voucher_code) : '' ?>" method="POST">

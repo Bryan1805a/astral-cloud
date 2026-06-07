@@ -85,7 +85,79 @@ class CheckoutController {
         ]);
     }
 
-    // 
+    public function validateVoucher(): void {
+        if (!isset($_SESSION["user_id"])) {
+            jsonResponse(["success" => false, "message" => "Not logged in."], 401);
+        }
+
+        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+            jsonResponse(["success" => false, "message" => "Invalid request."], 405);
+        }
+
+        verifyCsrfToken();
+
+        $user_id       = $_SESSION["user_id"];
+        $currentUser   = User::findById($user_id);
+        $cart_items    = Cart::getUserCart($user_id);
+        $voucher_code  = trim($_POST["voucher"] ?? "");
+
+        if (empty($cart_items)) {
+            jsonResponse(["success" => false, "message" => "Cart is empty."]);
+        }
+
+        $subtotal = 0;
+        foreach ($cart_items as $item) {
+            $subtotal += $item["price"] * $item["quantity"];
+        }
+
+        if (!$voucher_code) {
+            jsonResponse(["success" => true, "discount" => 0, "total" => $subtotal, "code" => ""]);
+        }
+
+        $voucher = Voucher::findByCode($voucher_code);
+
+        if (!$voucher) {
+            jsonResponse(["success" => false, "message" => "The discount code does not exist."]);
+        }
+
+        if (strtotime($voucher["expiry_date"]) < strtotime("today")) {
+            jsonResponse(["success" => false, "message" => "The voucher has expired."]);
+        }
+
+        if ($voucher["quantity"] <= $voucher["used_count"]) {
+            jsonResponse(["success" => false, "message" => "The voucher has run out."]);
+        }
+
+        if ($subtotal < $voucher["min_order_value"]) {
+            jsonResponse(["success" => false, "message" => "Minimum order not met (requires " . number_format($voucher["min_order_value"], 0, ",", ".") . " VND)."]);
+        }
+
+        if ($voucher["applicable_tier"] !== "all" && $voucher["applicable_tier"] !== $currentUser["tier"]) {
+            jsonResponse(["success" => false, "message" => "This code is only for tier " . strtoupper($voucher["applicable_tier"]) . "."]);
+        }
+
+        $discount = 0;
+        if ($voucher["discount_type"] === "fixed") {
+            $discount = $voucher["discount_value"];
+        } else {
+            $discount = $subtotal * ($voucher["discount_value"] / 100);
+            if (!empty($voucher["max_discount"]) && $discount > $voucher["max_discount"]) {
+                $discount = $voucher["max_discount"];
+            }
+        }
+
+        $total = max(0, $subtotal - $discount);
+
+        jsonResponse([
+            "success"  => true,
+            "discount" => $discount,
+            "total"    => $total,
+            "subtotal" => $subtotal,
+            "code"     => $voucher_code,
+            "message"  => "The code has been successfully applied!",
+        ]);
+    }
+
     public function placeOrder(): void {
         // Redirect user to login page if user not login
         if (!isset($_SESSION["user_id"])) {
