@@ -101,9 +101,9 @@
                             </div>
 
                             <div class="mt-auto d-flex gap-2">
-                                <button class="btn btn-sm btn-outline-info flex-grow-1" onclick="alert('Detail view feature is under development!')">
-                                    <i class="bi bi-info-circle"></i> Detail
-                                </button>
+                                <a href="/orders/invoice?id=<?= $order['order_id'] ?>" class="btn btn-sm btn-outline-info" title="Download Invoice">
+                                    <i class="bi bi-file-earmark-pdf"></i>
+                                </a>
                                 
                                 <?php if ($order['order_status'] === 'success' || $order['order_status'] === 'active'): ?>
                                     <button class="btn btn-sm btn-success flex-grow-1" onclick="openConsole('<?= htmlspecialchars($order['product_name']) ?>')">

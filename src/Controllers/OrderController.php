@@ -42,4 +42,42 @@ class OrderController {
             }
         }
     }
+
+    // Download invoice PDF for own order
+    public function invoice() {
+        if (!isset($_SESSION["user_id"])) {
+            header("Location: /login");
+            exit;
+        }
+
+        $orderId = (int)($_GET["id"] ?? 0);
+        if ($orderId <= 0) {
+            header("Location: /orders");
+            exit;
+        }
+
+        $order = Order::getInvoiceData($orderId);
+        if (!$order || $order["customer_id"] != $_SESSION["user_id"]) {
+            header("Location: /orders");
+            exit;
+        }
+
+        ob_start();
+        require __DIR__ . "/../Views/admin/orders/invoice.php";
+        $html = ob_get_clean();
+
+        $options = new \Dompdf\Options();
+        $options->set("defaultFont", "DejaVu Sans");
+        $options->set("isRemoteEnabled", false);
+        $options->set("isHtml5ParserEnabled", true);
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper("A4", "portrait");
+        $dompdf->render();
+
+        $filename = "INV-" . str_pad($orderId, 6, "0", STR_PAD_LEFT) . ".pdf";
+        $dompdf->stream($filename, ["Attachment" => 1]);
+        exit;
+    }
 }

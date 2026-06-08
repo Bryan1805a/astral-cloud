@@ -4,7 +4,8 @@ FROM php:8.2-apache
 RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql mysqli zip \
+    libxml2-dev \
+    && docker-php-ext-install pdo pdo_mysql mysqli zip dom mbstring \
     && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite

@@ -86,6 +86,7 @@
     $router->post("/checkout/validate-voucher",     [CheckoutController::class, "validateVoucher"]);
 
     $router->get("/orders",                         [OrderController::class, "index"]);
+    $router->get("/orders/invoice",                 [OrderController::class, "invoice"]);
     $router->post("/orders/cancel",                 [OrderController::class, "cancel"]);
 
     $router->get("/inbox",                          [InboxController::class, "index"]);
@@ -95,6 +96,7 @@
 
     // Routes for admin
     $router->get("/admin/orders",                   [AdminOrderController::class, "index"]);
+    $router->get("/admin/orders/invoice",           [AdminOrderController::class, "invoice"]);
     $router->post("/admin/orders/update",           [AdminOrderController::class, "update"]);
 
     $router->get("/admin/products",                 [AdminProductController::class, "index"]);

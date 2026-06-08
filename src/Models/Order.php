@@ -124,4 +124,51 @@ class Order {
         $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
         $stmt->execute([$status, $orderId]);
     }
+
+    // Get full invoice data for PDF generation
+    public static function getInvoiceData(int $orderId): ?array {
+        $pdo = Database::getConnection();
+
+        $stmt = $pdo->prepare("
+            SELECT
+                o.id              AS order_id,
+                o.subtotal,
+                o.discount_amount,
+                o.total_price,
+                o.status,
+                o.note,
+                o.created_at,
+                o.voucher_code,
+                u.id              AS customer_id,
+                u.name            AS customer_name,
+                u.email           AS customer_email,
+                u.phone           AS customer_phone,
+                u.tier            AS customer_tier,
+                u.total_spent     AS customer_total_spent
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            WHERE o.id = ?
+        ");
+        $stmt->execute([$orderId]);
+        $order = $stmt->fetch();
+
+        if (!$order) return null;
+
+        $stmtItems = $pdo->prepare("
+            SELECT
+                product_name,
+                product_cpu,
+                product_ram,
+                product_storage,
+                unit_price,
+                quantity,
+                subtotal
+            FROM order_items
+            WHERE order_id = ?
+        ");
+        $stmtItems->execute([$orderId]);
+        $order["items"] = $stmtItems->fetchAll();
+
+        return $order;
+    }
 }

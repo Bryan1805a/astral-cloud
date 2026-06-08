@@ -85,6 +85,9 @@
                                             <option value="cancelled" <?= $order['order_status'] == 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
                                         </select>
                                         <button type="submit" class="btn btn-sm btn-outline-warning">Save</button>
+                                        <a href="/admin/orders/invoice?id=<?= $order['order_id'] ?>" class="btn btn-sm btn-outline-info" title="Download Invoice" target="_blank">
+                                            <i class="bi bi-file-earmark-pdf"></i>
+                                        </a>
                                     </form>
                                 </td>
                             </tr>
