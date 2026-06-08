@@ -85,6 +85,10 @@
     $router->get("/checkout/success",               [CheckoutController::class, "success"]);
     $router->post("/checkout/validate-voucher",     [CheckoutController::class, "validateVoucher"]);
 
+    // Payment gateway routes
+    $router->get("/payment/vnpay-return",           [PaymentController::class, "vnpayReturn"]);
+    $router->get("/payment/vnpay-ipn",              [PaymentController::class, "vnpayIpn"]);
+
     $router->get("/orders",                         [OrderController::class, "index"]);
     $router->get("/orders/invoice",                 [OrderController::class, "invoice"]);
     $router->post("/orders/cancel",                 [OrderController::class, "cancel"]);

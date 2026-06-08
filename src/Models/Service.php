@@ -39,6 +39,17 @@ class Service {
         }
     }
 
+    // Terminate all services for an order (used when admin cancels a provisioned order)
+    public static function terminateForOrder(int $orderId): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("
+            UPDATE services SET status = 'terminated'
+            WHERE order_item_id IN (SELECT id FROM order_items WHERE order_id = ?)
+              AND status NOT IN ('terminated')
+        ");
+        $stmt->execute([$orderId]);
+    }
+
     // Display VPS information for customer
     public static function getUserServices(int $userId): array {
         $pdo = Database::getConnection();

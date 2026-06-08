@@ -29,6 +29,14 @@ class Voucher {
         $stmt->execute($data);
     }
 
+    // Count how many times a user has used a specific voucher
+    public static function getUsageCount(int $voucherId, int $userId): int {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM voucher_usages WHERE voucher_id = ? AND user_id = ?");
+        $stmt->execute([$voucherId, $userId]);
+        return (int) $stmt->fetchColumn();
+    }
+
     // Change voucher status
     // turn on / off
     public static function toggleActive(int $id): void {

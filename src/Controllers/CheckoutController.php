@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../config/vnpay.php';
+
 class CheckoutController {
     public function index(): void {
         // Redirect user to login page if they are not login
@@ -50,6 +52,10 @@ class CheckoutController {
                 // Check user tier
                 elseif ($voucher["applicable_tier"] !== "all" && $voucher["applicable_tier"] !== $currentUser["tier"]) {
                     $voucher_error = "This code is only for customer tier " . strtoupper($voucher["applicable_tier"]) . ".";
+                }
+                // Check per-user usage limit
+                elseif (Voucher::getUsageCount($voucher["id"], $user_id) >= $voucher["usage_limit_per_user"]) {
+                    $voucher_error = "You have reached the usage limit for this voucher.";
                 }
                 else {
                     $voucher_error = "";
@@ -136,6 +142,10 @@ class CheckoutController {
             jsonResponse(["success" => false, "message" => "This code is only for tier " . strtoupper($voucher["applicable_tier"]) . "."]);
         }
 
+        if (Voucher::getUsageCount($voucher["id"], $user_id) >= $voucher["usage_limit_per_user"]) {
+            jsonResponse(["success" => false, "message" => "You have reached the usage limit for this voucher."]);
+        }
+
         $discount = 0;
         if ($voucher["discount_type"] === "fixed") {
             $discount = $voucher["discount_value"];
@@ -203,6 +213,8 @@ class CheckoutController {
                     $voucher_error = "Minimum order not met.";
                 } elseif ($voucher["applicable_tier"] !== "all" && $voucher["applicable_tier"] !== $currentUser["tier"]) {
                     $voucher_error = "This code is not for your tier.";
+                } elseif (Voucher::getUsageCount($voucher["id"], $user_id) >= $voucher["usage_limit_per_user"]) {
+                    $voucher_error = "You have reached the usage limit for this voucher.";
                 } else {
                     $voucher_id = $voucher["id"];
                     if ($voucher["discount_type"] === "fixed") {
@@ -228,22 +240,23 @@ class CheckoutController {
         $total_price = max(0, $subtotal - $discount_amount);
         $note        = trim($_POST["note"] ?? "");
 
-        // Check stock for each item before placing order
-        foreach ($cart_items as $item) {
-            $stmt = Database::getConnection()->prepare(
-                "SELECT stock FROM products WHERE id = ? AND is_active = 1 FOR UPDATE"
-            );
-            $stmt->execute([$item["product_id"]]);
-            $product = $stmt->fetch();
-            if (!$product || $product["stock"] < $item["quantity"]) {
-                header("Location: /cart?err=insufficient_stock");
-                exit;
-            }
-        }
-
         try {
             $pdo = Database::getConnection();
             $pdo->beginTransaction();
+
+            // Check stock for each item inside the transaction (FOR UPDATE needs an active transaction)
+            foreach ($cart_items as $item) {
+                $stmt = $pdo->prepare(
+                    "SELECT stock FROM products WHERE id = ? AND is_active = 1 FOR UPDATE"
+                );
+                $stmt->execute([$item["product_id"]]);
+                $product = $stmt->fetch();
+                if (!$product || $product["stock"] < $item["quantity"]) {
+                    $pdo->rollBack();
+                    header("Location: /cart?err=insufficient_stock");
+                    exit;
+                }
+            }
 
             $new_order_id = Order::create($user_id, $voucher_id, $voucher_code ?: null, $subtotal, $discount_amount, $total_price, $note);
 
@@ -275,13 +288,23 @@ class CheckoutController {
 
             Cart::clear($user_id);
 
+            $txnRef = 'order_' . $new_order_id . '_' . time();
+            Payment::create($new_order_id, $total_price, 'vnpay', $txnRef, 'pending');
+
             $pdo->commit();
 
             AuditLog::log("order.place", "order", $new_order_id,
                 "Placed order #{$new_order_id} (total: " . number_format($total_price, 0, ",", ".") . " VND)"
             );
 
-            header("Location: /checkout/success?order_id=" . $new_order_id);
+            $ipAddr    = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+            $appUrl    = getenv('APP_URL') ?: '';
+            $returnUrl = getenv('VNP_RETURN_URL') ?: rtrim($appUrl, '/') . '/payment/vnpay-return';
+            $orderInfo = 'Thanh toan don hang #' . $new_order_id;
+
+            $paymentUrl = vnpayCreatePaymentUrl($txnRef, $total_price, $orderInfo, $ipAddr, $returnUrl);
+
+            header("Location: " . $paymentUrl);
             exit;
         } catch (Exception $e) {
             $pdo->rollBack();

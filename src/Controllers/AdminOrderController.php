@@ -35,7 +35,33 @@ class AdminOrderController {
                 $order = Order::findById($orderId);
                 $oldStatus = $order["status"] ?? "unknown";
 
-                Order::updateStatus($orderId, $status);
+                if ($status === "cancelled" && $oldStatus !== "cancelled") {
+                    $pdo = Database::getConnection();
+                    try {
+                        $pdo->beginTransaction();
+
+                        Order::updateStatus($orderId, $status);
+
+                        // Restore voucher usage if the order had one
+                        if (!empty($order["voucher_id"])) {
+                            $stmtDel = $pdo->prepare("DELETE FROM voucher_usages WHERE voucher_id = ? AND order_id = ?");
+                            $stmtDel->execute([$order["voucher_id"], $orderId]);
+                            $stmtRestore = $pdo->prepare("UPDATE vouchers SET used_count = used_count - 1 WHERE id = ?");
+                            $stmtRestore->execute([$order["voucher_id"]]);
+                        }
+
+                        // Terminate any provisioned services
+                        Service::terminateForOrder($orderId);
+
+                        $pdo->commit();
+                    } catch (Exception $e) {
+                        $pdo->rollBack();
+                        header("Location: /admin/orders?err=cancel_failed");
+                        exit;
+                    }
+                } else {
+                    Order::updateStatus($orderId, $status);
+                }
 
                 AuditLog::log("order.update_status", "order", $orderId,
                     "Order #{$orderId} status changed from {$oldStatus} to {$status}",
@@ -44,7 +70,7 @@ class AdminOrderController {
                 );
 
                 // If order success, auto provision VPS
-                if ($status == "success" && $order) {
+                if ($status === "success" && $order) {
                     Service::provisionForOrder($orderId, $order["user_id"]);
                 }
             }

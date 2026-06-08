@@ -66,6 +66,15 @@
             <form action="/checkout/place-order<?= $voucher_code ? '?voucher=' . urlencode($voucher_code) : '' ?>" method="POST">
                 <?= csrfField() ?>
                 <div class="mb-3">
+                    <label class="form-label text-secondary">Payment method</label>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="payment_method" id="pay-vnpay" value="vnpay" checked>
+                        <label class="form-check-label" for="pay-vnpay">
+                            <i class="bi bi-credit-card"></i> VNPay (ATM / Internet Banking)
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
                     <label class="form-label text-secondary">Order notes (Optional)</label>
                     <textarea name="note" class="form-control bg-dark text-light border-secondary" rows="2" placeholder="Example: Please install Ubuntu 22.04 for me..."></textarea>
                 </div>
