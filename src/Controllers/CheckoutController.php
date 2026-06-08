@@ -312,6 +312,13 @@ class CheckoutController {
         }
     }
     
+    // Handle GET requests to /checkout/place-order (VNPay sandbox may redirect here on error)
+    public function placeOrderGet(): void {
+        $query = $_SERVER['QUERY_STRING'] ?? '';
+        header("Location: /payment/vnpay-return" . ($query ? "?{$query}" : ""));
+        exit;
+    }
+
     // Success notification
     public function success(): void {
         if (!isset($_SESSION["user_id"])) {

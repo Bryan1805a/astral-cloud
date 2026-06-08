@@ -82,6 +82,7 @@
 
     $router->get("/checkout",                       [CheckoutController::class, "index"]);
     $router->post("/checkout/place-order",          [CheckoutController::class, "placeOrder"]);
+    $router->get("/checkout/place-order",           [CheckoutController::class, "placeOrderGet"]);
     $router->get("/checkout/success",               [CheckoutController::class, "success"]);
     $router->post("/checkout/validate-voucher",     [CheckoutController::class, "validateVoucher"]);
 
