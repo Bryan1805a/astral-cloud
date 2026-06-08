@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     libxml2-dev \
+    libonig-dev \
     && docker-php-ext-install pdo pdo_mysql mysqli zip dom mbstring \
     && rm -rf /var/lib/apt/lists/*
 
