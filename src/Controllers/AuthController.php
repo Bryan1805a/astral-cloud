@@ -142,12 +142,50 @@ class AuthController {
                                     <p>Best regards,<br>Astral Cloud Team</p>
                                 ";
 
+                                $mail->SMTPOptions = [
+                                    "ssl" => [
+                                        "verify_peer"       => false,
+                                        "verify_peer_name"  => false,
+                                        "allow_self_signed" => true,
+                                    ],
+                                ];
+
                                 $mail->send();
                                 header("Location: /verify-otp");
                                 exit;
                             } catch (Exception $e) {
-                                error_log("AuthController registration email failed: " . $e->getMessage());
-                                $success = "Registration successful! Your OTP code: <strong>{$otp}</strong>. (Email delivery failed, please use this code.)";
+                                error_log("AuthController registration email (port 465) failed: " . $e->getMessage());
+
+                                $mail2 = new PHPMailer(true);
+                                try {
+                                    $mail2->isSMTP();
+                                    $mail2->Host       = getenv("SMTP_HOST") ?: 'smtp.gmail.com';
+                                    $mail2->SMTPAuth   = true;
+                                    $mail2->Username   = $smtpUser;
+                                    $mail2->Password   = getenv("SMTP_PASS") ?: '';
+                                    $mail2->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                                    $mail2->Port       = 587;
+                                    $mail2->SMTPOptions = [
+                                        "ssl" => [
+                                            "verify_peer"       => false,
+                                            "verify_peer_name"  => false,
+                                            "allow_self_signed" => true,
+                                        ],
+                                    ];
+
+                                    $mail2->setFrom($fromEmail, $fromName);
+                                    $mail2->addAddress($email, $name);
+                                    $mail2->isHTML(true);
+                                    $mail2->Subject = 'Your Astral Cloud Verification Code';
+                                    $mail2->Body    = $mail->Body;
+
+                                    $mail2->send();
+                                    header("Location: /verify-otp");
+                                    exit;
+                                } catch (Exception $e2) {
+                                    error_log("AuthController registration email (port 587) also failed: " . $e2->getMessage());
+                                    $success = "Registration successful! Your OTP code: <strong>{$otp}</strong>. (Email delivery failed: " . htmlspecialchars($e2->getMessage()) . ")";
+                                }
                             }
                         }
                     }
