@@ -6,22 +6,19 @@ use PHPMailer\PHPMailer\Exception;
 class AuthController {
     // LOGIN
     public function login(): void {
-        // Redirect user to unique page base on role
         if (isset($_SESSION["user_id"])) {
             $this->redirectBasedOnRole();
         }
 
-        $error = "";
-        
-        // Check notification
+        $error   = "";
         $success = "";
         if (isset($_GET["msg"])) {
             if ($_GET["msg"] === "check_email") $success = "Please check your email to activate your account.";
             if ($_GET["msg"] === "verified_success") $success = "Account verified successfully! You can now log in.";
+            if ($_GET["msg"] === "otp_sent") $success = "A verification code has been sent to your email.";
             if ($_GET["msg"] === "invalid_token") $error = "The verification link is invalid or has expired.";
         }
 
-        // Check method post
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             verifyCsrfToken();
             $email    = trim($_POST["email"] ?? "");
@@ -32,13 +29,12 @@ class AuthController {
             } else {
                 $user = User::findByEmail($email);
 
-                // Check email and verify password from database
                 if ($user && password_verify($password, $user["password"])) {
                     if ($user["is_locked"] == 1) {
-                        $error = "Your account has been locked. Please contact the administrators."; // The account locked by administrator or BOT
+                        $error = "Your account has been locked. Please contact the administrators.";
                     }
                     elseif (isset($user["is_verified"]) && $user["is_verified"] == 0) {
-                        $error = "Your account has not been verified. Please check your email inbox."; // Email verify
+                        $error = "Your account has not been verified. Please check your email inbox.";
                     }
                     else {
                         $_SESSION["user_id"]    = $user["id"];
@@ -56,9 +52,9 @@ class AuthController {
         }
 
         view("auth/login", [
-            "error"  => $error,
+            "error"   => $error,
             "success" => $success,
-            "title"  => "Log in | Astral Cloud",
+            "title"   => "Log in | Astral Cloud",
         ]);
     }
 
@@ -67,7 +63,6 @@ class AuthController {
         $error   = "";
         $success = "";
 
-        // Check the request method
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             verifyCsrfToken();
             $name             = trim($_POST["name"] ?? "");
@@ -76,7 +71,6 @@ class AuthController {
             $password         = $_POST["password"] ?? "";
             $confirm_password = $_POST["confirm_password"] ?? "";
 
-            // Check valid registing data
             if (empty($name) || empty($email) || empty($password)) {
                 $error = "Please fill in all required fields (Name, Email, Password).";
             }
@@ -91,14 +85,11 @@ class AuthController {
             }
             else {
                 try {
-                    // Check if email exists in the database
                     if (User::emailExists($email)) {
                         $error = "This email address is already registered. Please use a different email address.";
                     }
-                    // Call create function with token function and save to database
                     else {
-                        $token    = bin2hex(random_bytes(32));
-                        $autoVerify = false;
+                        $token = bin2hex(random_bytes(32));
 
                         User::createWithToken([
                             "name"     => $name,
@@ -107,14 +98,20 @@ class AuthController {
                             "phone"    => $phone ?: null,
                         ], $token);
 
+                        $otp = str_pad((string) random_int(0, 999999), 6, "0", STR_PAD_LEFT);
+
+                        $_SESSION["otp_verification"] = [
+                            "email"      => $email,
+                            "name"       => $name,
+                            "code"       => $otp,
+                            "expires_at" => time() + 300,
+                        ];
+
                         $smtpUser = getenv("SMTP_USER") ?: "";
 
                         if (empty($smtpUser)) {
-                            User::verifyByEmail($email);
-                            $autoVerify = true;
+                            $success = "Registration successful! Your OTP code: <strong>{$otp}</strong>. You can now log in.";
                         } else {
-                            $appUrl = rtrim(getenv("APP_URL") ?: "http://localhost:8080", "/");
-                            $verifyLink = $appUrl . "/verify?token=" . $token;
                             $mail = new PHPMailer(true);
 
                             try {
@@ -132,30 +129,26 @@ class AuthController {
                                 $mail->addAddress($email, $name);
 
                                 $mail->isHTML(true);
-                                $mail->Subject = 'Verify your Astral Cloud Account';
+                                $mail->Subject = 'Your Astral Cloud Verification Code';
                                 $mail->Body    = "
                                     <h3>Hello {$name},</h3>
-                                    <p>Thank you for registering at Astral Cloud. Please click the button below to verify your email address:</p>
-                                    <a href='{$verifyLink}' style='display:inline-block; padding:10px 20px; background-color:#38bdf8; color:#ffffff; text-decoration:none; border-radius:5px; font-weight:bold;'>Verify Account</a>
-                                    <br><br>
-                                    <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
-                                    <p>{$verifyLink}</p>
+                                    <p>Thank you for registering at Astral Cloud. Use the following code to verify your account:</p>
+                                    <div style='text-align:center; margin:30px 0;'>
+                                        <span style='display:inline-block; padding:15px 30px; background-color:#38bdf8; color:#ffffff; font-size:32px; font-weight:bold; letter-spacing:8px; border-radius:8px;'>{$otp}</span>
+                                    </div>
+                                    <p>This code will expire in <strong>5 minutes</strong>.</p>
+                                    <p>If you did not create an account, please ignore this email.</p>
                                     <br>
                                     <p>Best regards,<br>Astral Cloud Team</p>
                                 ";
 
                                 $mail->send();
-                                header("Location: /login?msg=check_email");
+                                header("Location: /verify-otp");
                                 exit;
                             } catch (Exception $e) {
                                 error_log("AuthController registration email failed: " . $e->getMessage());
-                                User::verifyByEmail($email);
-                                $autoVerify = true;
+                                $success = "Registration successful! Your OTP code: <strong>{$otp}</strong>. (Email delivery failed, please use this code.)";
                             }
-                        }
-
-                        if ($autoVerify) {
-                            $success = "Registration successful! You can now log in.";
                         }
                     }
                 } catch (PDOException $e) {
@@ -171,7 +164,52 @@ class AuthController {
         ]);
     }
 
-    // Verify email via token
+    // Show OTP verification form
+    public function showOtpForm(): void {
+        if (!isset($_SESSION["otp_verification"])) {
+            header("Location: /register");
+            exit;
+        }
+
+        $otpData = $_SESSION["otp_verification"];
+        $email   = $otpData["email"];
+        $parts   = explode("@", $email);
+        $masked  = substr($parts[0], 0, 2) . str_repeat("*", max(0, strlen($parts[0]) - 2)) . "@" . $parts[1];
+        $error   = "";
+        $otpDev  = "";
+
+        if (empty(getenv("SMTP_USER") ?: "")) {
+            $otpDev = $otpData["code"];
+        }
+
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
+            $inputOtp = trim($_POST["otp"] ?? "");
+
+            if (time() > $otpData["expires_at"]) {
+                $error = "The verification code has expired. Please register again.";
+                unset($_SESSION["otp_verification"]);
+            }
+            elseif ($inputOtp !== $otpData["code"]) {
+                $error = "Invalid verification code. Please try again.";
+            }
+            else {
+                User::verifyByEmail($email);
+                unset($_SESSION["otp_verification"]);
+                header("Location: /login?msg=verified_success");
+                exit;
+            }
+        }
+
+        view("auth/otp", [
+            "masked_email" => $masked,
+            "error"        => $error,
+            "otp_dev"      => $otpDev,
+            "title"        => "Verify Account | Astral Cloud",
+        ]);
+    }
+
+    // Verify email via token (kept for backward compatibility)
     public function verify(): void {
         $token = $_GET["token"] ?? "";
 
@@ -192,7 +230,6 @@ class AuthController {
     }
 
     // Logout
-    // just delete session
     public function logout(): void {
         session_destroy();
         header("Location: /");

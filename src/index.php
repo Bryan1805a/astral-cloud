@@ -71,6 +71,8 @@
     $router->post("/register",                      [AuthController::class, "register"]);
     $router->get("/logout",                         [AuthController::class, "logout"]);
     $router->get("/verify",                         [AuthController::class, "verify"]);
+    $router->get("/verify-otp",                     [AuthController::class, "showOtpForm"]);
+    $router->post("/verify-otp",                    [AuthController::class, "showOtpForm"]);
 
     $router->get("/cart",                           [CartController::class, "index"]);
     $router->post("/cart/add",                      [CartController::class, "add"]);
