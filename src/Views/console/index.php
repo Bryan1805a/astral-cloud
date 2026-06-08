@@ -56,7 +56,7 @@
                 lineIndex++;
                 
                 // The random stream speed of 50ms to 300ms creates a "realistic" feel.
-                setTimeout(printBootSequence, Math.random() * 250 + 50);
+                setTimeout(printBootSequence, Math.random() * 300 + 100);
             } else {
                 // After booting, the command line appears.
                 interactive.style.display = 'flex';
