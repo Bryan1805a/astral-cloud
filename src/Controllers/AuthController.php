@@ -97,7 +97,8 @@ class AuthController {
                     }
                     // Call create function with token function and save to database
                     else {
-                        $token = bin2hex(random_bytes(32));
+                        $token    = bin2hex(random_bytes(32));
+                        $autoVerify = false;
 
                         User::createWithToken([
                             "name"     => $name,
@@ -106,42 +107,55 @@ class AuthController {
                             "phone"    => $phone ?: null,
                         ], $token);
 
-                        $appUrl = rtrim(getenv("APP_URL") ?: "http://localhost:8080", "/");
-                        $verifyLink = $appUrl . "/verify?token=" . $token;
-                        $mail = new PHPMailer(true);
+                        $smtpUser = getenv("SMTP_USER") ?: "";
 
-                        try {
-                            $mail->isSMTP();
-                            $mail->Host       = getenv("SMTP_HOST") ?: 'smtp.gmail.com';
-                            $mail->SMTPAuth   = true;
-                            $mail->Username   = getenv("SMTP_USER") ?: '';
-                            $mail->Password   = getenv("SMTP_PASS") ?: '';
-                            $mail->SMTPSecure = getenv("SMTP_ENCRYPTION") ?: PHPMailer::ENCRYPTION_SMTPS;
-                            $mail->Port       = (int)(getenv("SMTP_PORT") ?: 465);
+                        if (empty($smtpUser)) {
+                            User::verifyByEmail($email);
+                            $autoVerify = true;
+                        } else {
+                            $appUrl = rtrim(getenv("APP_URL") ?: "http://localhost:8080", "/");
+                            $verifyLink = $appUrl . "/verify?token=" . $token;
+                            $mail = new PHPMailer(true);
 
-                            $fromEmail = getenv("SMTP_FROM_EMAIL") ?: 'noreply@astralcloud.com';
-                            $fromName  = getenv("SMTP_FROM_NAME") ?: 'Astral Cloud';
-                            $mail->setFrom($fromEmail, $fromName);
-                            $mail->addAddress($email, $name);
+                            try {
+                                $mail->isSMTP();
+                                $mail->Host       = getenv("SMTP_HOST") ?: 'smtp.gmail.com';
+                                $mail->SMTPAuth   = true;
+                                $mail->Username   = $smtpUser;
+                                $mail->Password   = getenv("SMTP_PASS") ?: '';
+                                $mail->SMTPSecure = getenv("SMTP_ENCRYPTION") ?: PHPMailer::ENCRYPTION_SMTPS;
+                                $mail->Port       = (int)(getenv("SMTP_PORT") ?: 465);
 
-                            $mail->isHTML(true);
-                            $mail->Subject = 'Verify your Astral Cloud Account';
-                            $mail->Body    = "
-                                <h3>Hello {$name},</h3>
-                                <p>Thank you for registering at Astral Cloud. Please click the button below to verify your email address:</p>
-                                <a href='{$verifyLink}' style='display:inline-block; padding:10px 20px; background-color:#38bdf8; color:#ffffff; text-decoration:none; border-radius:5px; font-weight:bold;'>Verify Account</a>
-                                <br><br>
-                                <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
-                                <p>{$verifyLink}</p>
-                                <br>
-                                <p>Best regards,<br>Astral Cloud Team</p>
-                            ";
+                                $fromEmail = getenv("SMTP_FROM_EMAIL") ?: 'noreply@astralcloud.com';
+                                $fromName  = getenv("SMTP_FROM_NAME") ?: 'Astral Cloud';
+                                $mail->setFrom($fromEmail, $fromName);
+                                $mail->addAddress($email, $name);
 
-                            $mail->send();
-                            header("Location: /login?msg=check_email");
-                            exit;
-                        } catch (Exception $e) {
-                            $error = "Failed to send verification email. Please try again.";
+                                $mail->isHTML(true);
+                                $mail->Subject = 'Verify your Astral Cloud Account';
+                                $mail->Body    = "
+                                    <h3>Hello {$name},</h3>
+                                    <p>Thank you for registering at Astral Cloud. Please click the button below to verify your email address:</p>
+                                    <a href='{$verifyLink}' style='display:inline-block; padding:10px 20px; background-color:#38bdf8; color:#ffffff; text-decoration:none; border-radius:5px; font-weight:bold;'>Verify Account</a>
+                                    <br><br>
+                                    <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+                                    <p>{$verifyLink}</p>
+                                    <br>
+                                    <p>Best regards,<br>Astral Cloud Team</p>
+                                ";
+
+                                $mail->send();
+                                header("Location: /login?msg=check_email");
+                                exit;
+                            } catch (Exception $e) {
+                                error_log("AuthController registration email failed: " . $e->getMessage());
+                                User::verifyByEmail($email);
+                                $autoVerify = true;
+                            }
+                        }
+
+                        if ($autoVerify) {
+                            $success = "Registration successful! You can now log in.";
                         }
                     }
                 } catch (PDOException $e) {

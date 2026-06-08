@@ -91,4 +91,11 @@ class User {
         $stmt = $pdo->prepare("UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?");
         $stmt->execute([$userId]);
     }
+
+    // Auto-verify account by email (for dev environments without SMTP)
+    public static function verifyByEmail(string $email): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE users SET is_verified = 1, verification_token = NULL WHERE email = ?");
+        $stmt->execute([$email]);
+    }
 }
