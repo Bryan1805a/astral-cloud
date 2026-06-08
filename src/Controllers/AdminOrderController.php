@@ -33,8 +33,15 @@ class AdminOrderController {
 
             if ($orderId > 0 && in_array($status, $validStatuses)) {
                 $order = Order::findById($orderId);
+                $oldStatus = $order["status"] ?? "unknown";
 
                 Order::updateStatus($orderId, $status);
+
+                AuditLog::log("order.update_status", "order", $orderId,
+                    "Order #{$orderId} status changed from {$oldStatus} to {$status}",
+                    ["status" => $oldStatus],
+                    ["status" => $status]
+                );
 
                 // If order success, auto provision VPS
                 if ($status == "success" && $order) {

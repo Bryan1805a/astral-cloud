@@ -44,6 +44,12 @@ class AdminProductController {
             ];
 
             Product::create($data);
+
+            $newId = (int) Database::getConnection()->lastInsertId();
+            AuditLog::log("product.create", "product", $newId,
+                "Created VPS package: {$data["name"]} ({$data["price"]} VND/month)"
+            );
+
             header("Location: /admin/products?msg=created");
             exit;
         }
@@ -69,6 +75,9 @@ class AdminProductController {
             ];
 
             Product::update($id, $data);
+            AuditLog::log("product.update", "product", $id,
+                "Updated VPS package: {$data["name"]}"
+            );
             header("Location: /admin/products?msg=updated");
             exit;
         }
@@ -80,7 +89,11 @@ class AdminProductController {
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             verifyCsrfToken();
-            Product::toggleActive((int)$_POST["id"]);
+            $productId = (int)$_POST["id"];
+            Product::toggleActive($productId);
+            AuditLog::log("product.toggle_active", "product", $productId,
+                "Toggled VPS package visibility (ID: {$productId})"
+            );
             header("Location: /admin/products?msg=toggled");
             exit;
         }

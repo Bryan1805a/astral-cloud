@@ -120,4 +120,6 @@
     $router->get("/admin/emails",                   [AdminEmailController::class, "index"]);
     $router->post("/admin/emails/send",             [AdminEmailController::class, "send"]);
 
+    $router->get("/admin/audit-logs",              [AdminAuditLogController::class, "index"]);
+
     $router->dispatch($_SERVER["REQUEST_URI"], $_SERVER["REQUEST_METHOD"]);

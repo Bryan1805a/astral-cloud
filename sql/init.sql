@@ -334,7 +334,31 @@ CREATE TABLE services (
 
 
 -- ============================================================
--- TABLE 14: NOTIFICATIONS [NEW]
+-- TABLE 14: AUDIT_LOGS [NEW]
+-- Tracks all admin/staff actions for accountability
+-- ============================================================
+CREATE TABLE audit_logs (
+    id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id       INT UNSIGNED DEFAULT NULL,                    -- NULL for system/cron actions
+    action        VARCHAR(100) NOT NULL,                        -- e.g. 'order.update_status', 'product.create'
+    entity_type   VARCHAR(50) NOT NULL,                         -- e.g. 'order', 'product', 'user'
+    entity_id     INT UNSIGNED DEFAULT NULL,
+    description   VARCHAR(500) NOT NULL,
+    ip_address    VARCHAR(45) DEFAULT NULL,
+    old_values    JSON DEFAULT NULL,
+    new_values    JSON DEFAULT NULL,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_action (action),
+    INDEX idx_entity (entity_type, entity_id),
+    INDEX idx_user (user_id),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- TABLE 15: NOTIFICATIONS
 -- System notifications for users (other than email - these are in-app notifications)
 -- ============================================================
 CREATE TABLE notifications (

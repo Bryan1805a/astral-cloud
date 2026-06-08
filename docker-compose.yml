@@ -43,6 +43,27 @@ services:
       - db_data:/var/lib/mysql
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Auto create a table
 
+  # Cron
+  cron:
+    build: .
+    container_name: astral_cron
+    entrypoint: []
+    working_dir: /var/www/astral
+    command: >
+      sh -c "apt-get update && apt-get install -y cron &&
+      echo '0 * * * * php /var/www/astral/cron/cron.php all >> /var/log/astral-cron.log 2>&1' | crontab - &&
+      cron -f"
+    volumes:
+      - .:/var/www/astral
+      - ./vendor:/var/www/astral/vendor
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+
   # phpMyAdmin
   phpmyadmin:
     image: phpmyadmin:latest

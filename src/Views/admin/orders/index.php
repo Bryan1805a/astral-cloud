@@ -20,6 +20,7 @@
                     <a class="nav-link" href="/admin/vouchers">Vouchers</a>
                     <a class="nav-link" href="/admin/reviews">Reviews</a>
                     <a class="nav-link" href="/admin/emails">Emails</a>
+                    <a class="nav-link" href="/admin/audit-logs">Audit Logs</a>
             </div>
         </div>
     </nav>

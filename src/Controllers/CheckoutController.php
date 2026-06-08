@@ -277,6 +277,10 @@ class CheckoutController {
 
             $pdo->commit();
 
+            AuditLog::log("order.place", "order", $new_order_id,
+                "Placed order #{$new_order_id} (total: " . number_format($total_price, 0, ",", ".") . " VND)"
+            );
+
             header("Location: /checkout/success?order_id=" . $new_order_id);
             exit;
         } catch (Exception $e) {

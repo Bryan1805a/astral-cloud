@@ -42,6 +42,10 @@ class AuthController {
                         $_SESSION["user_role"]  = $user["role"];
                         $_SESSION["user_tier"]  = $user["tier"];
 
+                        AuditLog::log("auth.login", "user", $user["id"],
+                            "User logged in: {$user["name"]} ({$email})"
+                        );
+
                         $this->redirectBasedOnRole();
                     }
                 }
@@ -97,6 +101,10 @@ class AuthController {
                             "password" => $password,
                             "phone"    => $phone ?: null,
                         ], $token);
+
+                        AuditLog::log("auth.register", "user", (int) Database::getConnection()->lastInsertId(),
+                            "New account registered: {$name} ({$email})"
+                        );
 
                         $otp = str_pad((string) random_int(0, 999999), 6, "0", STR_PAD_LEFT);
 
@@ -234,6 +242,12 @@ class AuthController {
             else {
                 User::verifyByEmail($email);
                 unset($_SESSION["otp_verification"]);
+
+                $user = User::findByEmail($email);
+                AuditLog::log("auth.verify_otp", "user", $user ? $user["id"] : null,
+                    "Account verified via OTP: {$email}"
+                );
+
                 header("Location: /login?msg=verified_success");
                 exit;
             }
@@ -269,6 +283,13 @@ class AuthController {
 
     // Logout
     public function logout(): void {
+        $userId = $_SESSION["user_id"] ?? null;
+        $userName = $_SESSION["user_name"] ?? "Unknown";
+        if ($userId) {
+            AuditLog::log("auth.logout", "user", $userId,
+                "User logged out: {$userName}"
+            );
+        }
         session_destroy();
         header("Location: /");
         exit;

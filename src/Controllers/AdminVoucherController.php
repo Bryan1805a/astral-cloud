@@ -40,6 +40,9 @@ class AdminVoucherController {
 
             try {
                 Voucher::create($data);
+                AuditLog::log("voucher.create", "voucher", null,
+                    "Created voucher code: {$data["code"]} ({$data["discount_value"]} {$data["discount_type"]})"
+                );
                 header('Location: /admin/vouchers?msg=created');
                 exit;
             } catch (PDOException $e) {
@@ -55,7 +58,11 @@ class AdminVoucherController {
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             verifyCsrfToken();
-            Voucher::toggleActive((int)$_POST["id"]);
+            $voucherId = (int)$_POST["id"];
+            Voucher::toggleActive($voucherId);
+            AuditLog::log("voucher.toggle_active", "voucher", $voucherId,
+                "Toggled voucher active status (ID: {$voucherId})"
+            );
             header("Location: /admin/vouchers?msg=toggled");
             exit;
         }

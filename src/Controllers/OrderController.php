@@ -33,6 +33,9 @@ class OrderController {
                 $success = Order::cancelOrder($orderId, $userId);
 
                 if ($success) {
+                    AuditLog::log("order.cancel", "order", $orderId,
+                        "Cancelled order #{$orderId}"
+                    );
                     header('Location: /orders?msg=cancelled');
                 }
                 else {

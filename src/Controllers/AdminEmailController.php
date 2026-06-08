@@ -32,6 +32,10 @@ class AdminEmailController {
             $body = trim($_POST["body"]);
 
             AdminEmail::send($senderId, $recipientId, $subject, $body);
+            $recipientLabel = $recipientId ? "user #{$recipientId}" : "all customers (broadcast)";
+            AuditLog::log("email.send", "email", $recipientId,
+                "Sent email '{$subject}' to {$recipientLabel}"
+            );
             header('Location: /admin/emails?msg=sent');
             exit;
         }

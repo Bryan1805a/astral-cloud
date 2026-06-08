@@ -57,6 +57,10 @@ class CartController {
         Cart::add($_SESSION["user_id"], $product_id);
         $count = Cart::getCartCount($_SESSION["user_id"]);
 
+        AuditLog::log("cart.add", "product", $product_id,
+            "Added product #{$product_id} to cart"
+        );
+
         if (isAjaxRequest()) {
             jsonResponse(["success" => true, "message" => "Added to cart!", "count" => $count]);
         }
@@ -81,6 +85,9 @@ class CartController {
         $product_id = (int) ($_POST["product_id"] ?? 0);
         if ($product_id > 0) {
             Cart::remove($_SESSION["user_id"], $product_id);
+            AuditLog::log("cart.remove", "product", $product_id,
+                "Removed product #{$product_id} from cart"
+            );
         }
 
         $count = Cart::getCartCount($_SESSION["user_id"]);
@@ -112,6 +119,10 @@ class CartController {
         }
 
         Cart::updateQuantity($_SESSION["user_id"], $product_id, $quantity);
+
+        AuditLog::log("cart.update", "product", $product_id,
+            "Updated cart quantity for product #{$product_id} to {$quantity}"
+        );
 
         $cart_items = Cart::getUserCart($_SESSION["user_id"]);
         $total      = 0;

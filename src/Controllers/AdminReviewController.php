@@ -27,6 +27,9 @@ class AdminReviewController {
             $id = (int)($_POST["id"] ?? 0);
             if ($id > 0) {
                 Review::toggleVisibility($id);
+                AuditLog::log("review.toggle_visibility", "review", $id,
+                    "Toggled review visibility (ID: {$id})"
+                );
             }
             header('Location: /admin/reviews?msg=updated');
             exit;

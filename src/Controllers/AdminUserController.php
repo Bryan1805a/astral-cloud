@@ -25,6 +25,9 @@ class AdminUserController {
             $id = (int)$_POST["id"];
             if ($id > 0) {
                 User::toggleLock($id);
+                AuditLog::log("user.toggle_lock", "user", $id,
+                    "Toggled lock/unlock for user #{$id}"
+                );
             }
 
             header("Location: /admin/users?msg=status_changed");
