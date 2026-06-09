@@ -6,19 +6,19 @@ function vnpayCreatePaymentUrl(string $txnRef, float $amount, string $orderInfo,
     $vnpUrl     = getenv('VNP_URL');
 
     $inputData = [
-        'vnp_Version'    => '2.1.0',
-        'vnp_TmnCode'    => $tmnCode,
-        'vnp_Amount'     => (int) round($amount * 100),
-        'vnp_Command'    => 'pay',
-        'vnp_CreateDate' => date('YmdHis'),
-        'vnp_CurrCode'   => 'VND',
-        'vnp_ExpireDate' => date('YmdHis', strtotime('+15 minutes')),
-        'vnp_IpAddr'     => $ipAddr,
-        'vnp_Locale'     => 'vn',
-        'vnp_OrderInfo'  => $orderInfo,
-        'vnp_OrderType'  => 'other',
-        'vnp_ReturnUrl'  => $returnUrl,
-        'vnp_TxnRef'     => $txnRef,
+        'vnp_Version'       => '2.1.0',
+        'vnp_TmnCode'       => $tmnCode,
+        'vnp_Amount'        => (int) round($amount * 100),
+        'vnp_Command'       => 'pay',
+        'vnp_CreateDate'    => date('YmdHis'),
+        'vnp_CurrCode'      => 'VND',
+        'vnp_ExpireDate'    => date('YmdHis', strtotime('+15 minutes')),
+        'vnp_IpAddr'        => $ipAddr,
+        'vnp_Locale'        => 'vn',
+        'vnp_OrderInfo'     => $orderInfo,
+        'vnp_OrderType'     => 'other',
+        'vnp_ReturnUrl'     => $returnUrl,
+        'vnp_TxnRef'        => $txnRef,
     ];
 
     ksort($inputData);
