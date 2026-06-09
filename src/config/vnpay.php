@@ -1,13 +1,9 @@
 <?php
-
-function vnpayCreatePaymentUrl(string $txnRef, float $amount, string $orderInfo, string $ipAddr, string $returnUrl, ?string $ipnUrl = null): string {
-    $tmnCode    = getenv('VNP_TMN_CODE');
-    $hashSecret = getenv('VNP_HASH_SECRET');
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+function vnpayCreatePaymentUrl(string $txnRef, float $amount, string $orderInfo, string $ipAddr, string $returnUrl): string {
+    $tmnCode    = trim(getenv('VNP_TMN_CODE'));
+    $hashSecret = trim(getenv('VNP_HASH_SECRET'));
     $vnpUrl     = getenv('VNP_URL');
-
-    if ($ipnUrl === null) {
-        $ipnUrl = preg_replace('/\/vnpay-return$/', '/vnpay-ipn', $returnUrl);
-    }
 
     $inputData = [
         'vnp_Version'    => '2.1.0',
@@ -16,8 +12,8 @@ function vnpayCreatePaymentUrl(string $txnRef, float $amount, string $orderInfo,
         'vnp_Command'    => 'pay',
         'vnp_CreateDate' => date('YmdHis'),
         'vnp_CurrCode'   => 'VND',
+        'vnp_ExpireDate' => date('YmdHis', strtotime('+15 minutes')),
         'vnp_IpAddr'     => $ipAddr,
-        'vnp_IpnUrl'     => $ipnUrl,
         'vnp_Locale'     => 'vn',
         'vnp_OrderInfo'  => $orderInfo,
         'vnp_OrderType'  => 'other',
@@ -27,26 +23,39 @@ function vnpayCreatePaymentUrl(string $txnRef, float $amount, string $orderInfo,
 
     ksort($inputData);
 
-    $hashData = [];
+    $query = '';
+    $hashData = '';
+    $i = 0;
     foreach ($inputData as $key => $value) {
-        $hashData[] = urlencode($key) . '=' . urlencode($value);
+        $encoded = urlencode($key) . '=' . urlencode($value);
+        if ($i === 1) {
+            $hashData .= '&' . $encoded;
+        } else {
+            $hashData .= $encoded;
+            $i = 1;
+        }
+        $query .= $encoded . '&';
     }
-    $hashString = implode('&', $hashData);
 
-    $inputData['vnp_SecureHash'] = hash_hmac('sha512', $hashString, $hashSecret);
+    $secureHash = hash_hmac('sha512', $hashData, $hashSecret);
 
-    return $vnpUrl . '?' . http_build_query($inputData);
+    return $vnpUrl . '?' . $query . 'vnp_SecureHash=' . $secureHash;
 }
 
 function vnpayVerifyReturn(array $inputData, string $secureHash): bool {
     $hashSecret = getenv('VNP_HASH_SECRET');
 
-    unset($inputData['vnp_SecureHash']);
+    $filtered = [];
+    foreach ($inputData as $key => $value) {
+        if (str_starts_with($key, 'vnp_') && $key !== 'vnp_SecureHash' && $key !== 'vnp_SecureHashType') {
+            $filtered[$key] = $value;
+        }
+    }
 
-    ksort($inputData);
+    ksort($filtered);
 
     $hashData = [];
-    foreach ($inputData as $key => $value) {
+    foreach ($filtered as $key => $value) {
         $hashData[] = urlencode($key) . '=' . urlencode($value);
     }
     $hashString = implode('&', $hashData);

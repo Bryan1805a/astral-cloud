@@ -300,7 +300,7 @@ class CheckoutController {
             $ipAddr    = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
             $appUrl    = getenv('APP_URL') ?: '';
             $returnUrl = getenv('VNP_RETURN_URL') ?: rtrim($appUrl, '/') . '/payment/vnpay-return';
-            $orderInfo = 'Thanh toan don hang #' . $new_order_id;
+            $orderInfo = 'Thanh toan don hang ' . $new_order_id;
 
             $paymentUrl = vnpayCreatePaymentUrl($txnRef, $total_price, $orderInfo, $ipAddr, $returnUrl);
 

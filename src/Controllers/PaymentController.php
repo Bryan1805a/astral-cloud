@@ -66,7 +66,7 @@ class PaymentController {
         $secureHash = $inputData['vnp_SecureHash'] ?? '';
 
         if (!vnpayVerifyReturn($inputData, $secureHash)) {
-            die('vnp_ResponseCode=97&vnp_Message=InvalidSignature');
+            $this->ipnResponse('97', 'Invalid signature');
         }
 
         $txnRef       = $inputData['vnp_TxnRef'] ?? '';
@@ -78,31 +78,36 @@ class PaymentController {
 
         $payment = Payment::findByOrderId($orderId);
         if (!$payment) {
-            die('vnp_ResponseCode=01&vnp_Message=TransactionNotFound');
+            $this->ipnResponse('01', 'Order not found');
         }
 
         if ($payment['status'] === 'success') {
-            die('vnp_ResponseCode=02&vnp_Message=AlreadyProcessed');
+            $this->ipnResponse('02', 'Order already confirmed');
         }
 
         if ($responseCode === '00') {
             $vnpTransactionNo = $inputData['vnp_TransactionNo'] ?? '';
             Payment::markSuccess($payment['id'], $vnpTransactionNo);
 
-            AuditLog::log('payment.success', 'payment', $payment['id'],
+            AuditLog::logSystem('payment.success', 'payment', $payment['id'],
                 "VNPay IPN confirmed payment for order #{$payment['order_id']}. Transaction: {$vnpTransactionNo}"
             );
 
-            die('vnp_ResponseCode=00&vnp_Message=Success');
+            $this->ipnResponse('00', 'Confirm Success');
         } else {
             Payment::markFailed($payment['id']);
 
-            AuditLog::log('payment.failed', 'payment', $payment['id'],
+            AuditLog::logSystem('payment.failed', 'payment', $payment['id'],
                 "VNPay IPN: payment failed for order #{$payment['order_id']}. ResponseCode: {$responseCode}"
             );
 
-            die('vnp_ResponseCode=00&vnp_Message=PaymentFailed');
+            $this->ipnResponse('00', 'Payment Failed');
         }
+    }
+
+    private function ipnResponse(string $code, string $message): void {
+        echo json_encode(['RspCode' => $code, 'Message' => $message]);
+        exit;
     }
 
     private function redirectWithError(string $message): void {
