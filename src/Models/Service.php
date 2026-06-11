@@ -12,7 +12,7 @@ class Service {
         }
 
         // Get the list of VPS in this order
-        $stmtItems = $pdo->prepare("SELECT id, product_name FROM order_items WHERE order_id = ?");
+        $stmtItems = $pdo->prepare("SELECT id, product_name, product_cpu, product_ram FROM order_items WHERE order_id = ?");
         $stmtItems->execute([$orderId]);
         $items = $stmtItems->fetchAll();
 
@@ -22,19 +22,34 @@ class Service {
             VALUES (?, ?, ?, ?, ?, 'Ubuntu 22.04 LTS', 'running', CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY))
         ");
 
+        // VM Bridge API base URL (Docker → Windows host)
+        $vmBridgeUrl = (getenv('VM_BRIDGE_URL') ?: 'http://host.docker.internal:10001');
+
         // Loop every items for creating VPS
         foreach ($items as $item) {
-            // 1. Random Hostname: vps-pro-8472
-            $hostname = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $item['product_name'])) . '-' . rand(1000, 9999);
-            
-            // 2. Random IP Address (Dummy public IP)
-            $ip = '103.14.' . rand(1, 255) . '.' . rand(1, 255);
-            
-            // 3. Random Root Password (12 characters)
+            // 1. Generate root password locally (so we know it regardless of VM Bridge response)
             $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
             $password = substr(str_shuffle($chars), 0, 12);
 
-            // Save to database
+            // 2. Call VM Bridge to clone + start a real VMware VM
+            $hostname = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $item['product_name'])) . '-' . rand(1000, 9999);
+            $ip = '0.0.0.0';
+
+            $apiUrl = $vmBridgeUrl . '/provision?order_id=' . $orderId . '&item_id=' . $item['id']
+                . '&name=' . urlencode($hostname) . '&password=' . urlencode($password);
+
+            $ctx = stream_context_create(['http' => ['timeout' => 120]]);
+            $response = @file_get_contents($apiUrl, false, $ctx);
+
+            if ($response !== false) {
+                $data = json_decode($response, true);
+                if ($data && !empty($data['success'])) {
+                    $hostname = $data['hostname'] ?? $hostname;
+                    $ip       = $data['ip'] ?? $ip;
+                }
+            }
+
+            // 3. Save to database
             $stmtInsert->execute([$item['id'], $userId, $hostname, $ip, $password]);
         }
     }
