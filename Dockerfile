@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libxml2-dev \
     libonig-dev \
-    && docker-php-ext-install pdo pdo_mysql mysqli zip dom mbstring \
+    libcurl4-openssl-dev \
+    && docker-php-ext-install pdo pdo_mysql mysqli zip dom mbstring curl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite

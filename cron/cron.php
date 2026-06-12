@@ -153,13 +153,20 @@ function taskServiceReminders(): void {
     }
 }
 
+// ---- Task: Complete Pending VM Provisionings ----
+function taskCompleteProvisioning(): void {
+    cronLog("Checking for pending VM provisionings...");
+    Service::completePendingProvisionings();
+}
+
 // ---- Dispatch ----
 $task = $argv[1] ?? "all";
 
 $tasks = [
-    "service-expiry"    => "taskServiceExpiry",
-    "pending-orders"    => "taskPendingOrders",
-    "service-reminders" => "taskServiceReminders",
+    "service-expiry"           => "taskServiceExpiry",
+    "pending-orders"           => "taskPendingOrders",
+    "service-reminders"        => "taskServiceReminders",
+    "complete-provisioning"    => "taskCompleteProvisioning",
 ];
 
 if ($task === "all") {

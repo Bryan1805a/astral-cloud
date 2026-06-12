@@ -82,5 +82,40 @@ services:
     depends_on:
       - db
 
+  # Apache Guacamole - Web-based SSH Console
+  guacd:
+    image: guacamole/guacd
+    container_name: astral_guacd
+    restart: unless-stopped
+
+  guacamole-db:
+    image: mysql:8.0
+    container_name: astral_guac_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${GUAC_DB_ROOT_PASS}
+      MYSQL_DATABASE: guacamole_db
+      MYSQL_USER: guacamole_user
+      MYSQL_PASSWORD: ${GUAC_DB_PASS}
+    volumes:
+      - guac_db_data:/var/lib/mysql
+
+  guacamole:
+    image: guacamole/guacamole
+    container_name: astral_guac
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    environment:
+      GUACD_HOSTNAME: guacd
+      MYSQL_HOSTNAME: guacamole-db
+      MYSQL_DATABASE: guacamole_db
+      MYSQL_USER: guacamole_user
+      MYSQL_PASSWORD: ${GUAC_DB_PASS}
+    depends_on:
+      - guacd
+      - guacamole-db
+
 volumes:
   db_data:
+  guac_db_data:

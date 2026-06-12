@@ -106,7 +106,7 @@
                                 </a>
                                 
                                 <?php if ($order['order_status'] === 'success' || $order['order_status'] === 'active'): ?>
-                                    <button class="btn btn-sm btn-success flex-grow-1" onclick="openConsole('<?= htmlspecialchars($order['product_name']) ?>')">
+                                    <button class="btn btn-sm btn-success flex-grow-1" onclick="openConsole(<?= $currentService ? (int)$currentService['id'] : 0 ?>)">
                                         <i class="bi bi-terminal"></i> Console
                                     </button>
                                 <?php elseif ($order['order_status'] === 'pending'): ?>
@@ -131,9 +131,8 @@
     </div>
 
     <script>
-        function openConsole(serverName) {
-            // Redirect to the Console page with the VPS name
-            window.location.href = '/console?name=' + encodeURIComponent(serverName);
+        function openConsole(serviceId) {
+            window.location.href = '/console?id=' + encodeURIComponent(serviceId);
         }
     </script>
 </body>
