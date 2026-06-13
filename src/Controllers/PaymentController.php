@@ -46,6 +46,8 @@ class PaymentController {
                 "VNPay payment successful for order #{$order['id']}. Transaction: {$vnpTransactionNo}"
             );
 
+            Service::provisionForOrder((int) $order['id'], (int) $order['user_id']);
+
             header("Location: /checkout/success?order_id=" . $payment['order_id']);
             exit;
         } else {

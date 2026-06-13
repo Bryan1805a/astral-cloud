@@ -90,6 +90,9 @@ class Order {
                 $stmtRestoreVoucher->execute([$order["voucher_id"]]);
             }
 
+            // Restore product stock
+            self::restoreStock($orderId);
+
             $pdo->commit();
             return True;
         } catch (Exception $e) {
@@ -123,6 +126,18 @@ class Order {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
         $stmt->execute([$status, $orderId]);
+    }
+
+    // Restore product stock when an order is cancelled
+    public static function restoreStock(int $orderId): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("
+            UPDATE products p
+            JOIN order_items oi ON p.id = oi.product_id
+            SET p.stock = p.stock + oi.quantity
+            WHERE oi.order_id = ?
+        ");
+        $stmt->execute([$orderId]);
     }
 
     // Get full invoice data for PDF generation

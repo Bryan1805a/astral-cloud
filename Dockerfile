@@ -7,12 +7,16 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libonig-dev \
     libcurl4-openssl-dev \
+    cron \
     && docker-php-ext-install pdo pdo_mysql mysqli zip dom mbstring curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN a2enmod rewrite
+RUN a2enmod rewrite proxy proxy_http proxy_wstunnel
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+COPY proxy-console.conf /etc/apache2/conf-available/proxy-console.conf
+RUN a2enconf proxy-console
 
 WORKDIR /var/www/html
 

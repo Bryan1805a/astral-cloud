@@ -197,7 +197,7 @@ class CheckoutController {
             $subtotal += $item["price"] * $item["quantity"];
         }
 
-        $voucher_code    = trim($_GET["voucher"] ?? "");
+        $voucher_code    = trim($_POST["voucher"] ?? $_GET["voucher"] ?? "");
         $voucher_id      = null;
         $discount_amount = 0;
 

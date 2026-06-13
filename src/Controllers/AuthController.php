@@ -118,7 +118,8 @@ class AuthController {
                         $smtpUser = getenv("SMTP_USER") ?: "";
 
                         if (empty($smtpUser)) {
-                            $success = "Registration successful! Your OTP code: <strong>{$otp}</strong>. You can now log in.";
+                            header("Location: /verify-otp");
+                            exit;
                         } else {
                             $mail = new PHPMailer(true);
 
@@ -192,7 +193,8 @@ class AuthController {
                                     exit;
                                 } catch (Exception $e2) {
                                     error_log("AuthController registration email (port 587) also failed: " . $e2->getMessage());
-                                    $success = "Registration successful! Your OTP code: <strong>{$otp}</strong>. (Email delivery failed: " . htmlspecialchars($e2->getMessage()) . ")";
+                                    header("Location: /verify-otp");
+                                    exit;
                                 }
                             }
                         }

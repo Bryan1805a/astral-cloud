@@ -50,7 +50,10 @@ class AdminOrderController {
                             $stmtRestore->execute([$order["voucher_id"]]);
                         }
 
-                        // Terminate any provisioned services
+                        // Restore product stock
+                        Order::restoreStock($orderId);
+
+                        // Terminate any provisioned services (kills ttyd, stops VM)
                         Service::terminateForOrder($orderId);
 
                         $pdo->commit();
@@ -69,8 +72,8 @@ class AdminOrderController {
                     ["status" => $status]
                 );
 
-                // If order success, auto provision VPS
-                if ($status === "success" && $order) {
+                // Auto provision VPS when order is confirmed or success
+                if (in_array($status, ['confirmed', 'success']) && $order) {
                     Service::provisionForOrder($orderId, $order["user_id"]);
                 }
             }

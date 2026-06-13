@@ -31,6 +31,7 @@ services:
       - VNP_URL=${VNP_URL}
       - VNP_RETURN_URL=${VNP_RETURN_URL}
       - VM_BRIDGE_URL=${VM_BRIDGE_URL}
+      - TTYD_EXTERNAL_URL=${TTYD_EXTERNAL_URL}
 
   # MySQL
   db:
@@ -55,8 +56,7 @@ services:
     entrypoint: []
     working_dir: /var/www/astral
     command: >
-      sh -c "apt-get update && apt-get install -y cron &&
-      echo '0 * * * * php /var/www/astral/cron/cron.php all >> /var/log/astral-cron.log 2>&1' | crontab - &&
+      sh -c "echo '*/2 * * * * php /var/www/astral/cron/cron.php all >> /var/log/astral-cron.log 2>&1' | crontab - &&
       cron -f"
     volumes:
       - .:/var/www/astral
@@ -68,6 +68,7 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
+      - VM_BRIDGE_URL=${VM_BRIDGE_URL}
 
   # phpMyAdmin
   phpmyadmin:
@@ -82,40 +83,5 @@ services:
     depends_on:
       - db
 
-  # Apache Guacamole - Web-based SSH Console
-  guacd:
-    image: guacamole/guacd
-    container_name: astral_guacd
-    restart: unless-stopped
-
-  guacamole-db:
-    image: mysql:8.0
-    container_name: astral_guac_db
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${GUAC_DB_ROOT_PASS}
-      MYSQL_DATABASE: guacamole_db
-      MYSQL_USER: guacamole_user
-      MYSQL_PASSWORD: ${GUAC_DB_PASS}
-    volumes:
-      - guac_db_data:/var/lib/mysql
-
-  guacamole:
-    image: guacamole/guacamole
-    container_name: astral_guac
-    restart: unless-stopped
-    ports:
-      - "8082:8080"
-    environment:
-      GUACD_HOSTNAME: guacd
-      MYSQL_HOSTNAME: guacamole-db
-      MYSQL_DATABASE: guacamole_db
-      MYSQL_USER: guacamole_user
-      MYSQL_PASSWORD: ${GUAC_DB_PASS}
-    depends_on:
-      - guacd
-      - guacamole-db
-
 volumes:
   db_data:
-  guac_db_data:

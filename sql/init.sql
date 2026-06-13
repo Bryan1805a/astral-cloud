@@ -314,7 +314,8 @@ CREATE TABLE services (
     ip_address      VARCHAR(45)   DEFAULT NULL,                  -- Supports both IPv4 and IPv6.
     root_password   VARCHAR(255)  DEFAULT NULL,
     os              VARCHAR(50)   DEFAULT NULL,                  -- Example: "Ubuntu 22.04"
-    guacamole_connection_id INT UNSIGNED DEFAULT NULL,           -- Apache Guacamole connection ID for web console
+    console_port    INT UNSIGNED DEFAULT NULL,                   -- ttyd port for web console
+    provisioning_status VARCHAR(50) NOT NULL DEFAULT 'pending',  -- creating_vm | booting | waiting_ip | preparing_console | ready
     -- Status and lifecycle
     status          ENUM('provisioning','running','stopped','suspended','terminated')
                     NOT NULL DEFAULT 'provisioning',

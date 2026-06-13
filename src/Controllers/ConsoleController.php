@@ -9,6 +9,7 @@ class ConsoleController {
         $serviceId = (int) ($_GET["id"] ?? 0);
         $consoleUrl = null;
         $service = null;
+        $provisioningStatus = null;
 
         if ($serviceId > 0) {
             $pdo = Database::getConnection();
@@ -21,8 +22,11 @@ class ConsoleController {
             $stmt->execute([$serviceId, $_SESSION["user_id"]]);
             $service = $stmt->fetch();
 
-            if ($service && !empty($service['guacamole_connection_id'])) {
-                $consoleUrl = GuacamoleHelper::generateConsoleUrl((int) $service['guacamole_connection_id']);
+            if ($service) {
+                $provisioningStatus = $service['provisioning_status'] ?? 'pending';
+                if (!empty($service['console_port']) && $provisioningStatus === 'ready') {
+                    $consoleUrl = TtydHelper::generateConsoleUrl((int) $service['id']);
+                }
             }
         }
 

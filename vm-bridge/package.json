@@ -1,0 +1,10 @@
+{
+    "name": "astral-vm-bridge",
+    "version": "1.0.0",
+    "description": "VM Bridge — VMware provisioning + ttyd console proxy",
+    "main": "server.js",
+    "dependencies": {
+        "express": "^4.18.0",
+        "http-proxy": "^1.18.1"
+    }
+}

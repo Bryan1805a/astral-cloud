@@ -5,110 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Console | Astral Cloud</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/css/console.css">
+    <style>
+        body { background: #1a1d23; color: #e0e0e0; font-family: 'Courier New', monospace; }
+        .progress-container { max-width: 600px; margin: 80px auto; text-align: center; }
+        .status-icon { font-size: 48px; margin-bottom: 16px; }
+        .status-label { font-size: 18px; font-weight: bold; margin-bottom: 24px; }
+        .progress-steps { text-align: left; display: inline-block; }
+        .step { padding: 8px 16px; margin: 4px 0; border-radius: 6px; }
+        .step.done { color: #4ade80; }
+        .step.active { color: #38bdf8; background: rgba(56,189,248,0.1); }
+        .step.pending { color: #6b7280; }
+        .step .badge { margin-left: 8px; }
+        .cred-bar { background: #2d2d2d; padding: 12px 20px; border-radius: 8px; margin-top: 20px; font-size: 14px; }
+        .cred-bar code { color: #fbbf24; }
+        iframe { width:100%; height:calc(100vh - 56px); border:none; }
+    </style>
 </head>
 <body>
 
-<?php if ($consoleUrl && $service): ?>
+<?php if ($consoleUrl && $service && $provisioningStatus === 'ready'): ?>
+    <!-- ttyd iframe — live terminal -->
     <nav class="navbar navbar-dark bg-dark border-bottom border-secondary px-3">
         <span class="navbar-brand text-info">
-            <i class="bi bi-terminal"></i> <?= htmlspecialchars($service['hostname']) ?>
+            &#62;_ <?= htmlspecialchars($service['hostname']) ?>
         </span>
         <div class="text-light small">
             IP: <?= htmlspecialchars($service['ip_address']) ?> |
-            User: root |
-            Pass: <code class="bg-dark text-warning p-1"><?= htmlspecialchars($service['root_password']) ?></code>
+            root: <code class="bg-dark text-warning p-1"><?= htmlspecialchars($service['root_password']) ?></code>
         </div>
     </nav>
-    <iframe src="<?= htmlspecialchars($consoleUrl) ?>" id="guac-frame"
-            style="width:100%;height:calc(100vh - 56px);border:none;"></iframe>
-<?php else: ?>
-    <div id="terminal-output"></div>
+    <iframe src="<?= htmlspecialchars($consoleUrl) ?>" title="Web Console"></iframe>
 
-    <div id="interactive" class="input-line" style="display: none;">
-        <span class="prompt">root@<?= htmlspecialchars($hostname) ?>:~#</span>
-        <input type="text" id="cmd" class="cmd-input" autocomplete="off" autofocus>
+<?php elseif ($service): ?>
+    <!-- Provisioning progress -->
+    <?php
+    $steps = [
+        'creating_vm'      => ['Creating VM',       'VM is being cloned from base image'],
+        'booting'          => ['Booting VM',         'Virtual machine is starting up'],
+        'waiting_ip'       => ['Waiting for IP',     'Obtaining IP address from DHCP'],
+        'preparing_console'=> ['Preparing Console',  'Starting web terminal service'],
+        'ready'            => ['Ready',              'Console is available'],
+    ];
+    $status = $provisioningStatus ?: 'creating_vm';
+    $statusIndex = array_search($status, array_keys($steps));
+    if ($statusIndex === false) $statusIndex = 0;
+    ?>
+    <div class="progress-container">
+        <div class="status-icon">
+            <?php if ($statusIndex < 4): ?>
+                <span style="font-size:64px;">⏳</span>
+            <?php else: ?>
+                <span style="font-size:64px;">✅</span>
+            <?php endif; ?>
+        </div>
+        <div class="status-label">Provisioning Your VPS</div>
+        <div class="progress-steps">
+            <?php $i = 0; foreach ($steps as $key => $step): ?>
+                <div class="step <?= $i < $statusIndex ? 'done' : ($i === $statusIndex ? 'active' : 'pending') ?>">
+                    <?= $i < $statusIndex ? '✓' : ($i === $statusIndex ? '▶' : '○') ?>
+                    <strong><?= $step[0] ?></strong>
+                    <span class="text-muted">— <?= $step[1] ?></span>
+                    <?php if ($i === $statusIndex && $i < 4): ?>
+                        <span class="badge bg-info">in progress</span>
+                    <?php elseif ($i === $statusIndex && $i === 4): ?>
+                        <span class="badge bg-success">done</span>
+                    <?php endif; ?>
+                </div>
+            <?php $i++; endforeach; ?>
+        </div>
+        <div class="cred-bar">
+            <strong>root password:</strong>
+            <code><?= htmlspecialchars($service['root_password']) ?></code>
+        </div>
+        <p class="text-muted mt-3 small">
+            This page auto-refreshes. If provisioning takes too long,
+            check back in a minute.
+        </p>
     </div>
 
     <script>
-        const output = document.getElementById('terminal-output');
-        const interactive = document.getElementById('interactive');
-        const cmdInput = document.getElementById('cmd');
-        const hostname = "<?= htmlspecialchars($hostname) ?>";
-
-        const bootSequence = [
-            "Initiating connection to Astral Cloud Gateway...",
-            "Resolving IP address...",
-            "Connected to 103.14.xx.xx (Port 22)",
-            "Authenticating SSH keys... [OK]",
-            "Mounting /dev/sda1 (NVMe SSD)... [OK]",
-            "Starting network interfaces... [OK]",
-            "Starting OpenSSH daemon... [OK]",
-            " ",
-            "Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-101-generic x86_64)",
-            " * Documentation:  https://help.ubuntu.com",
-            " * Management:     https://landscape.canonical.com",
-            " * Support:        https://ubuntu.com/advantage",
-            " ",
-            "System information as of " + new Date().toUTCString(),
-            "  System load:  0.01               Processes:             102",
-            "  Usage of /:   12.4% of 80.00GB   Users logged in:       1",
-            "  Memory usage: 8%                 IPv4 address for eth0: 103.14.88.99",
-            " ",
-            "Last login: " + new Date().toLocaleString() + " from 113.160.x.x",
-            "Type 'help' for a list of available commands."
-        ];
-
-        let lineIndex = 0;
-
-        function printBootSequence() {
-            if (lineIndex < bootSequence.length) {
-                const line = document.createElement('div');
-                line.textContent = bootSequence[lineIndex];
-                output.appendChild(line);
-                window.scrollTo(0, document.body.scrollHeight);
-                lineIndex++;
-                setTimeout(printBootSequence, Math.random() * 300 + 100);
-            } else {
-                interactive.style.display = 'flex';
-                cmdInput.focus();
-            }
-        }
-
-        setTimeout(printBootSequence, 500);
-
-        cmdInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                const val = this.value.trim();
-                const cmdDiv = document.createElement('div');
-                cmdDiv.innerHTML = `<span style="color:#38bdf8;font-weight:bold;">root@${hostname}:~#</span> ${val}`;
-                output.appendChild(cmdDiv);
-
-                const responseDiv = document.createElement('div');
-                if (val === 'help') {
-                    responseDiv.innerHTML = "Available commands:<br> - clear : Clear the terminal screen<br> - ping  : Check network connection<br> - exit  : Close connection";
-                } else if (val === 'clear') {
-                    output.innerHTML = '';
-                } else if (val === 'ping') {
-                    responseDiv.innerHTML = "PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.<br>64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=14.2 ms<br>64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=14.5 ms";
-                } else if (val === 'exit') {
-                    window.location.href = '/orders';
-                    return;
-                } else if (val !== '') {
-                    responseDiv.textContent = "-bash: " + val + ": command not found";
-                }
-
-                if (val !== 'clear' && val !== 'exit') {
-                    output.appendChild(responseDiv);
-                }
-
-                this.value = '';
-                window.scrollTo(0, document.body.scrollHeight);
-            }
-        });
-
-        document.addEventListener('click', () => cmdInput.focus());
+        // Auto-refresh every 15 seconds while provisioning
+        setTimeout(function() { location.reload(); }, 15000);
     </script>
+
+<?php else: ?>
+    <div class="progress-container">
+        <p class="text-danger">Service not found or access denied.</p>
+        <a href="/orders" class="btn btn-outline-light">Back to Orders</a>
+    </div>
 <?php endif; ?>
 </body>
 </html>

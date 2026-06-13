@@ -63,8 +63,9 @@
                 <span class="fs-4 fw-bold text-info" id="checkout-total"><?= number_format($total_price, 0, ',', '.') ?>VND</span>
             </div>
 
-            <form action="/checkout/place-order<?= $voucher_code ? '?voucher=' . urlencode($voucher_code) : '' ?>" method="POST">
+            <form action="/checkout/place-order" method="POST">
                 <?= csrfField() ?>
+                <input type="hidden" name="voucher" id="hidden-voucher" value="<?= htmlspecialchars($voucher_code) ?>">
                 <div class="mb-3">
                     <label class="form-label text-secondary">Payment method</label>
                     <div class="form-check mb-2">

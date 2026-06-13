@@ -86,6 +86,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 btn.innerHTML = 'Apply';
 
                 if (data.success && data.code) {
+                    var hiddenVoucher = document.getElementById('hidden-voucher');
+                    if (hiddenVoucher) hiddenVoucher.value = data.code;
                     if (successEl) {
                         successEl.textContent = data.message;
                         successEl.style.display = 'block';
@@ -99,6 +101,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     if (totalEl) totalEl.textContent = formatCurrency(data.total);
                 } else if (!data.success) {
+                    var hiddenVoucher = document.getElementById('hidden-voucher');
+                    if (hiddenVoucher) hiddenVoucher.value = '';
                     if (errorEl) {
                         errorEl.textContent = data.message;
                         errorEl.style.display = 'block';
