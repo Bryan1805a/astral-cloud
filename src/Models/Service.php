@@ -2,7 +2,7 @@
 class Service {
 
     public static function setProvisioningStatus(int $serviceId, string $status): void {
-        $valid = ['pending','creating_vm','booting','waiting_ip','setting_password','preparing_console','ready'];
+        $valid = ['pending','creating_vm','booting','waiting_ip','preparing_console','ready'];
         if (!in_array($status, $valid)) return;
         $pdo = Database::getConnection();
         $pdo->prepare("UPDATE services SET provisioning_status = ? WHERE id = ?")
@@ -25,12 +25,8 @@ class Service {
         $vmBridgeUrl = (getenv('VM_BRIDGE_URL') ?: 'http://host.docker.internal:10001');
 
         foreach ($items as $item) {
-            $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            $password = '';
-            for ($i = 0; $i < 12; $i++) {
-                $password .= $chars[random_int(0, strlen($chars) - 1)];
-            }
             $hostname = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $item['product_name'])) . '-' . rand(1000, 9999);
+            $password = getenv('VM_BASE_PASSWORD') ?: 'password';
 
             $stmtInsert = $pdo->prepare("
                 INSERT INTO services (order_item_id, user_id, hostname, ip_address, root_password, os, status, start_date, expiry_date, provisioning_status)
@@ -86,17 +82,7 @@ class Service {
             $pdo->prepare("UPDATE services SET ip_address = ? WHERE id = ?")->execute([$ip, $serviceId]);
             error_log("[AstralCloud] Service #{$serviceId}: got IP = {$ip}");
 
-            // Step 3: Set root password on the VM (base VM has a different password)
-            self::setProvisioningStatus($serviceId, 'setting_password');
-            $basePassword = getenv('VM_BASE_PASSWORD') ?: 'password';
-            $setPassUrl = $vmBridgeUrl . '/set-root-password'
-                . '?name=' . urlencode($hostname)
-                . '&password=' . urlencode($password)
-                . '&base_password=' . urlencode($basePassword);
-            $ctx = stream_context_create(['http' => ['timeout' => 30]]);
-            @file_get_contents($setPassUrl, false, $ctx);
-
-            // Step 4: Register console with VM Bridge
+            // Register console with VM Bridge
             self::setProvisioningStatus($serviceId, 'preparing_console');
             $result = TtydHelper::startConsole($serviceId, $ip, $hostname, $password);
 
@@ -164,23 +150,13 @@ class Service {
                 }
             }
 
-            // ── Step 2: We have IP — set password + register console ─
+            // ── Step 2: We have IP — register console ──────────
             if ($hasIp && empty($s['console_port'])) {
                 // Re-fetch the service to get the now-updated IP
                 $stmtIp = $pdo->prepare("SELECT ip_address FROM services WHERE id = ?");
                 $stmtIp->execute([$s['id']]);
                 $row = $stmtIp->fetch();
                 $ip = $row['ip_address'];
-
-                // Set root password on the VM
-                self::setProvisioningStatus($s['id'], 'setting_password');
-                $basePassword = getenv('VM_BASE_PASSWORD') ?: 'password';
-                $setPassUrl = $vmBridgeUrl . '/set-root-password'
-                    . '?name=' . urlencode($s['hostname'])
-                    . '&password=' . urlencode($s['root_password'])
-                    . '&base_password=' . urlencode($basePassword);
-                $ctx = stream_context_create(['http' => ['timeout' => 30]]);
-                @file_get_contents($setPassUrl, false, $ctx);
 
                 // Register console
                 self::setProvisioningStatus($s['id'], 'preparing_console');

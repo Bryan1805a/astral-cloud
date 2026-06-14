@@ -9,9 +9,8 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     cron \
     && docker-php-ext-install pdo pdo_mysql mysqli zip dom mbstring curl \
+    && a2enmod rewrite proxy proxy_http proxy_wstunnel \
     && rm -rf /var/lib/apt/lists/*
-
-RUN a2enmod rewrite proxy proxy_http proxy_wstunnel
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
