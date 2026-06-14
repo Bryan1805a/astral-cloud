@@ -122,6 +122,7 @@ class AuthController {
                             exit;
                         } else {
                             $mail = new PHPMailer(true);
+                            
 
                             try {
                                 $mail->isSMTP();

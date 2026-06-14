@@ -9,27 +9,26 @@ function showToast(message, type) {
     if (!container) return;
 
     const icons = {
-        success: 'bi-check-circle-fill',
-        danger: 'bi-exclamation-triangle-fill',
-        warning: 'bi-exclamation-circle-fill',
-        info: 'bi-info-circle-fill',
+        success: '&#10003;',
+        danger: '&#9888;',
+        warning: '&#9888;',
+        info: '&#8505;',
     };
 
     const toast = document.createElement('div');
-    toast.className = 'toast align-items-center text-bg-' + type + ' border-0 show';
-    toast.role = 'alert';
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">
-                <i class="bi ${icons[type] || icons.info} me-2"></i> ${message}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    `;
+    toast.style.cssText =
+        'padding:14px 20px;border-radius:16px;font-weight:600;font-size:14px;' +
+        'animation:toastIn 0.3s ease;display:flex;align-items:center;gap:10px;' +
+        (type === 'success' ? 'background:#002a16;color:#b4ffd8;border:1px solid rgba(255,255,255,0.12);' :
+        type === 'danger' ? 'background:#2a0000;color:#ffb4b4;border:1px solid rgba(255,255,255,0.12);' :
+        type === 'warning' ? 'background:#2a2a00;color:#ffe484;border:1px solid rgba(255,255,255,0.12);' :
+        'background:#002a3a;color:#b4e0ff;border:1px solid rgba(255,255,255,0.12);');
+    toast.innerHTML = (icons[type] || '') + ' ' + message;
     container.appendChild(toast);
 
     setTimeout(function () {
-        toast.classList.remove('show');
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
         setTimeout(function () { toast.remove(); }, 300);
     }, 3500);
 }
@@ -49,6 +48,58 @@ function formatCurrency(amount) {
     return amount.toLocaleString('vi-VN') + ' VND';
 }
 
+// Scroll-reveal animation
+const revealElements = document.querySelectorAll(
+    ".page-section, .vps-card, .blog-card, .package-card, .auth-card, .cart-item, .cart-summary, .detail-card, .admin-card, .admin-table, .chart-card, .history-card, .checkout-form, .checkout-summary, .glass-panel",
+);
+const observer = new IntersectionObserver(
+    (entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("show");
+            }
+        });
+    },
+    { threshold: 0.12 },
+);
+revealElements.forEach((el) => {
+    el.classList.add("reveal");
+    observer.observe(el);
+});
+
+// 3D tilt on cards
+const tiltSelectors = [
+    ".vps-card", ".blog-card", ".package-card", ".admin-card",
+    ".cart-item", ".detail-card", ".history-card",
+];
+const tiltElements = document.querySelectorAll(tiltSelectors.join(", "));
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (!prefersReducedMotion && tiltElements.length) {
+    tiltElements.forEach((el) => {
+        el.style.transformStyle = "preserve-3d";
+        el.addEventListener("mousemove", (e) => {
+            const rect = el.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width;
+            const py = (e.clientY - rect.top) / rect.height;
+            const rotateY = (px - 0.5) * 16;
+            const rotateX = (0.5 - py) * 12;
+            el.style.setProperty("--rx", `${rotateX}deg`);
+            el.style.setProperty("--ry", `${rotateY}deg`);
+        });
+        el.addEventListener("mouseleave", () => {
+            el.style.setProperty("--rx", `0deg`);
+            el.style.setProperty("--ry", `0deg`);
+        });
+    });
+}
+
+// Toast animation keyframes
+const styleSheet = document.createElement("style");
+styleSheet.textContent = `
+    @keyframes toastIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+`;
+document.head.appendChild(styleSheet);
+
 document.addEventListener('DOMContentLoaded', function () {
     // Voucher AJAX on checkout
     var voucherForm = document.getElementById('voucher-form');
@@ -64,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var discountRow = document.getElementById('discount-row');
             var discountEl = document.getElementById('discount-amount');
             var totalEl = document.getElementById('checkout-total');
+            var discountCodeEl = document.getElementById('discount-code');
 
             var formData = new FormData();
             formData.append('_csrf_token', getCsrfToken());
@@ -96,6 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (discountRow && data.discount > 0) {
                         discountRow.style.display = 'flex';
                         if (discountEl) discountEl.textContent = '- ' + formatCurrency(data.discount);
+                        if (discountCodeEl) discountCodeEl.textContent = data.code;
                     } else if (discountRow) {
                         discountRow.style.display = 'none';
                     }

@@ -1,40 +1,102 @@
-<div class="text-center mb-5">
-    <h1 class="display-4 fw-bold">Deploy the system quickly.</h1>
-    <p class="lead text-secondary">Create a powerful Cloud VPS in just 60 seconds.</p>
-</div>
-
-<div class="row g-4">
-    <?php foreach ($vps_plans as $plan): ?>
-        <div class="col-md-6 col-lg-4">
-            <div class="card glass-card h-100 text-light p-3">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title fw-bold text-info">
-                        <i class="bi bi-server"></i> <?= htmlspecialchars($plan['name']) ?>
-                    </h5>
-                    <p class="card-text text-secondary small"><?= htmlspecialchars($plan['description']) ?></p>
-
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li class="mb-2"><i class="bi bi-cpu text-primary me-2"></i> <strong>CPU:</strong> <?= htmlspecialchars($plan['cpu']) ?></li>
-                        <li class="mb-2"><i class="bi bi-memory text-primary me-2"></i> <strong>RAM:</strong> <?= htmlspecialchars($plan['ram']) ?></li>
-                        <li class="mb-2"><i class="bi bi-hdd-network text-primary me-2"></i> <strong>Storage:</strong> <?= htmlspecialchars($plan['storage']) ?></li>
-                        <li class="mb-2"><i class="bi bi-speedometer2 text-primary me-2"></i> <strong>Network:</strong> <?= htmlspecialchars($plan['bandwidth']) ?></li>
-                    </ul>
-
-                    <div class="mt-auto border-top border-secondary pt-3 text-center">
-                        <div class="price-text mb-3">
-                            <?= number_format($plan['price'], 0, ',', '.') ?> VND <span class="fs-6 text-secondary fw-normal">/month</span>
-                        </div>
-
-                        <form action="/cart/add" method="POST" class="js-add-cart">
-                            <?= csrfField() ?>
-                            <input type="hidden" name="product_id" value="<?= $plan['id'] ?>">
-                            <button type="submit" class="btn btn-info w-100 fw-bold">
-                                <i class="bi bi-cart-plus"></i> Register configuration
-                            </button>
-                        </form>
-                    </div>
-                </div>
+<!-- HERO -->
+<section class="page-section hero-section">
+    <div class="hero-content">
+        <div>
+            <h1>Cloud VPS that makes your <br><span>PROJECT</span><br>FASTER!</h1>
+            <p>Astral Cloud provides high-performance VPS, fast deployment, stable security, and easy management for students, developers, and businesses.</p>
+            <div class="hero-buttons">
+                <a href="#plans" class="btn-white">View VPS Plans</a>
+                <a href="/register" class="btn-outline">Get Started</a>
             </div>
         </div>
-    <?php endforeach; ?>
-</div>
+    </div>
+    <div class="hero-visual">
+        <div class="orb orb-one"></div>
+        <div class="server-shape">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="page-section about-section">
+    <h2>Why Astral Cloud?</h2>
+    <p>We simulate a modern VPS rental and management system, helping users find server packages, place orders, make demo payments, and track activation status.</p>
+    <div class="stats">
+        <div class="stat-card"><span>⚡</span><h3>99.9%</h3><p>Uptime</p><small>Always-on infrastructure for stable VPS performance.</small></div>
+        <div class="stat-card"><span>💾</span><h3>NVMe</h3><p>SSD Storage</p><small>Ultra-fast storage for websites, APIs and applications.</small></div>
+        <div class="stat-card"><span>🎧</span><h3>24/7</h3><p>Support</p><small>Professional assistance whenever you need help.</small></div>
+        <div class="stat-card"><span>🛡️</span><h3>DDoS</h3><p>Protection</p><small>Advanced protection against malicious attacks.</small></div>
+    </div>
+</section>
+
+<!-- PACKAGES PREVIEW -->
+<section id="features" class="page-section package-section">
+    <h2>Our VPS Packages</h2>
+    <p>Popular VPS packages for a variety of usage needs.</p>
+    <div class="package-grid">
+        <div class="package-card">
+            <div class="package-icon">🧊</div><h3>Basic</h3>
+            <p>2GB RAM / 1 CPU / 40GB SSD</p><strong>99.000 VND/month</strong>
+            <a href="#plans">View plan</a>
+        </div>
+        <div class="package-card">
+            <div class="package-icon">💠</div><h3>Pro</h3>
+            <p>4GB RAM / 2 CPU / 80GB SSD</p><strong>199.000 VND/month</strong>
+            <a href="#plans">View plan</a>
+        </div>
+        <div class="package-card">
+            <div class="package-icon">🔷</div><h3>Enterprise</h3>
+            <p>8GB RAM / 4 CPU / 160GB SSD</p><strong>399.000 VND/month</strong>
+            <a href="#plans">View plan</a>
+        </div>
+    </div>
+</section>
+
+<!-- VPS PLANS (from backend) -->
+<section id="plans" class="products-section">
+    <h1>All VPS Plans</h1>
+    <p>Choose the VPS package that suits your needs.</p>
+    <div class="vps-grid">
+        <?php foreach ($vps_plans as $plan): ?>
+            <div class="vps-card">
+                <h2><?= htmlspecialchars($plan['name']) ?></h2>
+                <p class="description"><?= htmlspecialchars($plan['description']) ?></p>
+                <div class="price"><?= number_format($plan['price'], 0, ',', '.') ?> VND<span>/month</span></div>
+                <ul>
+                    <li><span class="spec-label">CPU</span><span class="spec-value"><?= htmlspecialchars($plan['cpu']) ?></span></li>
+                    <li><span class="spec-label">RAM</span><span class="spec-value"><?= htmlspecialchars($plan['ram']) ?></span></li>
+                    <li><span class="spec-label">Storage</span><span class="spec-value"><?= htmlspecialchars($plan['storage']) ?></span></li>
+                    <li><span class="spec-label">Bandwidth</span><span class="spec-value"><?= htmlspecialchars($plan['bandwidth']) ?></span></li>
+                </ul>
+                <form action="/cart/add" method="POST" class="js-add-cart" style="margin-top:auto;">
+                    <input type="hidden" name="_csrf_token" value="<?= generateCsrfToken() ?>">
+                    <input type="hidden" name="product_id" value="<?= $plan['id'] ?>">
+                    <button type="submit" class="plan-btn w-100" style="width:100%;">Add to Cart</button>
+                </form>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</section>
+
+<!-- BLOG -->
+<section id="blog" class="page-section blog-section">
+    <h2>Cloud Knowledge</h2>
+    <div class="blog-grid">
+        <div class="blog-card">
+            <div class="blog-icon">🖥️</div><h3>What is VPS?</h3>
+            <p>Learn how virtual private servers work in a cloud environment.</p>
+            <a href="#" class="blog-link">Read More →</a>
+        </div>
+        <div class="blog-card">
+            <div class="blog-icon">⚙️</div><h3>Choosing the Right VPS Plan</h3>
+            <p>Understand how RAM, CPU, SSD and bandwidth affect performance.</p>
+            <a href="#" class="blog-link">Read More →</a>
+        </div>
+        <div class="blog-card">
+            <div class="blog-icon">🔒</div><h3>Server Security Guide</h3>
+            <p>Basic practices to keep your VPS safer and more reliable.</p>
+            <a href="#" class="blog-link">Read More →</a>
+        </div>
+    </div>
+</section>

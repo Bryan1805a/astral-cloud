@@ -1,60 +1,45 @@
-<h2 class="mb-4 fw-bold text-info"><i class="bi bi-envelope"></i> Inbox</h2>
+<section class="page-section">
+    <h2 style="margin-bottom:24px;">Inbox</h2>
 
-<?php if (empty($emails)): ?>
-    <div class="glass-panel p-5 text-center">
-        <i class="bi bi-inbox text-secondary icon-xl"></i>
-        <h4 class="mt-3 text-secondary">No messages yet.</h4>
-        <p>You will receive notifications and announcements here.</p>
-        <a href="/" class="btn btn-primary mt-2">Back to Home</a>
-    </div>
-<?php else: ?>
-    <div class="glass-panel p-4">
-        <div class="table-responsive">
-            <table class="table table-glass mb-0">
-                <thead>
-                    <tr>
-                        <th>From</th>
-                        <th>Subject</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($emails as $msg): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($msg['sender_name']) ?></td>
-                            <td><?= htmlspecialchars($msg['subject']) ?></td>
-                            <td class="text-secondary"><?= date('d/m/Y H:i', strtotime($msg['sent_at'])) ?></td>
-                            <td>
-                                <?php if ($msg['is_read']): ?>
-                                    <span class="badge bg-secondary">Read</span>
-                                <?php else: ?>
-                                    <span class="badge bg-info text-dark">New</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if (!$msg['is_read']): ?>
-                                    <form action="/inbox/read" method="POST" class="d-inline">
-                                        <?= csrfField() ?>
-                                        <input type="hidden" name="id" value="<?= $msg['id'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-info">
-                                            <i class="bi bi-envelope-open"></i> Mark Read
-                                        </button>
-                                    </form>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <?php if (!empty($msg['body'])): ?>
-                            <tr>
-                                <td colspan="5" class="bg-dark bg-opacity-25">
-                                    <div class="p-3 text-secondary"><?= nl2br(htmlspecialchars($msg['body'])) ?></div>
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+    <?php if (empty($emails)): ?>
+        <div style="padding:60px 40px;text-align:center;border-radius:24px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:48px;margin-bottom:16px;">📬</div>
+            <h3 style="color:#6b7280;">No messages yet</h3>
+            <p style="color:#6b7280;">You will receive notifications and announcements here.</p>
+            <a href="/" class="checkout-btn" style="display:inline-block;margin-top:12px;">Back to Home</a>
         </div>
-    </div>
-<?php endif; ?>
+    <?php else: ?>
+        <?php foreach ($emails as $msg): ?>
+            <div style="padding:20px 24px;border-radius:20px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <strong style="font-size:17px;"><?= htmlspecialchars($msg['subject']) ?></strong>
+                            <?php if (!$msg['is_read']): ?>
+                                <span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;background:#38bdf8;color:#000;">NEW</span>
+                            <?php else: ?>
+                                <span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;background:rgba(255,255,255,0.1);color:#6b7280;">READ</span>
+                            <?php endif; ?>
+                        </div>
+                        <div style="color:#6b7280;font-size:13px;margin-top:4px;">
+                            From <strong style="color:#b8b8b8;"><?= htmlspecialchars($msg['sender_name']) ?></strong>
+                            &middot; <?= date('d/m/Y H:i', strtotime($msg['sent_at'])) ?>
+                        </div>
+                    </div>
+                    <?php if (!$msg['is_read']): ?>
+                        <form action="/inbox/read" method="POST">
+                            <?= csrfField() ?>
+                            <input type="hidden" name="id" value="<?= $msg['id'] ?>">
+                            <button type="submit" style="padding:8px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:#b8b8b8;cursor:pointer;font-size:13px;">Mark read</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+                <?php if (!empty($msg['body'])): ?>
+                    <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);color:#b8b8b8;font-size:14px;line-height:1.6;">
+                        <?= nl2br(htmlspecialchars($msg['body'])) ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</section>

@@ -19,9 +19,14 @@ const proxy = httpProxy.createProxyServer({
 });
 
 proxy.on('error', (err, req, res) => {
-    if (res && !res.headersSent) {
-        res.writeHead(502, { 'Content-Type': 'text/plain' });
-        res.end('Console proxy error');
+    if (!res) return;
+    if (typeof res.writeHead === 'function') {
+        if (!res.headersSent) {
+            res.writeHead(502, { 'Content-Type': 'text/plain' });
+            res.end('Console proxy error');
+        }
+    } else {
+        res.destroy();
     }
 });
 
@@ -128,20 +133,23 @@ app.get('/ttyd/start', (req, res) => {
     while (used.has(port)) port++;
 
     const ttydBin = getTtydBinary();
+    const knownHostsFile = process.platform === 'win32' ? 'NUL' : '/dev/null';
     const ttyd = spawn(ttydBin, [
         '-p', port.toString(),
         '-W',
-        '-P', '3600',
-        '-i', '127.0.0.1',          // listen on localhost only (proxy handles external)
+        // omit -P (ping interval); ttyd 1.7 defaults are fine
+        '-i', '127.0.0.1',
         'ssh',
         '-o', 'StrictHostKeyChecking=no',
-        '-o', 'UserKnownHostsFile=/dev/null',
+        '-o', `UserKnownHostsFile=${knownHostsFile}`,
         `root@${vmIp}`
     ], {
-        detached: true,
-        stdio: 'ignore',
-        windowsHide: true
+        // windowsHide (CREATE_NO_WINDOW) crashes ttyd 1.7 on Windows — omit it
+        stdio: ['ignore', 'ignore', 'pipe']
     });
+
+    let stderrBuf = '';
+    ttyd.stderr.on('data', (chunk) => { stderrBuf += chunk.toString(); });
 
     ttyd.on('error', (err) => {
         console.error(`[-] ttyd spawn error for service #${serviceId}: ${err.message}`);
@@ -150,6 +158,9 @@ app.get('/ttyd/start', (req, res) => {
 
     ttyd.on('exit', (code) => {
         console.log(`[-] ttyd for service #${serviceId} exited (code ${code})`);
+        if (code !== 0) {
+            console.error(`  stderr: ${stderrBuf || '(none)'}`);
+        }
         ttydInstances.delete(serviceId);
     });
 

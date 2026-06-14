@@ -4,40 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Console | Astral Cloud</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/base.css">
     <style>
-        body { background: #1a1d23; color: #e0e0e0; font-family: 'Courier New', monospace; }
-        .progress-container { max-width: 600px; margin: 80px auto; text-align: center; }
-        .status-icon { font-size: 48px; margin-bottom: 16px; }
-        .status-label { font-size: 18px; font-weight: bold; margin-bottom: 24px; }
-        .progress-steps { text-align: left; display: inline-block; }
-        .step { padding: 8px 16px; margin: 4px 0; border-radius: 6px; }
-        .step.done { color: #4ade80; }
-        .step.active { color: #38bdf8; background: rgba(56,189,248,0.1); }
-        .step.pending { color: #6b7280; }
-        .step .badge { margin-left: 8px; }
-        .cred-bar { background: #2d2d2d; padding: 12px 20px; border-radius: 8px; margin-top: 20px; font-size: 14px; }
-        .cred-bar code { color: #fbbf24; }
-        iframe { width:100%; height:calc(100vh - 56px); border:none; }
+        body { background:#0a0a0a; color:#e0e0e0; font-family:'Courier New',monospace; min-height:100vh; }
+        .console-wrap { max-width:700px; margin:0 auto; padding:60px 24px; }
+        .console-nav { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:32px; padding:16px 20px; border-radius:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
+        .console-nav h1 { font-size:18px; font-weight:700; color:#38bdf8; margin:0; }
+        .console-nav .meta { color:#6b7280; font-size:13px; }
+        .console-nav .meta code { color:#fbbf24; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px; }
+        .step-list { text-align:left; max-width:480px; margin:0 auto; }
+        .step { padding:12px 16px; margin:6px 0; border-radius:12px; display:flex; align-items:center; gap:12px; font-size:15px; }
+        .step.done { color:#4ade80; }
+        .step.active { color:#38bdf8; background:rgba(56,189,248,0.08); }
+        .step.pending { color:#6b7280; }
+        .step-icon { font-size:20px; width:28px; text-align:center; }
+        .step .badge-progress { padding:3px 10px; border-radius:999px; font-size:11px; font-weight:800; }
+        .step.active .badge-progress { background:#38bdf8; color:#000; }
+        .step.done .badge-progress { background:#4ade80; color:#000; }
+        .cred-box { margin-top:24px; padding:16px 20px; border-radius:16px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); text-align:center; font-size:14px; }
+        .cred-box code { color:#fbbf24; display:block; margin-top:4px; font-size:16px; }
+        .back-btn { padding:10px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.12); color:#b8b8b8; text-decoration:none; font-size:14px; }
+        .back-btn:hover { border-color:#38bdf8; color:#38bdf8; }
+        .console-iframe { width:100%; height:calc(100vh - 56px); border:none; }
+        .error-box { text-align:center; padding:60px; }
+        .error-box p { color:#ef4444; font-size:18px; margin-bottom:16px; }
+        .spinner { display:inline-block; width:20px; height:20px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; animation:spinner .75s linear infinite; vertical-align:middle; }
+        @keyframes spinner { to { transform:rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <?php if ($consoleUrl && $service && $provisioningStatus === 'ready'): ?>
-    <!-- ttyd iframe — live terminal -->
-    <nav class="navbar navbar-dark bg-dark border-bottom border-secondary px-3">
-        <span class="navbar-brand text-info">
-            &#62;_ <?= htmlspecialchars($service['hostname']) ?>
-        </span>
-        <div class="text-light small">
+    <nav class="console-nav" style="margin:0;border-radius:0;border:0;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <h1>&gt;_ <?= htmlspecialchars($service['hostname']) ?></h1>
+        <div class="meta">
             IP: <?= htmlspecialchars($service['ip_address']) ?> |
-            root: <code class="bg-dark text-warning p-1"><?= htmlspecialchars($service['root_password']) ?></code>
+            root: <code><?= htmlspecialchars($service['root_password']) ?></code>
         </div>
     </nav>
-    <iframe src="<?= htmlspecialchars($consoleUrl) ?>" title="Web Console"></iframe>
+    <iframe class="console-iframe" src="<?= htmlspecialchars($consoleUrl) ?>" title="Web Console"></iframe>
 
 <?php elseif ($service): ?>
-    <!-- Provisioning progress -->
     <?php
     $steps = [
         'creating_vm'      => ['Creating VM',       'VM is being cloned from base image'],
@@ -50,48 +57,38 @@
     $statusIndex = array_search($status, array_keys($steps));
     if ($statusIndex === false) $statusIndex = 0;
     ?>
-    <div class="progress-container">
-        <div class="status-icon">
-            <?php if ($statusIndex < 4): ?>
-                <span style="font-size:64px;">⏳</span>
-            <?php else: ?>
-                <span style="font-size:64px;">✅</span>
-            <?php endif; ?>
+    <div class="console-wrap">
+        <div style="text-align:center;">
+            <div style="font-size:56px;margin-bottom:16px;"><?= $statusIndex < 4 ? '⏳' : '✅' ?></div>
+            <h1 style="font-size:24px;font-weight:700;margin-bottom:32px;">Provisioning Your VPS</h1>
+            <div class="step-list">
+                <?php $i = 0; foreach ($steps as $key => $step): ?>
+                    <div class="step <?= $i < $statusIndex ? 'done' : ($i === $statusIndex ? 'active' : 'pending') ?>">
+                        <span class="step-icon"><?= $i < $statusIndex ? '✓' : ($i === $statusIndex ? '▶' : '○') ?></span>
+                        <span><strong><?= $step[0] ?></strong> — <?= $step[1] ?></span>
+                        <?php if ($i === $statusIndex && $i < 4): ?>
+                            <span class="badge-progress"><span class="spinner"></span> in progress</span>
+                        <?php elseif ($i === $statusIndex && $i === 4): ?>
+                            <span class="badge-progress">done</span>
+                        <?php endif; ?>
+                    </div>
+                <?php $i++; endforeach; ?>
+            </div>
+            <div class="cred-box">
+                <strong>root password:</strong>
+                <code><?= htmlspecialchars($service['root_password']) ?></code>
+            </div>
+            <p class="text-muted mt-3">This page auto-refreshes. If provisioning takes too long, check back in a minute.</p>
         </div>
-        <div class="status-label">Provisioning Your VPS</div>
-        <div class="progress-steps">
-            <?php $i = 0; foreach ($steps as $key => $step): ?>
-                <div class="step <?= $i < $statusIndex ? 'done' : ($i === $statusIndex ? 'active' : 'pending') ?>">
-                    <?= $i < $statusIndex ? '✓' : ($i === $statusIndex ? '▶' : '○') ?>
-                    <strong><?= $step[0] ?></strong>
-                    <span class="text-muted">— <?= $step[1] ?></span>
-                    <?php if ($i === $statusIndex && $i < 4): ?>
-                        <span class="badge bg-info">in progress</span>
-                    <?php elseif ($i === $statusIndex && $i === 4): ?>
-                        <span class="badge bg-success">done</span>
-                    <?php endif; ?>
-                </div>
-            <?php $i++; endforeach; ?>
-        </div>
-        <div class="cred-bar">
-            <strong>root password:</strong>
-            <code><?= htmlspecialchars($service['root_password']) ?></code>
-        </div>
-        <p class="text-muted mt-3 small">
-            This page auto-refreshes. If provisioning takes too long,
-            check back in a minute.
-        </p>
     </div>
-
-    <script>
-        // Auto-refresh every 15 seconds while provisioning
-        setTimeout(function() { location.reload(); }, 15000);
-    </script>
+    <script>setTimeout(function(){location.reload()},15000);</script>
 
 <?php else: ?>
-    <div class="progress-container">
-        <p class="text-danger">Service not found or access denied.</p>
-        <a href="/orders" class="btn btn-outline-light">Back to Orders</a>
+    <div class="console-wrap">
+        <div class="error-box">
+            <p>Service not found or access denied.</p>
+            <a href="/orders" class="back-btn">← Back to Orders</a>
+        </div>
     </div>
 <?php endif; ?>
 </body>
