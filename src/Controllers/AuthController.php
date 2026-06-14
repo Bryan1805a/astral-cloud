@@ -17,6 +17,7 @@ class AuthController {
             if ($_GET["msg"] === "verified_success") $success = "Account verified successfully! You can now log in.";
             if ($_GET["msg"] === "otp_sent") $success = "A verification code has been sent to your email.";
             if ($_GET["msg"] === "invalid_token") $error = "The verification link is invalid or has expired.";
+            if ($_GET["msg"] === "password_reset") $success = "Password reset successfully! You can now log in with your new password.";
         }
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {

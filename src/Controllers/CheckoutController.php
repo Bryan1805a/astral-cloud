@@ -297,6 +297,19 @@ class CheckoutController {
                 "Placed order #{$new_order_id} (total: " . number_format($total_price, 0, ",", ".") . " VND)"
             );
 
+            // Send order confirmation email
+            if (MailHelper::isConfigured()) {
+                $emailItems = [];
+                foreach ($cart_items as $item) {
+                    $emailItems[] = [
+                        'product_name' => $item['name'],
+                        'quantity'     => $item['quantity'],
+                        'unit_price'   => $item['price'],
+                    ];
+                }
+                MailHelper::sendOrderConfirmation($currentUser['email'], $currentUser['name'], $new_order_id, $total_price, $emailItems);
+            }
+
             $ipAddr    = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
             $appUrl    = getenv('APP_URL') ?: '';
             $returnUrl = getenv('VNP_RETURN_URL') ?: rtrim($appUrl, '/') . '/payment/vnpay-return';

@@ -73,6 +73,10 @@
     $router->get("/verify",                         [AuthController::class, "verify"]);
     $router->get("/verify-otp",                     [AuthController::class, "showOtpForm"]);
     $router->post("/verify-otp",                    [AuthController::class, "showOtpForm"]);
+    $router->get("/forgot-password",                [PasswordResetController::class, "forgot"]);
+    $router->post("/forgot-password",               [PasswordResetController::class, "forgot"]);
+    $router->get("/reset-password",                 [PasswordResetController::class, "reset"]);
+    $router->post("/reset-password",                [PasswordResetController::class, "reset"]);
 
     $router->get("/cart",                           [CartController::class, "index"]);
     $router->post("/cart/add",                      [CartController::class, "add"]);

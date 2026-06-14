@@ -24,6 +24,9 @@
             </div>
             <button type="submit" class="auth-btn">Login</button>
         </form>
-        <p class="auth-link">Don't have an account? <a href="/register">Register</a></p>
+        <p class="auth-link" style="display:flex;justify-content:space-between;">
+            <a href="/forgot-password">Forgot Password?</a>
+            <a href="/register">Register</a>
+        </p>
     </div>
 </section>

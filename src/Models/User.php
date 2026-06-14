@@ -121,4 +121,35 @@ class User {
         $stmt->execute(['id' => $id]);
         return $stmt->fetch() ?: null;
     }
+
+    // Set password reset token
+    public static function setResetToken(string $email, string $token): bool {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE users SET reset_token = :token, reset_token_expires = DATE_ADD(NOW(), INTERVAL 30 MINUTE) WHERE email = :email");
+        $stmt->execute(['token' => $token, 'email' => $email]);
+        return $stmt->rowCount() > 0;
+    }
+
+    // Find user by valid reset token
+    public static function findByResetToken(string $token): ?array {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT id, name, email FROM users WHERE reset_token = :token AND reset_token_expires > NOW() LIMIT 1");
+        $stmt->execute(['token' => $token]);
+        return $stmt->fetch() ?: null;
+    }
+
+    // Clear reset token after use
+    public static function clearResetToken(int $id): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE users SET reset_token = NULL, reset_token_expires = NULL WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+    }
+
+    // Force-set new password (for reset flow, no current password needed)
+    public static function forceUpdatePassword(int $id, string $newPassword): void {
+        $pdo = Database::getConnection();
+        $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("UPDATE users SET password = :password WHERE id = :id");
+        $stmt->execute(['password' => $hashed, 'id' => $id]);
+    }
 }
