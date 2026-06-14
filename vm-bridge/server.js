@@ -1,50 +1,21 @@
 const express = require('express');
 const http = require('http');
-const { exec, spawn } = require('child_process');
-const httpProxy = require('http-proxy');
+const { exec } = require('child_process');
+const { Client: SSHClient } = require('ssh2');
+const { WebSocketServer } = require('ws');
 
 const app = express();
 const port = 10001;
 
-// ── ttyd process store ──────────────────────────────────────────
-// serviceId -> { process, port, vmIp, startedAt }
-const ttydInstances = new Map();
-const TTYD_PORT_START = 10010;
-
-// ── Reverse proxy for ttyd ─────────────────────────────────────
-const proxy = httpProxy.createProxyServer({
-    ws: true,
-    timeout: 60000,
-    proxyTimeout: 60000,
-});
-
-proxy.on('error', (err, req, res) => {
-    if (!res) return;
-    if (typeof res.writeHead === 'function') {
-        if (!res.headersSent) {
-            res.writeHead(502, { 'Content-Type': 'text/plain' });
-            res.end('Console proxy error');
-        }
-    } else {
-        res.destroy();
-    }
-});
-
-function getTtydBinary() {
-    if (process.platform === 'win32') {
-        const path = require('path');
-        const exePath = path.join(__dirname, 'ttyd.exe');
-        if (require('fs').existsSync(exePath)) return exePath;
-        return 'ttyd.exe';
-    }
-    return 'ttyd';
-}
+// ── Console store ─────────────────────────────────────────────
+// serviceId -> { ip, hostname, password, startedAt }
+const consoleStore = new Map();
 
 function safeName(raw) {
     return (raw || '').replace(/[^a-zA-Z0-9._-]/g, '');
 }
 
-// VMware paths (customise these for your environment)
+// ── VMware paths ──────────────────────────────────────────────
 const VMRUN  = `"C:\\Program Files\\VMware\\VMware Workstation\\vmrun.exe"`;
 const BASE_VM = `"C:\\Users\\Bryan\\Documents\\Virtual Machines\\Ubuntu_Base\\Ubuntu_Base.vmx"`;
 const VM_DIR  = `C:\\Users\\Bryan\\Documents\\VMs`;
@@ -65,7 +36,6 @@ app.get('/provision', (req, res) => {
 
     console.log(`\n[+] Provisioning VM: ${vmName} (order=${orderId}, item=${itemId})...`);
 
-    // Step 1: linked clone from base VM
     const cloneCmd = `${VMRUN} clone ${BASE_VM} ${vmx} linked -snapshot=Base_Snapshot -cloneName=${vmName}`;
 
     exec(cloneCmd, (cloneErr, cloneOut, cloneErrOut) => {
@@ -75,7 +45,6 @@ app.get('/provision', (req, res) => {
             return res.status(500).json({ success: false, error: msg });
         }
 
-        // Step 2: start VM headless (nogui = no Workstation popup)
         const startCmd = `${VMRUN} start ${vmx} nogui`;
 
         exec(startCmd, (startErr, startOut, startErrOut) => {
@@ -112,129 +81,306 @@ app.get('/status', (req, res) => {
     });
 });
 
-// ── ttyd Console Management ───────────────────────────────────
+// ── Set root password on the VM (called after getting IP) ─────
+app.get('/set-root-password', (req, res) => {
+    const vmName = safeName(req.query.name);
+    const newPassword = req.query.password || 'astral123';
+    const basePassword = req.query.base_password || 'password';
 
+    if (!vmName) return res.json({ success: false, error: 'Missing name' });
+    const { vmx } = vmPaths(vmName);
+
+    const cmd = `${VMRUN} -gu root -gp "${basePassword}" runProgramInGuest ${vmx} /bin/sh -c "echo 'root:${newPassword.replace(/'/g, "'\\''")}' | chpasswd"`;
+
+    console.log(`[+] Setting root password for ${vmName}...`);
+    exec(cmd, { timeout: 30000 }, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`[-] Failed to set password for ${vmName}: ${error.message}`);
+            console.error(`    stderr: ${stderr || '(none)'}`);
+            return res.json({ success: false, error: error.message });
+        }
+        console.log(`[+] Root password set for ${vmName}`);
+        res.json({ success: true });
+    });
+});
+
+// ── Console management API (called by PHP backend) ────────────
 app.get('/ttyd/start', (req, res) => {
     const serviceId = String(req.query.service_id || '').replace(/[^0-9]/g, '');
     const vmIp      = req.query.ip || '';
     const vmName    = safeName(req.query.name) || `VPS_${serviceId}`;
+    const password  = req.query.password || 'astral123';
 
     if (!serviceId || !vmIp) {
         return res.json({ success: false, error: 'Missing service_id or ip' });
     }
 
-    if (ttydInstances.has(serviceId)) {
-        const existing = ttydInstances.get(serviceId);
-        return res.json({ success: true, port: existing.port });
-    }
-
-    let port = TTYD_PORT_START;
-    const used = new Set([...ttydInstances.values()].map(i => i.port));
-    while (used.has(port)) port++;
-
-    const ttydBin = getTtydBinary();
-    const knownHostsFile = process.platform === 'win32' ? 'NUL' : '/dev/null';
-    const ttyd = spawn(ttydBin, [
-        '-p', port.toString(),
-        '-W',
-        // omit -P (ping interval); ttyd 1.7 defaults are fine
-        '-i', '127.0.0.1',
-        'ssh',
-        '-o', 'StrictHostKeyChecking=no',
-        '-o', `UserKnownHostsFile=${knownHostsFile}`,
-        `root@${vmIp}`
-    ], {
-        // windowsHide (CREATE_NO_WINDOW) crashes ttyd 1.7 on Windows — omit it
-        stdio: ['ignore', 'ignore', 'pipe']
-    });
-
-    let stderrBuf = '';
-    ttyd.stderr.on('data', (chunk) => { stderrBuf += chunk.toString(); });
-
-    ttyd.on('error', (err) => {
-        console.error(`[-] ttyd spawn error for service #${serviceId}: ${err.message}`);
-        ttydInstances.delete(serviceId);
-    });
-
-    ttyd.on('exit', (code) => {
-        console.log(`[-] ttyd for service #${serviceId} exited (code ${code})`);
-        if (code !== 0) {
-            console.error(`  stderr: ${stderrBuf || '(none)'}`);
-        }
-        ttydInstances.delete(serviceId);
-    });
-
-    ttyd.unref();
-    ttydInstances.set(serviceId, { process: ttyd, port, vmIp, vmName, startedAt: new Date() });
-
-    console.log(`[+] ttyd started for service #${serviceId} → :${port} → root@${vmIp}`);
-    res.json({ success: true, port });
+    consoleStore.set(serviceId, { ip: vmIp, hostname: vmName, password, startedAt: new Date() });
+    console.log(`[+] Console registered for service #${serviceId} → ${vmIp}`);
+    res.json({ success: true, port: 0 });
 });
 
 app.get('/ttyd/stop', (req, res) => {
     const serviceId = String(req.query.service_id || '').replace(/[^0-9]/g, '');
     if (!serviceId) return res.json({ success: false, error: 'Missing service_id' });
 
-    if (ttydInstances.has(serviceId)) {
-        const inst = ttydInstances.get(serviceId);
-        try {
-            process.kill(-inst.process.pid, 'SIGTERM');
-        } catch (_) {
-            try { inst.process.kill('SIGTERM'); } catch (_2) {}
-        }
-        ttydInstances.delete(serviceId);
-        console.log(`[-] ttyd for service #${serviceId} stopped`);
-    }
+    consoleStore.delete(serviceId);
+    console.log(`[-] Console removed for service #${serviceId}`);
     res.json({ success: true });
 });
 
 app.get('/ttyd/status', (req, res) => {
     const serviceId = String(req.query.service_id || '').replace(/[^0-9]/g, '');
-    if (!serviceId || !ttydInstances.has(serviceId)) {
+    if (!serviceId || !consoleStore.has(serviceId)) {
         return res.json({ success: false, running: false });
     }
-    const inst = ttydInstances.get(serviceId);
-    const alive = !!inst.process && inst.process.exitCode === null;
-    if (!alive) {
-        ttydInstances.delete(serviceId);
-        return res.json({ success: false, running: false });
-    }
-    res.json({ success: true, running: true, port: inst.port, ip: inst.vmIp });
+    const info = consoleStore.get(serviceId);
+    res.json({ success: true, running: true, port: 0, ip: info.ip });
 });
 
-// ── Console Proxy: /console/:serviceId → ttyd on 127.0.0.1:PORT ──
-// app.use mounts on the prefix and strips it from req.url automatically.
-// This catches /console/123, /console/123/, /console/123/ws, etc.
+// ── xterm.js terminal page ────────────────────────────────────
+app.get('/console/:serviceId', (req, res) => {
+    const serviceId = String(req.params.serviceId || '').replace(/[^0-9]/g, '');
+    const info = consoleStore.get(serviceId);
 
-app.use('/console/:serviceId', (req, res) => {
-    const serviceId = req.params.serviceId.replace(/[^0-9]/g, '');
-    const inst = ttydInstances.get(serviceId);
-    if (!inst) {
-        return res.status(404).send('Console not found or not yet provisioned');
+    if (!info) {
+        return res.status(404).contentType('text/html').send(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Console</title>
+<style>body{background:#0c0c0c;color:#ef4444;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;}</style>
+</head><body><div style="text-align:center"><p style="font-size:18px">Console not found</p>
+<p style="color:#6b7280">The service may not be provisioned yet.</p></div></body></html>`);
     }
-    // req.url is now just the sub-path (e.g. /ws, /, or empty)
-    proxy.web(req, res, { target: `http://127.0.0.1:${inst.port}` });
+
+    res.contentType('text/html').send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${info.hostname} | Astral Cloud Console</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{background:#0c0c0c;}
+        #terminal{height:100vh;padding:4px;}
+        .xterm .xterm-viewport::-webkit-scrollbar{width:8px;}
+        .xterm .xterm-viewport::-webkit-scrollbar-thumb{background:#333;border-radius:4px;}
+        .xterm .xterm-viewport::-webkit-scrollbar-track{background:#0c0c0c;}
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.js"></script>
+    <script>
+(function(){
+    var term = new Terminal({
+        cursorBlink: true,
+        fontSize: 14,
+        fontFamily: "'Cascadia Code', 'Fira Code', 'Courier New', monospace",
+        theme: {
+            background: '#0c0c0c',
+            foreground: '#e0e0e0',
+            cursor: '#ffffff',
+            selectionBackground: '#38bdf8',
+            selectionForeground: '#000000',
+            black: '#1a1a2e',
+            red: '#ff6b6b',
+            green: '#4ade80',
+            yellow: '#fbbf24',
+            blue: '#60a5fa',
+            magenta: '#c084fc',
+            cyan: '#22d3ee',
+            white: '#e0e0e0',
+            brightBlack: '#374151',
+            brightRed: '#fca5a5',
+            brightGreen: '#86efac',
+            brightYellow: '#fde68a',
+            brightBlue: '#93c5fd',
+            brightMagenta: '#d8b4fe',
+            brightCyan: '#67e8f9',
+            brightWhite: '#ffffff'
+        },
+        allowProposedApi: true,
+        allowTransparency: false,
+        scrollback: 5000
+    });
+
+    var fitAddon = new FitAddon.FitAddon();
+    var webLinksAddon = new WebLinksAddon.WebLinksAddon();
+    term.loadAddon(fitAddon);
+    term.loadAddon(webLinksAddon);
+    term.open(document.getElementById('terminal'));
+    fitAddon.fit();
+
+    var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var wsUrl = proto + '//' + location.host + '/console/${serviceId}';
+    var ws;
+    var reconnectTimer;
+    var reconnectDelay = 1000;
+
+    function connect() {
+        if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = function() {
+            reconnectDelay = 1000;
+            term.writeln('\\r\\n\u001b[1;32mConnected to ${info.hostname} (${info.ip})\u001b[0m');
+            ws.send(JSON.stringify({ type: 'resize', cols: term.cols, rows: term.rows }));
+        };
+
+        ws.onmessage = function(ev) {
+            term.write(ev.data);
+        };
+
+        ws.onclose = function() {
+            term.writeln('\\r\\n\u001b[1;33mConnection lost. Reconnecting in ' + (reconnectDelay / 1000) + 's...\u001b[0m');
+            reconnectTimer = setTimeout(function() {
+                reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+                connect();
+            }, reconnectDelay);
+        };
+
+        ws.onerror = function() {
+            // onclose fires right after onerror, let onclose handle reconnection
+        };
+    }
+
+    term.onData(function(data) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'input', data: data }));
+        }
+    });
+
+    term.onResize(function(size) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'resize', cols: size.cols, rows: size.rows }));
+        }
+    });
+
+    window.addEventListener('resize', function() { fitAddon.fit(); });
+    connect();
+})();
+    </script>
+</body>
+</html>`);
 });
 
-// ── Start HTTP server ─────────────────────────────────────────
+// ── HTTP server ────────────────────────────────────────────────
 const server = http.createServer(app);
 
-// Handle WebSocket upgrades for the console proxy
-server.on('upgrade', (req, socket, head) => {
+// ── WebSocket terminal handler ─────────────────────────────────
+const wss = new WebSocketServer({ noServer: true });
+
+wss.on('connection', function(ws, req) {
     const match = req.url.match(/^\/console\/(\d+)/);
-    if (match) {
-        const serviceId = match[1];
-        const inst = ttydInstances.get(serviceId);
-        if (inst) {
-            const stripped = req.url.replace(new RegExp(`^/console/${serviceId}`), '');
-            req.url = stripped;
-            proxy.ws(req, socket, head, { target: `http://127.0.0.1:${inst.port}` });
-        } else {
-            socket.destroy();
+    if (!match) { ws.close(); return; }
+
+    const serviceId = match[1];
+    const info = consoleStore.get(serviceId);
+
+    if (!info) {
+        ws.send('\r\n\u001b[1;31mService not provisioned yet.\u001b[0m');
+        ws.close();
+        return;
+    }
+
+    console.log(`[+] Terminal: service #${serviceId} → ssh root@${info.ip}`);
+
+    const ssh = new SSHClient();
+    let sshStream;
+    let connected = false;
+
+    ssh.on('ready', function() {
+        connected = true;
+        ssh.shell({ term: 'xterm-256color', cols: 80, rows: 24 }, function(err, stream) {
+            if (err) {
+                ws.send('\r\n\u001b[1;31mShell error: ' + err.message + '\u001b[0m');
+                ws.close();
+                return;
+            }
+            sshStream = stream;
+
+            stream.on('data', function(data) {
+                if (ws.readyState === 1) ws.send(data.toString('utf-8'));
+            });
+
+            stream.stderr.on('data', function(data) {
+                if (ws.readyState === 1) ws.send(data.toString('utf-8'));
+            });
+
+            stream.on('close', function() {
+                console.log(`[-] SSH closed for #${serviceId}`);
+                ws.close();
+            });
+        });
+    });
+
+    ssh.on('error', function(err) {
+        console.error(`[-] SSH error #${serviceId}: ${err.message}`);
+        if (!connected) {
+            ws.send('\r\n\u001b[1;31mCannot connect to VM. It may still be booting.\r\n' +
+                    'Error: ' + err.message + '\u001b[0m');
         }
+        ws.close();
+    });
+
+    ssh.on('close', function() {
+        console.log(`[-] SSH connection closed for #${serviceId}`);
+    });
+
+    ws.on('message', function(msg) {
+        try {
+            var parsed = JSON.parse(msg);
+            if (parsed.type === 'input' && sshStream) {
+                sshStream.write(parsed.data);
+            } else if (parsed.type === 'resize' && sshStream) {
+                sshStream.setWindow(parsed.rows, parsed.cols);
+            }
+        } catch (_) {}
+    });
+
+    ws.on('close', function() {
+        if (sshStream) sshStream.end();
+        ssh.end();
+    });
+
+    ssh.connect({
+        host: info.ip,
+        port: 22,
+        username: 'root',
+        password: info.password || 'astral123',
+        readyTimeout: 15000,
+        keepaliveInterval: 10000,
+        algorithms: {
+            kex: [
+                'ecdh-sha2-nistp256', 'ecdh-sha2-nistp384', 'ecdh-sha2-nistp521',
+                'diffie-hellman-group-exchange-sha256', 'diffie-hellman-group14-sha256',
+                'diffie-hellman-group14-sha1'
+            ],
+            cipher: [
+                'aes128-ctr', 'aes192-ctr', 'aes256-ctr',
+                'aes128-gcm@openssh.com', 'aes256-gcm@openssh.com'
+            ],
+            serverHostKey: [
+                'ssh-rsa', 'ecdsa-sha2-nistp256', 'ssh-ed25519',
+                'rsa-sha2-512', 'rsa-sha2-256'
+            ]
+        }
+    });
+});
+
+server.on('upgrade', function(req, socket, head) {
+    if (req.url.match(/^\/console\/(\d+)/)) {
+        wss.handleUpgrade(req, socket, head, function(ws) {
+            wss.emit('connection', ws, req);
+        });
     } else {
         socket.destroy();
     }
 });
 
-server.listen(port, () => console.log(`VM Bridge API + ttyd proxy running on port ${port}...`));
+server.listen(port, function() {
+    console.log('VM Bridge API running on port ' + port + '...');
+});

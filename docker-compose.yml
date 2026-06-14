@@ -31,6 +31,7 @@ services:
       - VNP_URL=${VNP_URL}
       - VNP_RETURN_URL=${VNP_RETURN_URL}
       - VM_BRIDGE_URL=${VM_BRIDGE_URL}
+      - VM_BASE_PASSWORD=${VM_BASE_PASSWORD}
       - TTYD_EXTERNAL_URL=${TTYD_EXTERNAL_URL}
 
   # MySQL
@@ -69,6 +70,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
       - VM_BRIDGE_URL=${VM_BRIDGE_URL}
+      - VM_BASE_PASSWORD=${VM_BASE_PASSWORD}
 
   # phpMyAdmin
   phpmyadmin:

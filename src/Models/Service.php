@@ -2,7 +2,7 @@
 class Service {
 
     public static function setProvisioningStatus(int $serviceId, string $status): void {
-        $valid = ['pending','creating_vm','booting','waiting_ip','preparing_console','ready'];
+        $valid = ['pending','creating_vm','booting','waiting_ip','setting_password','preparing_console','ready'];
         if (!in_array($status, $valid)) return;
         $pdo = Database::getConnection();
         $pdo->prepare("UPDATE services SET provisioning_status = ? WHERE id = ?")
@@ -86,16 +86,26 @@ class Service {
             $pdo->prepare("UPDATE services SET ip_address = ? WHERE id = ?")->execute([$ip, $serviceId]);
             error_log("[AstralCloud] Service #{$serviceId}: got IP = {$ip}");
 
-            // Step 3: Start ttyd console
-            self::setProvisioningStatus($serviceId, 'preparing_console');
-            $port = TtydHelper::startConsole($serviceId, $ip, $hostname);
+            // Step 3: Set root password on the VM (base VM has a different password)
+            self::setProvisioningStatus($serviceId, 'setting_password');
+            $basePassword = getenv('VM_BASE_PASSWORD') ?: 'password';
+            $setPassUrl = $vmBridgeUrl . '/set-root-password'
+                . '?name=' . urlencode($hostname)
+                . '&password=' . urlencode($password)
+                . '&base_password=' . urlencode($basePassword);
+            $ctx = stream_context_create(['http' => ['timeout' => 30]]);
+            @file_get_contents($setPassUrl, false, $ctx);
 
-            if ($port !== null) {
-                $pdo->prepare("UPDATE services SET console_port = ?, status = 'running', provisioning_status = 'ready' WHERE id = ?")
-                    ->execute([$port, $serviceId]);
-                error_log("[AstralCloud] Service #{$serviceId}: provisioned on port {$port}");
+            // Step 4: Register console with VM Bridge
+            self::setProvisioningStatus($serviceId, 'preparing_console');
+            $result = TtydHelper::startConsole($serviceId, $ip, $hostname, $password);
+
+            if ($result !== null) {
+                $pdo->prepare("UPDATE services SET console_port = 1, status = 'running', provisioning_status = 'ready' WHERE id = ?")
+                    ->execute([$serviceId]);
+                error_log("[AstralCloud] Service #{$serviceId}: console registered → {$ip}");
             } else {
-                error_log("[AstralCloud] Service #{$serviceId}: ttyd start failed (cron will retry)");
+                error_log("[AstralCloud] Service #{$serviceId}: console registration failed (cron will retry)");
             }
         }
     }
@@ -154,24 +164,35 @@ class Service {
                 }
             }
 
-            // ── Step 2: We have IP — start ttyd console ──────────
+            // ── Step 2: We have IP — set password + register console ─
             if ($hasIp && empty($s['console_port'])) {
-                self::setProvisioningStatus($s['id'], 'preparing_console');
-
                 // Re-fetch the service to get the now-updated IP
                 $stmtIp = $pdo->prepare("SELECT ip_address FROM services WHERE id = ?");
                 $stmtIp->execute([$s['id']]);
                 $row = $stmtIp->fetch();
                 $ip = $row['ip_address'];
 
-                $port = TtydHelper::startConsole($s['id'], $ip, $s['hostname']);
+                // Set root password on the VM
+                self::setProvisioningStatus($s['id'], 'setting_password');
+                $basePassword = getenv('VM_BASE_PASSWORD') ?: 'password';
+                $setPassUrl = $vmBridgeUrl . '/set-root-password'
+                    . '?name=' . urlencode($s['hostname'])
+                    . '&password=' . urlencode($s['root_password'])
+                    . '&base_password=' . urlencode($basePassword);
+                $ctx = stream_context_create(['http' => ['timeout' => 30]]);
+                @file_get_contents($setPassUrl, false, $ctx);
+
+                // Register console
+                self::setProvisioningStatus($s['id'], 'preparing_console');
+
+                $port = TtydHelper::startConsole($s['id'], $ip, $s['hostname'], $s['root_password']);
 
                 if ($port !== null) {
-                    $pdo->prepare("UPDATE services SET console_port = ?, status = 'running', provisioning_status = 'ready' WHERE id = ?")
-                        ->execute([$port, $s['id']]);
-                    cronLog("  Service #{$s['id']}: IP={$ip}, ttyd on port {$port}");
+                    $pdo->prepare("UPDATE services SET console_port = 1, status = 'running', provisioning_status = 'ready' WHERE id = ?")
+                        ->execute([$s['id']]);
+                    cronLog("  Service #{$s['id']}: IP={$ip}, console registered");
                 } else {
-                    cronLog("  Service #{$s['id']}: IP={$ip} (ttyd start failed, will retry)");
+                    cronLog("  Service #{$s['id']}: IP={$ip} (console registration failed, will retry)");
                 }
             }
         }

@@ -50,6 +50,7 @@
         'creating_vm'      => ['Creating VM',       'VM is being cloned from base image'],
         'booting'          => ['Booting VM',         'Virtual machine is starting up'],
         'waiting_ip'       => ['Waiting for IP',     'Obtaining IP address from DHCP'],
+        'setting_password' => ['Setting Password',   'Configuring root credentials'],
         'preparing_console'=> ['Preparing Console',  'Starting web terminal service'],
         'ready'            => ['Ready',              'Console is available'],
     ];
@@ -59,16 +60,16 @@
     ?>
     <div class="console-wrap">
         <div style="text-align:center;">
-            <div style="font-size:56px;margin-bottom:16px;"><?= $statusIndex < 4 ? '⏳' : '✅' ?></div>
+            <div style="font-size:56px;margin-bottom:16px;"><?= $statusIndex < 5 ? '⏳' : '✅' ?></div>
             <h1 style="font-size:24px;font-weight:700;margin-bottom:32px;">Provisioning Your VPS</h1>
             <div class="step-list">
                 <?php $i = 0; foreach ($steps as $key => $step): ?>
                     <div class="step <?= $i < $statusIndex ? 'done' : ($i === $statusIndex ? 'active' : 'pending') ?>">
                         <span class="step-icon"><?= $i < $statusIndex ? '✓' : ($i === $statusIndex ? '▶' : '○') ?></span>
                         <span><strong><?= $step[0] ?></strong> — <?= $step[1] ?></span>
-                        <?php if ($i === $statusIndex && $i < 4): ?>
+                        <?php if ($i === $statusIndex && $i < 5): ?>
                             <span class="badge-progress"><span class="spinner"></span> in progress</span>
-                        <?php elseif ($i === $statusIndex && $i === 4): ?>
+                        <?php elseif ($i === $statusIndex && $i === 5): ?>
                             <span class="badge-progress">done</span>
                         <?php endif; ?>
                     </div>

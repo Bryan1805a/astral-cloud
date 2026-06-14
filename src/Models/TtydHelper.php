@@ -27,24 +27,25 @@ class TtydHelper {
 
     // ── Console lifecycle ─────────────────────────────────────
 
-    public static function startConsole(int $serviceId, string $ip, string $hostname): ?int {
+    public static function startConsole(int $serviceId, string $ip, string $hostname, string $password): ?int {
         $bridgeUrl = self::getBridgeUrl();
         $url = $bridgeUrl . '/ttyd/start'
             . '?service_id=' . $serviceId
             . '&ip=' . urlencode($ip)
-            . '&name=' . urlencode($hostname);
+            . '&name=' . urlencode($hostname)
+            . '&password=' . urlencode($password);
 
         $ctx = stream_context_create(['http' => ['timeout' => 30]]);
         $response = @file_get_contents($url, false, $ctx);
 
         if ($response === false) {
-            error_log("TtydHelper: failed to start console for service #{$serviceId}");
+            error_log("TtydHelper: failed to register console for service #{$serviceId}");
             return null;
         }
 
         $data = json_decode($response, true);
-        if ($data && !empty($data['success']) && !empty($data['port'])) {
-            return (int) $data['port'];
+        if ($data && !empty($data['success'])) {
+            return 1;
         }
 
         error_log("TtydHelper: unexpected response for service #{$serviceId}: " . ($response ?? 'null'));

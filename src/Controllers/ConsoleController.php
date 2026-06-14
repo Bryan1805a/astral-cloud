@@ -24,7 +24,7 @@ class ConsoleController {
 
             if ($service) {
                 $provisioningStatus = $service['provisioning_status'] ?? 'pending';
-                if (!empty($service['console_port']) && $provisioningStatus === 'ready') {
+                if ($provisioningStatus === 'ready') {
                     $consoleUrl = TtydHelper::generateConsoleUrl((int) $service['id']);
                 }
             }
