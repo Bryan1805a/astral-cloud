@@ -43,9 +43,9 @@
                         <svg width="10" height="6" viewBox="0 0 10 6" style="margin-left:4px;"><path d="M1 1l4 4 4-4" stroke="#6b7280" stroke-width="1.5" fill="none"/></svg>
                     </button>
                     <div class="user-dropdown-menu" style="display:none;position:absolute;right:0;top:110%;min-width:180px;background:#151515;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:8px;z-index:10000;backdrop-filter:blur(18px);">
-                        <a href="/orders" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">My Orders</a>
-                        <a href="/inbox" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">Inbox</a>
-                        <a href="/cart" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">Cart</a>
+                        <a href="/profile" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">👤 My Profile</a>
+                        <a href="/orders" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">📦 My Orders</a>
+                        <a href="/inbox" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">📬 Inbox</a>
                         <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 8px;"></div>
                         <a href="/logout" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#ef4444;transition:all 0.15s;">Logout</a>
                     </div>

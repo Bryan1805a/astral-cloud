@@ -98,4 +98,27 @@ class User {
         $stmt = $pdo->prepare("UPDATE users SET is_verified = 1, verification_token = NULL WHERE email = ?");
         $stmt->execute([$email]);
     }
+
+    // Update profile (name, phone)
+    public static function updateProfile(int $id, string $name, ?string $phone): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE users SET name = :name, phone = :phone WHERE id = :id");
+        $stmt->execute(['name' => $name, 'phone' => $phone, 'id' => $id]);
+    }
+
+    // Change password
+    public static function updatePassword(int $id, string $newPassword): void {
+        $pdo = Database::getConnection();
+        $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("UPDATE users SET password = :password WHERE id = :id");
+        $stmt->execute(['password' => $hashed, 'id' => $id]);
+    }
+
+    // Get full profile for profile page
+    public static function getProfile(int $id): ?array {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT id, name, email, password, phone, role, tier, total_spent, created_at FROM users WHERE id = :id LIMIT 1");
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch() ?: null;
+    }
 }

@@ -97,6 +97,9 @@
     $router->get("/inbox",                          [InboxController::class, "index"]);
     $router->post("/inbox/read",                    [InboxController::class, "markRead"]);
 
+    $router->get("/profile",                        [ProfileController::class, "index"]);
+    $router->post("/profile/update",                [ProfileController::class, "update"]);
+
     $router->get("/console",                        [ConsoleController::class, "index"]);
 
     // Routes for admin
