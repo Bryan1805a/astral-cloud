@@ -3,54 +3,35 @@ document.addEventListener('DOMContentLoaded', function () {
     // Add to cart
     document.querySelectorAll('.js-add-cart').forEach(function (form) {
         form.addEventListener('submit', function (e) {
+            var btn = form.querySelector('.btn') || form.querySelector('button[type="submit"]');
+            if (!btn) return;
+
             e.preventDefault();
 
-            var btn = form.querySelector('.btn');
             var originalHtml = btn.innerHTML;
-
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Adding...';
+            btn.innerHTML = 'Adding...';
 
             var formData = new FormData(form);
-            var token = getCsrfToken();
-
-            if (!token) {
-                // Fallback: submit normally if no CSRF field detected
-                form.submit();
-                return;
-            }
 
             fetch(form.action, {
                 method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 body: formData,
             })
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data.success) {
-                    btn.innerHTML = '<i class="bi bi-check-lg"></i> Added!';
-                    btn.classList.remove('btn-info');
-                    btn.classList.add('btn-success');
-                    setTimeout(function () {
-                        btn.innerHTML = originalHtml;
-                        btn.classList.remove('btn-success');
-                        btn.classList.add('btn-info');
-                        btn.disabled = false;
-                    }, 2000);
+                    btn.innerHTML = 'Added!';
+                    btn.disabled = false;
                     updateCartBadge(data.count);
                     showToast(data.message, 'success');
                 } else {
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
-                    showToast(data.message, 'danger');
+                    form.submit();
                 }
             })
             .catch(function () {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-                showToast('Network error. Please try again.', 'danger');
+                form.submit();
             });
         });
     });

@@ -84,7 +84,7 @@
                                                 <option value="cancelled" <?= $s == 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
                                             </select>
                                             <button type="submit" class="btn-icon">Save</button>
-                                            <a href="/admin/orders/invoice?id=<?= $order['order_id'] ?>" class="btn-icon" target="_blank">📄</a>
+                                            <a href="/admin/orders/invoice?id=<?= $order['order_id'] ?>" class="btn-icon" target="_blank">Invoice</a>
                                         </form>
                                     </td>
                                 </tr>

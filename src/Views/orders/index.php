@@ -59,7 +59,7 @@
 <body>
     <div class="orders-wrap">
         <div class="orders-header">
-            <h1>🖥️ Your <span>Services</span></h1>
+            <h1>Your <span>Services</span></h1>
             <a href="/" class="back-link">← Back to Home</a>
         </div>
 
@@ -136,7 +136,7 @@
                         </div>
 
                         <div class="order-actions">
-                            <a href="/orders/invoice?id=<?= $order['order_id'] ?>" class="action-btn secondary">📄 Invoice</a>
+                            <a href="/orders/invoice?id=<?= $order['order_id'] ?>" class="action-btn secondary">Invoice</a>
                             <?php if ($status === 'success' || $status === 'active'): ?>
                                 <button class="action-btn primary" onclick="window.location.href='/console?id=<?= $currentService ? (int)$currentService['id'] : 0 ?>'">▶ Console</button>
                             <?php elseif ($status === 'pending'): ?>
@@ -146,7 +146,7 @@
                                     <button type="submit" class="action-btn danger" style="width:100%;">✕ Cancel</button>
                                 </form>
                             <?php else: ?>
-                                <button class="action-btn secondary" disabled>⏳ Waiting...</button>
+                                <button class="action-btn secondary" disabled>Waiting...</button>
                             <?php endif; ?>
                         </div>
                     </div>

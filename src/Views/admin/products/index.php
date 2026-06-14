@@ -119,10 +119,14 @@
                                 <label style="display:block;margin-bottom:6px;color:#b8b8b8;font-size:13px;">Bandwidth</label>
                                 <input type="text" name="bandwidth" class="form-control" required placeholder="E.g.: 1 Gbps">
                             </div>
-                            <div class="col-md-6 d-flex" style="align-items:flex-end;">
+                            <div class="col-md-4">
+                                <label style="display:block;margin-bottom:6px;color:#b8b8b8;font-size:13px;">Stock</label>
+                                <input type="number" name="stock" class="form-control" value="100">
+                            </div>
+                            <div class="col-md-2 d-flex" style="align-items:flex-end;">
                                 <label style="display:flex;align-items:center;gap:10px;color:#b8b8b8;font-size:14px;">
                                     <input type="checkbox" name="is_active" class="form-check-input" checked style="width:40px;height:20px;">
-                                    Enable immediately
+                                    Enable
                                 </label>
                             </div>
                             <div class="col-12">

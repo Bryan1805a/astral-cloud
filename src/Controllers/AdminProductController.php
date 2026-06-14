@@ -38,7 +38,7 @@ class AdminProductController {
                 'storage' => $_POST['storage'],
                 'bandwidth' => $_POST['bandwidth'],
                 'price' => $_POST['price'],
-                'stock' => $_POST['stock'] !== '' ? (int)$_POST['stock'] : 100,
+                'stock' => (int)($_POST['stock'] ?? 100),
                 'is_active' => isset($_POST['is_active']) ? 1 : 0,
                 'created_by' => $_SESSION['user_id']
             ];

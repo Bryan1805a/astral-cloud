@@ -117,33 +117,33 @@ class CheckoutController {
         }
 
         if (!$voucher_code) {
-            jsonResponse(["success" => true, "discount" => 0, "total" => $subtotal, "code" => ""]);
+            jsonResponse(["success" => true, "discount" => 0, "total" => $subtotal, "subtotal" => $subtotal, "code" => ""]);
         }
 
         $voucher = Voucher::findByCode($voucher_code);
 
         if (!$voucher) {
-            jsonResponse(["success" => false, "message" => "The discount code does not exist."]);
+            jsonResponse(["success" => false, "message" => "The discount code does not exist.", "subtotal" => $subtotal]);
         }
 
         if (strtotime($voucher["expiry_date"]) < strtotime("today")) {
-            jsonResponse(["success" => false, "message" => "The voucher has expired."]);
+            jsonResponse(["success" => false, "message" => "The voucher has expired.", "subtotal" => $subtotal]);
         }
 
         if ($voucher["quantity"] <= $voucher["used_count"]) {
-            jsonResponse(["success" => false, "message" => "The voucher has run out."]);
+            jsonResponse(["success" => false, "message" => "The voucher has run out.", "subtotal" => $subtotal]);
         }
 
         if ($subtotal < $voucher["min_order_value"]) {
-            jsonResponse(["success" => false, "message" => "Minimum order not met (requires " . number_format($voucher["min_order_value"], 0, ",", ".") . " VND)."]);
+            jsonResponse(["success" => false, "message" => "Minimum order not met (requires " . number_format($voucher["min_order_value"], 0, ",", ".") . " VND).", "subtotal" => $subtotal]);
         }
 
         if ($voucher["applicable_tier"] !== "all" && $voucher["applicable_tier"] !== $currentUser["tier"]) {
-            jsonResponse(["success" => false, "message" => "This code is only for tier " . strtoupper($voucher["applicable_tier"]) . "."]);
+            jsonResponse(["success" => false, "message" => "This code is only for tier " . strtoupper($voucher["applicable_tier"]) . ".", "subtotal" => $subtotal]);
         }
 
         if (Voucher::getUsageCount($voucher["id"], $user_id) >= $voucher["usage_limit_per_user"]) {
-            jsonResponse(["success" => false, "message" => "You have reached the usage limit for this voucher."]);
+            jsonResponse(["success" => false, "message" => "You have reached the usage limit for this voucher.", "subtotal" => $subtotal]);
         }
 
         $discount = 0;

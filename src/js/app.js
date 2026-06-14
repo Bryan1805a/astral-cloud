@@ -101,6 +101,18 @@ styleSheet.textContent = `
 document.head.appendChild(styleSheet);
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Initialize cart badge count on page load
+    fetch('/cart/count', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        if (typeof data.count === 'number') {
+            updateCartBadge(data.count);
+        }
+    })
+    .catch(function () {});
+
     // Voucher AJAX on checkout
     var voucherForm = document.getElementById('voucher-form');
     if (voucherForm) {
@@ -137,8 +149,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 btn.disabled = false;
                 btn.innerHTML = 'Apply';
 
+                var hiddenVoucher = document.getElementById('hidden-voucher');
+
                 if (data.success && data.code) {
-                    var hiddenVoucher = document.getElementById('hidden-voucher');
                     if (hiddenVoucher) hiddenVoucher.value = data.code;
                     if (successEl) {
                         successEl.textContent = data.message;
@@ -154,12 +167,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     if (totalEl) totalEl.textContent = formatCurrency(data.total);
                 } else if (!data.success) {
-                    var hiddenVoucher = document.getElementById('hidden-voucher');
                     if (hiddenVoucher) hiddenVoucher.value = '';
                     if (errorEl) {
                         errorEl.textContent = data.message;
                         errorEl.style.display = 'block';
                     }
+                    if (successEl) successEl.style.display = 'none';
+                    if (discountRow) discountRow.style.display = 'none';
+                    if (totalEl) totalEl.textContent = formatCurrency(data.subtotal || 0);
+                } else {
+                    if (hiddenVoucher) hiddenVoucher.value = '';
+                    if (errorEl) errorEl.style.display = 'none';
                     if (successEl) successEl.style.display = 'none';
                     if (discountRow) discountRow.style.display = 'none';
                     if (totalEl) totalEl.textContent = formatCurrency(data.subtotal || 0);

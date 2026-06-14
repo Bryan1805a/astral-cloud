@@ -115,14 +115,15 @@ class AuthController {
                             "expires_at" => time() + 300,
                         ];
 
+                        header("Location: /verify-otp");
+
+                        if (ob_get_level()) ob_end_flush();
+                        flush();
+
                         $smtpUser = getenv("SMTP_USER") ?: "";
 
-                        if (empty($smtpUser)) {
-                            header("Location: /verify-otp");
-                            exit;
-                        } else {
+                        if (!empty($smtpUser)) {
                             $mail = new PHPMailer(true);
-                            
 
                             try {
                                 $mail->isSMTP();
@@ -161,8 +162,6 @@ class AuthController {
                                 ];
 
                                 $mail->send();
-                                header("Location: /verify-otp");
-                                exit;
                             } catch (Exception $e) {
                                 error_log("AuthController registration email (port 465) failed: " . $e->getMessage());
 
@@ -190,15 +189,13 @@ class AuthController {
                                     $mail2->Body    = $mail->Body;
 
                                     $mail2->send();
-                                    header("Location: /verify-otp");
-                                    exit;
                                 } catch (Exception $e2) {
                                     error_log("AuthController registration email (port 587) also failed: " . $e2->getMessage());
-                                    header("Location: /verify-otp");
-                                    exit;
                                 }
                             }
                         }
+
+                        exit;
                     }
                 } catch (PDOException $e) {
                     $error = "A system error has occurred. Please try again later.";
