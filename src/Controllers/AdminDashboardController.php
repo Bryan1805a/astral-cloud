@@ -2,13 +2,11 @@
 
 class AdminDashboardController {
     private function checkAdmin() {
-        // Redirect to login page if user not login
         if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {
             header("Location: /login");
             exit;
         }
 
-        // Check user role
         if ($_SESSION["user_role"] !== "admin" && $_SESSION["user_role"] !== "staff") {
             die("403 - No access.");
         }
@@ -17,23 +15,47 @@ class AdminDashboardController {
     public function index() {
         $this->checkAdmin();
 
-        // Get summary
-        $stats = Report::getSummaryStats();
-        $topProducts = Report::getTopSellingProducts();
-        $worstProducts = Report::getWorstSellingProducts();
+        $stats          = Report::getSummaryStats();
+        $topProducts    = Report::getTopSellingProducts();
+        $worstProducts  = Report::getWorstSellingProducts();
+        $orderBreakdown = Report::getOrderStatusBreakdown();
+        $serviceCounts  = Report::getServiceStatusCounts();
+        $recentActivity = Report::getRecentActivity(10);
+        $revenueComp    = Report::getMonthlyComparison();
+        $allProductSales= Report::getAllProductSales();
+        $topCustomers   = Report::getTopCustomers(6);
 
-        // Get data for chart
         $monthlyRevenue = Report::getMonthlyRevenue();
         $chartLabels = [];
-        $chartData = [];
+        $chartData   = [];
         foreach ($monthlyRevenue as $row) {
             $chartLabels[] = $row["month"];
-            $chartData[] = (float)$row["revenue"];
+            $chartData[]   = (float) $row["revenue"];
         }
 
-        // Convert PHP arrays to JSON for the view
         $chartLabelsJson = json_encode($chartLabels);
-        $chartDataJson = json_encode($chartData);
+        $chartDataJson   = json_encode($chartData);
+        $orderLabelsJson = json_encode(array_column($orderBreakdown, 'status'));
+        $orderDataJson   = json_encode(array_column($orderBreakdown, 'count'));
+
+        // System health
+        $dbOk = false;
+        try {
+            Database::getConnection()->query("SELECT 1");
+            $dbOk = true;
+        } catch (Throwable $e) {}
+
+        $bridgeUrl = getenv('VM_BRIDGE_URL') ?: 'http://host.docker.internal:10001';
+        $bridgeOk = false;
+        $ctx = stream_context_create(['http' => ['timeout' => 3]]);
+        $result = @file_get_contents($bridgeUrl . '/ttyd/status?service_id=0', false, $ctx);
+        $bridgeOk = $result !== false;
+
+        $systemHealth = [
+            'database'  => $dbOk,
+            'vm_bridge' => $bridgeOk,
+            'bridge_url' => $bridgeUrl,
+        ];
 
         require_once __DIR__ . "/../Views/admin/dashboard/index.php";
     }

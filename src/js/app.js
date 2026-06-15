@@ -113,6 +113,116 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .catch(function () {});
 
+    // Review buttons + modal
+    var reviewModal = document.getElementById('review-modal');
+    var reviewModalClose = document.getElementById('review-modal-close');
+    var reviewForm = document.getElementById('review-form');
+    var reviewError = document.getElementById('review-error');
+    var reviewModalTitle = document.getElementById('review-modal-title');
+    var reviewModalReviews = document.getElementById('review-modal-reviews');
+    var reviewModalForm = document.getElementById('review-modal-form');
+
+    function renderStars(rating) {
+        var html = '';
+        for (var i = 1; i <= 5; i++) {
+            html += '<span class="star ' + (i > rating ? 'empty' : '') + '">★</span>';
+        }
+        return html;
+    }
+
+    var reviewsBtns = document.querySelectorAll('.reviews-btn');
+    reviewsBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var productId = this.getAttribute('data-product');
+            var card = document.getElementById('plan-' + productId);
+            if (!card) return;
+
+            var reviewsData = [];
+            var canReviewData = null;
+            try { reviewsData = JSON.parse(card.getAttribute('data-reviews') || '[]'); } catch (e) {}
+            try { canReviewData = JSON.parse(card.getAttribute('data-can-review') || 'null'); } catch (e) {}
+
+            var productName = (card.querySelector('h2') || {}).textContent || 'Product #' + productId;
+
+            reviewModalTitle.textContent = 'Reviews — ' + productName;
+
+            if (reviewsData.length === 0) {
+                reviewModalReviews.innerHTML = '<p class="review-empty-text">No reviews yet. Be the first to review!</p>';
+            } else {
+                var html = '<div class="reviews-list">';
+                reviewsData.forEach(function (r) {
+                    html += '<div class="review-item">';
+                    html += '  <div class="review-header">';
+                    html += '    <span class="review-author">' + (r.user_name || 'Anonymous').replace(/</g, '&lt;') + '</span>';
+                    html += '    <span class="review-date">' + (r.created_at || '').substring(0, 10).split('-').reverse().join('/') + '</span>';
+                    html += '  </div>';
+                    html += '  <div class="review-item-stars">' + renderStars(r.rating) + '</div>';
+                    html += '  <p class="review-comment">' + (r.comment || '').replace(/</g, '&lt;').replace(/\n/g, '<br>') + '</p>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                reviewModalReviews.innerHTML = html;
+            }
+
+            if (reviewForm) {
+                document.getElementById('review-product-id').value = productId;
+                if (canReviewData && canReviewData.order_id) {
+                    document.getElementById('review-order-id').value = canReviewData.order_id;
+                }
+            }
+            if (reviewModalForm) {
+                reviewModalForm.style.display = canReviewData ? 'block' : 'none';
+            }
+
+            reviewModal.style.display = 'flex';
+        });
+    });
+
+    if (reviewModalClose) {
+        reviewModalClose.addEventListener('click', function () {
+            reviewModal.style.display = 'none';
+        });
+        reviewModal.addEventListener('click', function (e) {
+            if (e.target === reviewModal) {
+                reviewModal.style.display = 'none';
+            }
+        });
+    }
+
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (reviewError) reviewError.style.display = 'none';
+
+            var formData = new FormData(reviewForm);
+
+            fetch('/review/submit', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    reviewModal.style.display = 'none';
+                    showToast(data.message, 'success');
+                    setTimeout(function () { location.reload(); }, 1000);
+                } else {
+                    if (reviewError) {
+                        reviewError.textContent = data.message;
+                        reviewError.style.display = 'block';
+                    }
+                }
+            })
+            .catch(function () {
+                if (reviewError) {
+                    reviewError.textContent = 'Network error. Please try again.';
+                    reviewError.style.display = 'block';
+                }
+            });
+        });
+    }
+
     // Voucher AJAX on checkout
     var voucherForm = document.getElementById('voucher-form');
     if (voucherForm) {

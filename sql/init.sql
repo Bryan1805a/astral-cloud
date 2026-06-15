@@ -621,6 +621,125 @@ INSERT INTO vouchers (code, description, discount_type, discount_value, min_orde
 ('DIAMOND20',  'Diamond customers receive a 20% discount',          'percent', 20.00, 500000,  200000, 999, 5, 'diamond', DATE_ADD(CURDATE(), INTERVAL 180 DAY)),
 ('GOLDUP',     'Gold/Diamond customers receive a 15% discount.','percent', 15.00, 300000,  150000, 500, 3, 'gold',    DATE_ADD(CURDATE(), INTERVAL 120 DAY));
 
+-- Demo completed orders (for review seeding)
+INSERT INTO orders (id, user_id, subtotal, discount_amount, total_price, status, created_at) VALUES
+(1, 3,  99000, 0,  99000, 'success', '2026-06-10'),
+(2, 4, 199000, 0, 199000, 'success', '2026-06-11'),
+(3, 5, 499000, 0, 499000, 'success', '2026-06-12'),
+(4, 4,  99000, 0,  99000, 'success', '2026-06-13'),
+(5, 5, 799000, 0, 799000, 'success', '2026-06-13'),
+(6, 3, 199000, 0, 199000, 'success', '2026-06-14'),
+(7, 5, 999000, 0, 999000, 'success', '2026-06-14');
+
+-- Historical orders (for revenue chart across months)
+INSERT INTO orders (id, user_id, subtotal, discount_amount, total_price, status, created_at) VALUES
+-- Nov 2025
+(8, 3,  99000, 0,  99000, 'success', '2025-11-05'),
+(9, 4, 199000, 0, 199000, 'success', '2025-11-12'),
+(10,5, 499000, 0, 499000, 'success', '2025-11-18'),
+(11,4,  99000, 0,  99000, 'success', '2025-11-25'),
+-- Dec 2025
+(12,3, 199000, 0, 199000, 'success', '2025-12-03'),
+(13,5, 999000, 0, 999000, 'success', '2025-12-08'),
+(14,4,  99000, 0,  99000, 'success', '2025-12-14'),
+(15,5, 799000, 0, 799000, 'success', '2025-12-19'),
+(16,3,  99000, 0,  99000, 'success', '2025-12-27'),
+-- Jan 2026
+(17,4, 499000, 0, 499000, 'success', '2026-01-04'),
+(18,5,2999000,0,2999000,'success', '2026-01-07'),
+(19,3, 199000, 0, 199000, 'success', '2026-01-11'),
+(20,4, 799000, 0, 799000, 'success', '2026-01-16'),
+(21,5,  99000, 0,  99000, 'success', '2026-01-20'),
+(22,3,  99000, 0,  99000, 'success', '2026-01-26'),
+-- Feb 2026
+(23,5, 999000, 0, 999000, 'success', '2026-02-02'),
+(24,4, 199000, 0, 199000, 'success', '2026-02-10'),
+(25,3,  99000, 0,  99000, 'success', '2026-02-22'),
+-- Mar 2026
+(26,5, 799000, 0, 799000, 'success', '2026-03-01'),
+(27,4, 499000, 0, 499000, 'success', '2026-03-05'),
+(28,3,2999000,0,2999000,'success', '2026-03-09'),
+(29,5, 199000, 0, 199000, 'success', '2026-03-13'),
+(30,4,  99000, 0,  99000, 'success', '2026-03-18'),
+(31,3, 999000, 0, 999000, 'success', '2026-03-23'),
+-- Apr 2026
+(32,5, 499000, 0, 499000, 'success', '2026-04-02'),
+(33,4, 199000, 0, 199000, 'success', '2026-04-08'),
+(34,3, 799000, 0, 799000, 'success', '2026-04-14'),
+(35,5,  99000, 0,  99000, 'success', '2026-04-19'),
+(36,4, 999000, 0, 999000, 'success', '2026-04-25'),
+-- May 2026
+(37,5,2999000,0,2999000,'success', '2026-05-01'),
+(38,4, 799000, 0, 799000, 'success', '2026-05-06'),
+(39,3, 499000, 0, 499000, 'success', '2026-05-10'),
+(40,5, 999000, 0, 999000, 'success', '2026-05-14'),
+(41,4,  99000, 0,  99000, 'success', '2026-05-18'),
+(42,3, 199000, 0, 199000, 'success', '2026-05-23'),
+(43,5, 199000, 0, 199000, 'success', '2026-05-28');
+
+INSERT INTO order_items (order_id, product_id, product_name, product_cpu, product_ram, product_storage, unit_price, quantity, subtotal) VALUES
+-- Existing (1-7)
+(1, 1, 'VPS Starter',   '1 vCPU', '1 GB',  '20 GB SSD',        99000, 1,  99000),
+(2, 2, 'VPS Basic',     '2 vCPU', '2 GB',  '40 GB SSD',       199000, 1, 199000),
+(3, 3, 'VPS Pro',       '4 vCPU', '8 GB',  '80 GB SSD NVMe',  499000, 1, 499000),
+(4, 1, 'VPS Starter',   '1 vCPU', '1 GB',  '20 GB SSD',        99000, 1,  99000),
+(5, 6, 'VPS Gaming',    '6 vCPU', '12 GB', '100 GB SSD NVMe', 799000, 1, 799000),
+(6, 2, 'VPS Basic',     '2 vCPU', '2 GB',  '40 GB SSD',       199000, 1, 199000),
+(7, 4, 'VPS Business',  '8 vCPU', '16 GB', '160 GB SSD NVMe', 999000, 1, 999000),
+-- Nov 2025
+(8,  1, 'VPS Starter',      '1 vCPU', '1 GB',  '20 GB SSD',         99000, 1,  99000),
+(9,  2, 'VPS Basic',        '2 vCPU', '2 GB',  '40 GB SSD',        199000, 1, 199000),
+(10, 3, 'VPS Pro',          '4 vCPU', '8 GB',  '80 GB SSD NVMe',   499000, 1, 499000),
+(11, 1, 'VPS Starter',      '1 vCPU', '1 GB',  '20 GB SSD',         99000, 1,  99000),
+-- Dec 2025
+(12, 2, 'VPS Basic',        '2 vCPU', '2 GB',  '40 GB SSD',        199000, 1, 199000),
+(13, 4, 'VPS Business',     '8 vCPU', '16 GB', '160 GB SSD NVMe',  999000, 1, 999000),
+(14, 1, 'VPS Starter',      '1 vCPU', '1 GB',  '20 GB SSD',         99000, 1,  99000),
+(15, 6, 'VPS Gaming',       '6 vCPU', '12 GB', '100 GB SSD NVMe',  799000, 1, 799000),
+(16, 1, 'VPS Starter',      '1 vCPU', '1 GB',  '20 GB SSD',         99000, 1,  99000),
+-- Jan 2026
+(17, 3, 'VPS Pro',          '4 vCPU', '8 GB',  '80 GB SSD NVMe',   499000, 1, 499000),
+(18, 5, 'Cloud VM Enterprise','16 vCPU','64 GB','500 GB NVMe RAID',2999000,1,2999000),
+(19, 2, 'VPS Basic',        '2 vCPU', '2 GB',  '40 GB SSD',        199000, 1, 199000),
+(20, 6, 'VPS Gaming',       '6 vCPU', '12 GB', '100 GB SSD NVMe',  799000, 1, 799000),
+(21, 1, 'VPS Starter',      '1 vCPU', '1 GB',  '20 GB SSD',         99000, 1,  99000),
+(22, 1, 'VPS Starter',      '1 vCPU', '1 GB',  '20 GB SSD',         99000, 1,  99000),
+-- Feb 2026
+(23, 4, 'VPS Business',     '8 vCPU', '16 GB', '160 GB SSD NVMe',  999000, 1, 999000),
+(24, 2, 'VPS Basic',        '2 vCPU', '2 GB',  '40 GB SSD',        199000, 1, 199000),
+(25, 1, 'VPS Starter',      '1 vCPU', '1 GB',  '20 GB SSD',         99000, 1,  99000),
+-- Mar 2026
+(26, 6, 'VPS Gaming',       '6 vCPU', '12 GB', '100 GB SSD NVMe',  799000, 1, 799000),
+(27, 3, 'VPS Pro',          '4 vCPU', '8 GB',  '80 GB SSD NVMe',   499000, 1, 499000),
+(28, 5, 'Cloud VM Enterprise','16 vCPU','64 GB','500 GB NVMe RAID',2999000,1,2999000),
+(29, 2, 'VPS Basic',        '2 vCPU', '2 GB',  '40 GB SSD',        199000, 1, 199000),
+(30, 1, 'VPS Starter',      '1 vCPU', '1 GB',  '20 GB SSD',         99000, 1,  99000),
+(31, 4, 'VPS Business',     '8 vCPU', '16 GB', '160 GB SSD NVMe',  999000, 1, 999000),
+-- Apr 2026
+(32, 3, 'VPS Pro',          '4 vCPU', '8 GB',  '80 GB SSD NVMe',   499000, 1, 499000),
+(33, 2, 'VPS Basic',        '2 vCPU', '2 GB',  '40 GB SSD',        199000, 1, 199000),
+(34, 6, 'VPS Gaming',       '6 vCPU', '12 GB', '100 GB SSD NVMe',  799000, 1, 799000),
+(35, 1, 'VPS Starter',      '1 vCPU', '1 GB',  '20 GB SSD',         99000, 1,  99000),
+(36, 4, 'VPS Business',     '8 vCPU', '16 GB', '160 GB SSD NVMe',  999000, 1, 999000),
+-- May 2026
+(37, 5, 'Cloud VM Enterprise','16 vCPU','64 GB','500 GB NVMe RAID',2999000,1,2999000),
+(38, 6, 'VPS Gaming',       '6 vCPU', '12 GB', '100 GB SSD NVMe',  799000, 1, 799000),
+(39, 3, 'VPS Pro',          '4 vCPU', '8 GB',  '80 GB SSD NVMe',   499000, 1, 499000),
+(40, 4, 'VPS Business',     '8 vCPU', '16 GB', '160 GB SSD NVMe',  999000, 1, 999000),
+(41, 1, 'VPS Starter',      '1 vCPU', '1 GB',  '20 GB SSD',         99000, 1,  99000),
+(42, 2, 'VPS Basic',        '2 vCPU', '2 GB',  '40 GB SSD',        199000, 1, 199000),
+(43, 2, 'VPS Basic',        '2 vCPU', '2 GB',  '40 GB SSD',        199000, 1, 199000);
+
+-- Demo reviews
+INSERT INTO reviews (user_id, product_id, order_id, rating, comment, created_at) VALUES
+(3, 1, 1, 5, 'The VPS Starter plan is perfect for my small blog! Setup was quick, performance is stable, and the price is unbeatable. Highly recommended for personal projects.', DATE_SUB(NOW(), INTERVAL 6 DAY)),
+(4, 2, 2, 4, 'VPS Basic has been solid for my API backend. The 2GB RAM handles moderate traffic well. Only wish they offered more storage options, but overall great value for 199k VND.', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+(5, 3, 3, 5, 'Running my e-commerce site on VPS Pro and the NVMe storage makes a huge difference. Page loads are instant. Support team helped me migrate — outstanding service!', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+(4, 1, 4, 3, 'Bought a second Starter VPS for my staging environment. It works fine for basic tasks but gets slow when running multiple Docker containers. Fair for the price though.', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+(5, 6, 5, 4, 'VPS Gaming handles my Minecraft server with 20 players smoothly. Low latency is real — ping times are excellent. Knocked off one star because initial setup docs could be clearer.', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(3, 2, 6, 5, 'Upgraded from Starter to Basic and the difference is night and day. My Node.js app runs buttery smooth now. The 2GB RAM overhead is exactly what I needed for background workers.', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(5, 4, 7, 4, 'VPS Business powers our CI/CD pipeline flawlessly. 16GB RAM chews through parallel builds. Docker caching on NVMe is incredibly fast. Deducted one star because bandwidth could be higher for the price.', DATE_SUB(NOW(), INTERVAL 12 HOUR));
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================

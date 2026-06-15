@@ -156,4 +156,6 @@
 
     $router->get("/admin/audit-logs",              [AdminAuditLogController::class, "index"]);
 
+    $router->post("/review/submit",                [ReviewController::class, "submit"]);
+
     $router->dispatch($_SERVER["REQUEST_URI"], $_SERVER["REQUEST_METHOD"]);

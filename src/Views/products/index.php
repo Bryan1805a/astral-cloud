@@ -144,7 +144,14 @@
     <p>Choose the VPS package that suits your needs.</p>
     <div class="vps-grid">
         <?php foreach ($vps_plans as $plan): ?>
-            <div class="vps-card">
+            <?php
+                $reviews = $product_reviews[$plan['id']] ?? [];
+                $reviewCount = count($reviews);
+                $avgRating = $reviewCount > 0 ? round(array_sum(array_column($reviews, 'rating')) / $reviewCount, 1) : 0;
+            ?>
+            <div class="vps-card" id="plan-<?= $plan['id'] ?>"
+                 data-reviews='<?= htmlspecialchars(json_encode($reviews), ENT_QUOTES, 'UTF-8') ?>'
+                 data-can-review='<?= htmlspecialchars(json_encode($can_review[$plan['id']] ?? null), ENT_QUOTES, 'UTF-8') ?>'>
                 <h2><?= htmlspecialchars($plan['name']) ?></h2>
                 <p class="description"><?= htmlspecialchars($plan['description']) ?></p>
                 <div class="price"><?= number_format($plan['price'], 0, ',', '.') ?> VND<span>/month</span></div>
@@ -154,13 +161,70 @@
                     <li><span class="spec-label">Storage</span><span class="spec-value"><?= htmlspecialchars($plan['storage']) ?></span></li>
                     <li><span class="spec-label">Bandwidth</span><span class="spec-value"><?= htmlspecialchars($plan['bandwidth']) ?></span></li>
                 </ul>
-                <form action="/cart/add" method="POST" class="js-add-cart" style="margin-top:auto;">
-                    <input type="hidden" name="_csrf_token" value="<?= generateCsrfToken() ?>">
-                    <input type="hidden" name="product_id" value="<?= $plan['id'] ?>">
-                    <button type="submit" class="plan-btn w-100" style="width:100%;">Add to Cart</button>
-                </form>
+
+                <div class="review-stars-line">
+                    <?php if ($reviewCount > 0): ?>
+                        <span class="star-rating-line">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <span class="star <?= $i <= round($avgRating) ? '' : 'empty' ?>">★</span>
+                            <?php endfor; ?>
+                        </span>
+                        <span class="review-avg-line"><?= $avgRating ?></span>
+                        <span class="review-count-line">(<?= $reviewCount ?>)</span>
+                    <?php else: ?>
+                        <span class="review-count-line empty">No reviews</span>
+                    <?php endif; ?>
+                </div>
+
+                <div class="card-actions" style="margin-top:auto;">
+                    <form action="/cart/add" method="POST" class="js-add-cart">
+                        <input type="hidden" name="_csrf_token" value="<?= generateCsrfToken() ?>">
+                        <input type="hidden" name="product_id" value="<?= $plan['id'] ?>">
+                        <button type="submit" class="plan-btn w-100">Add to Cart</button>
+                    </form>
+                    <button type="button" class="reviews-btn" data-product="<?= $plan['id'] ?>">
+                        <?= $reviewCount > 0 ? 'Reviews (' . $reviewCount . ')' : 'Reviews' ?>
+                    </button>
+                </div>
             </div>
         <?php endforeach; ?>
+    </div>
+
+    <!-- Reviews Modal (floating window) -->
+    <div class="review-modal-overlay" id="review-modal" style="display:none;">
+        <div class="review-modal">
+            <div class="review-modal-header">
+                <h3 id="review-modal-title">Reviews</h3>
+                <button type="button" class="review-modal-close" id="review-modal-close">&times;</button>
+            </div>
+            <div class="review-modal-body" id="review-modal-reviews"></div>
+            <?php if (isset($_SESSION['user_id'])): ?>
+            <div class="review-modal-form" id="review-modal-form" style="display:none;">
+                <hr class="review-modal-divider">
+                <h4>Write a Review</h4>
+                <form id="review-form" method="POST" action="/review/submit">
+                    <input type="hidden" name="_csrf_token" value="<?= generateCsrfToken() ?>">
+                    <input type="hidden" name="product_id" id="review-product-id">
+                    <input type="hidden" name="order_id" id="review-order-id">
+                    <div class="review-form-group">
+                        <label>Rating</label>
+                        <div class="review-rating-select">
+                            <?php for ($i = 5; $i >= 1; $i--): ?>
+                                <input type="radio" name="rating" value="<?= $i ?>" id="rv-star-<?= $i ?>" <?= $i === 5 ? 'required' : '' ?>>
+                                <label for="rv-star-<?= $i ?>" title="<?= $i ?> star<?= $i > 1 ? 's' : '' ?>">★</label>
+                            <?php endfor; ?>
+                        </div>
+                    </div>
+                    <div class="review-form-group">
+                        <label for="review-comment">Your Review</label>
+                        <textarea name="comment" id="review-comment" rows="4" placeholder="Share your experience... (min 10 characters)" required></textarea>
+                    </div>
+                    <div class="review-form-error" id="review-error" style="display:none;"></div>
+                    <button type="submit" class="plan-btn" style="width:100%;">Submit Review</button>
+                </form>
+            </div>
+            <?php endif; ?>
+        </div>
     </div>
 </section>
 
