@@ -4,11 +4,12 @@
  *
  * Flow:
  *   provisionForOrder() is called when payment succeeds (or admin confirms).
- *   It calls the VM Bridge to clone a base Ubuntu VM, polls for the guest IP,
- *   sets the root password, then registers a web terminal console via TtydHelper.
+ *   It inserts service rows and triggers VM cloning via the VM Bridge — then
+ *   returns immediately.  No blocking polling.
  *
- *   completePendingProvisionings() is the cron retry loop — picks up any
- *   services still stuck in "provisioning" (missing IP or console) and retries.
+ *   completePendingProvisionings() (runs every 2 min via cron) handles the
+ *   async follow-up: polls for the guest IP, sets the root password, and
+ *   registers the web terminal console via TtydHelper.
  *
  *   terminateForOrder() stops consoles and marks services as terminated.
  */
@@ -55,7 +56,7 @@ class Service {
             $ch = curl_init($provisionUrl);
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 300,
+                CURLOPT_TIMEOUT        => 60,
                 CURLOPT_CONNECTTIMEOUT => 30,
             ]);
             $response = curl_exec($ch);
@@ -66,45 +67,9 @@ class Service {
                 error_log("[AstralCloud] VM clone failed for service #{$serviceId}: HTTP {$httpCode} - {$error}");
                 continue;
             }
-            error_log("[AstralCloud] VM cloned for service #{$serviceId} ({$hostname})");
+            error_log("[AstralCloud] VM cloned for service #{$serviceId} ({$hostname}) — cron will handle the rest");
 
-            // Step 2: Poll for IP (up to 60 seconds)
-            self::setProvisioningStatus($serviceId, 'waiting_ip');
-            $ip = null;
-            $maxAttempts = 12;
-            for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
-                sleep(5);
-                $statusUrl = $vmBridgeUrl . '/status?name=' . urlencode($hostname);
-                $ctx = stream_context_create(['http' => ['timeout' => 10]]);
-                $statusResponse = @file_get_contents($statusUrl, false, $ctx);
-                if ($statusResponse !== false) {
-                    $data = json_decode($statusResponse, true);
-                    if ($data && !empty($data['success']) && !empty($data['ip'])) {
-                        $ip = $data['ip'];
-                        break;
-                    }
-                }
-            }
-
-            if (!$ip) {
-                error_log("[AstralCloud] Timed out waiting for IP for service #{$serviceId}");
-                continue;
-            }
-
-            $pdo->prepare("UPDATE services SET ip_address = ? WHERE id = ?")->execute([$ip, $serviceId]);
-            error_log("[AstralCloud] Service #{$serviceId}: got IP = {$ip}");
-
-            // Register console with VM Bridge
-            self::setProvisioningStatus($serviceId, 'preparing_console');
-            $result = TtydHelper::startConsole($serviceId, $ip, $hostname, $password);
-
-            if ($result !== null) {
-                $pdo->prepare("UPDATE services SET console_port = 1, status = 'running', provisioning_status = 'ready' WHERE id = ?")
-                    ->execute([$serviceId]);
-                error_log("[AstralCloud] Service #{$serviceId}: console registered → {$ip}");
-            } else {
-                error_log("[AstralCloud] Service #{$serviceId}: console registration failed (cron will retry)");
-            }
+            self::setProvisioningStatus($serviceId, 'booting');
         }
     }
 

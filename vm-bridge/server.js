@@ -29,7 +29,7 @@ const { Client: SSHClient } = require('ssh2');
 const { WebSocketServer } = require('ws');
 
 const app = express();
-const port = 10001;
+const port = parseInt(process.env.PORT, 10) || 10001;
 
 // ── Console store ─────────────────────────────────────────────
 // serviceId -> { ip, hostname, password, startedAt }
@@ -39,10 +39,10 @@ function safeName(raw) {
     return (raw || '').replace(/[^a-zA-Z0-9._-]/g, '');
 }
 
-// ── VMware paths ──────────────────────────────────────────────
-const VMRUN  = `"C:\\Program Files\\VMware\\VMware Workstation\\vmrun.exe"`;
-const BASE_VM = `"C:\\Users\\Bryan\\Documents\\Virtual Machines\\Ubuntu_Base\\Ubuntu_Base.vmx"`;
-const VM_DIR  = `C:\\Users\\Bryan\\Documents\\VMs`;
+// ── VMware paths (override via env vars or edit below) ──────
+const VMRUN   = process.env.VMRUN_PATH   || `"C:\\Program Files\\VMware\\VMware Workstation\\vmrun.exe"`;
+const BASE_VM = process.env.BASE_VMX     || `"C:\\Users\\Bryan\\Documents\\Virtual Machines\\Ubuntu_Base\\Ubuntu_Base.vmx"`;
+const VM_DIR  = process.env.VM_DIR       || `C:\\Users\\Bryan\\Documents\\VMs`;
 
 function vmPaths(vmName) {
     const dir = `${VM_DIR}\\${vmName}`;
