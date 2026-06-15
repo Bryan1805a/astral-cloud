@@ -18,6 +18,7 @@ class AuthController {
             if ($_GET["msg"] === "otp_sent") $success = "A verification code has been sent to your email.";
             if ($_GET["msg"] === "invalid_token") $error = "The verification link is invalid or has expired.";
             if ($_GET["msg"] === "password_reset") $success = "Password reset successfully! You can now log in with your new password.";
+            if ($_GET["msg"] === "mfa_timeout") $error = "MFA session expired. Please log in again.";
         }
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -36,6 +37,18 @@ class AuthController {
                     }
                     elseif (isset($user["is_verified"]) && $user["is_verified"] == 0) {
                         $error = "Your account has not been verified. Please check your email inbox.";
+                    }
+                    elseif (!empty($user["mfa_secret"]) && $user["mfa_enabled"] == 1) {
+                        $_SESSION["_mfa_pending"] = [
+                            "user_id"   => $user["id"],
+                            "user_name" => $user["name"],
+                            "user_role" => $user["role"],
+                            "user_tier" => $user["tier"],
+                            "secret"    => $user["mfa_secret"],
+                            "expires"   => time() + 300,
+                        ];
+                        header("Location: /mfa-verify");
+                        exit;
                     }
                     else {
                         $_SESSION["user_id"]    = $user["id"];
@@ -208,6 +221,57 @@ class AuthController {
             "error"   => $error,
             "success" => $success,
             "title"   => "Registration | Astral Cloud",
+        ]);
+    }
+
+    // MFA Verification (during login)
+    public function mfaVerify(): void {
+        if (!isset($_SESSION["_mfa_pending"])) {
+            header("Location: /login");
+            exit;
+        }
+
+        $pending = $_SESSION["_mfa_pending"];
+
+        if (time() > $pending["expires"]) {
+            unset($_SESSION["_mfa_pending"]);
+            header("Location: /login?msg=mfa_timeout");
+            exit;
+        }
+
+        $error = "";
+
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
+            $code = trim($_POST["code"] ?? "");
+
+            if (empty($code) || strlen($code) !== 6) {
+                $error = "Please enter a valid 6-digit code.";
+            } elseif (!MfaHelper::verifyCode($pending["secret"], $code)) {
+                $error = "Invalid verification code. Please try again.";
+            } else {
+                $_SESSION["user_id"]   = $pending["user_id"];
+                $_SESSION["user_name"] = $pending["user_name"];
+                $_SESSION["user_role"] = $pending["user_role"];
+                $_SESSION["user_tier"] = $pending["user_tier"];
+                unset($_SESSION["_mfa_pending"]);
+
+                AuditLog::log("auth.login", "user", $pending["user_id"],
+                    "User logged in (MFA verified): {$pending["user_name"]}"
+                );
+
+                if ($_SESSION["user_role"] === "admin" || $_SESSION["user_role"] === "staff") {
+                    header("Location: /admin");
+                } else {
+                    header("Location: /");
+                }
+                exit;
+            }
+        }
+
+        view("auth/mfa-verify", [
+            "error" => $error,
+            "title" => "MFA Verification | Astral Cloud",
         ]);
     }
 
