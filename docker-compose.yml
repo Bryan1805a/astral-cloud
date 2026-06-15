@@ -70,7 +70,7 @@ services:
     entrypoint: []
     working_dir: /var/www/astral
     command: >
-      sh -c "echo '*/2 * * * * php /var/www/astral/cron/cron.php all >> /var/log/astral-cron.log 2>&1' | crontab - &&
+      sh -c "echo '*/2 * * * * /usr/local/bin/php /var/www/astral/cron/cron.php all >> /var/log/astral-cron.log 2>&1' | crontab - &&
       cron -f"
     volumes:
       - .:/var/www/astral
