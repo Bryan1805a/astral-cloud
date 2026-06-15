@@ -1,8 +1,5 @@
 <?php
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
 class AuthController {
     // LOGIN
     public function login(): void {
@@ -156,86 +153,23 @@ class AuthController {
                             "expires_at" => time() + 300,
                         ];
 
-                        header("Location: /verify-otp");
+                        $emailBody = "
+                            <h3>Hello {$name},</h3>
+                            <p>Thank you for registering at Astral Cloud. Use the following code to verify your account:</p>
+                            <div style='text-align:center; margin:30px 0;'>
+                                <span style='display:inline-block; padding:15px 30px; background-color:#38bdf8; color:#ffffff; font-size:32px; font-weight:bold; letter-spacing:8px; border-radius:8px;'>{$otp}</span>
+                            </div>
+                            <p>This code will expire in <strong>5 minutes</strong>.</p>
+                            <p>If you did not create an account, please ignore this email.</p>
+                            <br>
+                            <p>Best regards,<br>Astral Cloud Team</p>
+                        ";
 
-                        if (ob_get_level()) ob_end_flush();
-                        flush();
-
-                        $smtpUser = getenv("SMTP_USER") ?: "";
-
-                        if (!empty($smtpUser)) {
-                            $mail = new PHPMailer(true);
-
-                            try {
-                                $mail->isSMTP();
-                                $mail->Host       = getenv("SMTP_HOST") ?: 'smtp.gmail.com';
-                                $mail->SMTPAuth   = true;
-                                $mail->Username   = $smtpUser;
-                                $mail->Password   = getenv("SMTP_PASS") ?: '';
-                                $mail->SMTPSecure = getenv("SMTP_ENCRYPTION") ?: PHPMailer::ENCRYPTION_SMTPS;
-                                $mail->Port       = (int)(getenv("SMTP_PORT") ?: 465);
-
-                                $fromEmail = getenv("SMTP_FROM_EMAIL") ?: 'noreply@astralcloud.com';
-                                $fromName  = getenv("SMTP_FROM_NAME") ?: 'Astral Cloud';
-                                $mail->setFrom($fromEmail, $fromName);
-                                $mail->addAddress($email, $name);
-
-                                $mail->isHTML(true);
-                                $mail->Subject = 'Your Astral Cloud Verification Code';
-                                $mail->Body    = "
-                                    <h3>Hello {$name},</h3>
-                                    <p>Thank you for registering at Astral Cloud. Use the following code to verify your account:</p>
-                                    <div style='text-align:center; margin:30px 0;'>
-                                        <span style='display:inline-block; padding:15px 30px; background-color:#38bdf8; color:#ffffff; font-size:32px; font-weight:bold; letter-spacing:8px; border-radius:8px;'>{$otp}</span>
-                                    </div>
-                                    <p>This code will expire in <strong>5 minutes</strong>.</p>
-                                    <p>If you did not create an account, please ignore this email.</p>
-                                    <br>
-                                    <p>Best regards,<br>Astral Cloud Team</p>
-                                ";
-
-                                $mail->SMTPOptions = [
-                                    "ssl" => [
-                                        "verify_peer"       => false,
-                                        "verify_peer_name"  => false,
-                                        "allow_self_signed" => true,
-                                    ],
-                                ];
-
-                                $mail->send();
-                            } catch (Exception $e) {
-                                error_log("AuthController registration email (port 465) failed: " . $e->getMessage());
-
-                                $mail2 = new PHPMailer(true);
-                                try {
-                                    $mail2->isSMTP();
-                                    $mail2->Host       = getenv("SMTP_HOST") ?: 'smtp.gmail.com';
-                                    $mail2->SMTPAuth   = true;
-                                    $mail2->Username   = $smtpUser;
-                                    $mail2->Password   = getenv("SMTP_PASS") ?: '';
-                                    $mail2->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                                    $mail2->Port       = 587;
-                                    $mail2->SMTPOptions = [
-                                        "ssl" => [
-                                            "verify_peer"       => false,
-                                            "verify_peer_name"  => false,
-                                            "allow_self_signed" => true,
-                                        ],
-                                    ];
-
-                                    $mail2->setFrom($fromEmail, $fromName);
-                                    $mail2->addAddress($email, $name);
-                                    $mail2->isHTML(true);
-                                    $mail2->Subject = 'Your Astral Cloud Verification Code';
-                                    $mail2->Body    = $mail->Body;
-
-                                    $mail2->send();
-                                } catch (Exception $e2) {
-                                    error_log("AuthController registration email (port 587) also failed: " . $e2->getMessage());
-                                }
-                            }
+                        if (MailHelper::isConfigured()) {
+                            MailHelper::send($email, $name, 'Your Astral Cloud Verification Code', $emailBody);
                         }
 
+                        header("Location: /verify-otp");
                         exit;
                     }
                 } catch (PDOException $e) {
