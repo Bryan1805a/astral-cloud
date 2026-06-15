@@ -75,6 +75,8 @@
     // Routes for user
     $router->get("/",                               [ProductController::class, "index"]);
 
+    $router->get("/api/health",                     [HealthController::class, "index"]);
+
     $router->get("/login",                          [AuthController::class, "login"]);
     $router->post("/login",                         [AuthController::class, "login"]);
     $router->get("/register",                       [AuthController::class, "register"]);
