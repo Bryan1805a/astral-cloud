@@ -19,6 +19,51 @@ class ProfileController {
         ]);
     }
 
+    public function setupMfa(): void {
+        if (!isset($_SESSION["user_id"])) {
+            header("Location: /login");
+            exit;
+        }
+
+        if (!isset($_SESSION["_mfa_setup_secret"])) {
+            header("Location: /profile");
+            exit;
+        }
+
+        $user    = User::getProfile($_SESSION["user_id"]);
+        $secret  = $_SESSION["_mfa_setup_secret"];
+        $uri     = MfaHelper::generateProvisioningUri($secret, $user["email"]);
+        $error   = "";
+
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            verifyCsrfToken();
+            $code = trim($_POST["code"] ?? "");
+
+            if (empty($code) || strlen($code) !== 6) {
+                $error = "Please enter a valid 6-digit code.";
+            } elseif (!MfaHelper::verifyCode($secret, $code)) {
+                $error = "Invalid code. Make sure your authenticator app is synchronized.";
+            } else {
+                User::enableMfa($_SESSION["user_id"], $secret);
+                unset($_SESSION["_mfa_setup_secret"]);
+
+                AuditLog::log("profile.enable_mfa", "user", $_SESSION["user_id"],
+                    "Enabled MFA for {$user["email"]}"
+                );
+
+                header("Location: /profile?success=" . urlencode("MFA enabled successfully!"));
+                exit;
+            }
+        }
+
+        view("auth/mfa-setup", [
+            "secret" => $secret,
+            "uri"    => $uri,
+            "error"  => $error,
+            "title"  => "Setup MFA | Astral Cloud",
+        ]);
+    }
+
     public function update(): void {
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");
@@ -87,6 +132,38 @@ class ProfileController {
             );
 
             header("Location: /profile?success=" . urlencode("Password changed."));
+            exit;
+        }
+
+        if ($action === "enable_mfa") {
+            $secret = MfaHelper::generateSecret();
+            $_SESSION["_mfa_setup_secret"] = $secret;
+
+            header("Location: /mfa-setup");
+            exit;
+        }
+
+        if ($action === "disable_mfa") {
+            $code = trim($_POST["mfa_code"] ?? "");
+
+            if (empty($code)) {
+                header("Location: /profile?error=" . urlencode("Please enter your MFA code to disable."));
+                exit;
+            }
+
+            $secret = User::getMfaSecret($_SESSION["user_id"]);
+            if (!$secret || !MfaHelper::verifyCode($secret, $code)) {
+                header("Location: /profile?error=" . urlencode("Invalid MFA code. Try again."));
+                exit;
+            }
+
+            User::disableMfa($_SESSION["user_id"]);
+
+            AuditLog::log("profile.disable_mfa", "user", $_SESSION["user_id"],
+                "Disabled MFA"
+            );
+
+            header("Location: /profile?success=" . urlencode("MFA has been disabled."));
             exit;
         }
 
