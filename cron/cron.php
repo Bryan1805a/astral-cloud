@@ -1,17 +1,19 @@
 <?php
 /**
- * Astral Cloud - Cron Job Runner
+ * Astral Cloud — Cron Job Runner
+ *
+ * Runs every 2 minutes via docker-compose cron container.
+ * Tasks are idempotent — safe to run repeatedly.
+ *
+ * Tasks:
+ *   service-expiry        Suspend services past their expiry_date
+ *   pending-orders        Cancel orders stuck in "pending" > 24 hours
+ *   service-reminders     Notify users 7/3/1 day(s) before service expiry
+ *   complete-provisioning Retry VM provisioning (poll for IP, register console)
+ *   prune-rate-limits     Delete expired rate-limit rows
+ *   all                   Run everything above
  *
  * Usage: php cron/cron.php <task>
- *
- * Available tasks:
- *   service-expiry    - Suspend/terminate services past expiry_date
- *   pending-orders    - Auto-cancel pending orders older than 24 hours
- *   service-reminders - Send expiry reminders (7, 3, 1 day before)
- *   all               - Run all tasks above
- *
- * Add to system crontab (runs every hour):
- *   0 * * * * /usr/bin/php /var/www/html/cron/cron.php all >> /var/log/astral-cron.log 2>&1
  */
 
 if (PHP_SAPI !== "cli") {

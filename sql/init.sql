@@ -1,4 +1,24 @@
 -- ============================================================
+-- Astral Cloud — Full database schema
+-- ============================================================
+-- Tables:
+--   1. users             15. notifications
+--   2. products          16. rate_limits
+--   3. product_promotions
+--   4. vouchers          Triggers (7 total):
+--   5. cart                trg_update_tier_insert/update  — auto tier from total_spent
+--   6. orders              trg_order_status_update_spent  — adjust total_spent on success/cancel
+--   7. order_items         trg_voucher_used_count         — increment voucher counter
+--   8. order_status_history trg_order_status_history       — log status changes
+--   9. voucher_usages      trg_payment_success_confirm_order — auto-confirm on payment
+--  10. reviews             trg_order_status_notify        — push notification on status change
+--  11. admin_emails
+--  12. payments           User tiers: silver (<5M VND), gold (≥5M), diamond (≥20M)
+--  13. services           Order lifecycle: pending → confirmed → provisioning → active → success
+--  14. audit_logs                                ↘ cancelled (at any point)
+--
+-- Run: docker exec -i astral_db mysql -u root -p < sql/init.sql
+-- ============================================================
 -- Astral Cloud database rebuild script
 -- Run this script after `docker compose down -v` to recreate the
 -- `astral_cloud` database, all tables, triggers, and seed data.
@@ -583,5 +603,5 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
 -- END OF SCHEMA
--- Sum: 16 TABLE + 7 triggers
+-- Sum: 16 tables + 7 triggers
 -- ============================================================

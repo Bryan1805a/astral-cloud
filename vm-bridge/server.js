@@ -1,3 +1,27 @@
+/**
+ * VM Bridge — VMware provisioning + web SSH console
+ *
+ * REST API (port 10001):
+ *   GET /provision?order_id=&item_id=&name=&password=
+ *       Clones Ubuntu_Base VM via vmrun, starts it, returns immediately.
+ *   GET /status?name=
+ *       Polls the guest OS for its IP address via vmrun getGuestIPAddress.
+ *   GET /set-root-password?name=&password=&base_password=
+ *       Uses vmrun runProgramInGuest to change root password.
+ *
+ * Console API:
+ *   GET /ttyd/start?service_id=&ip=&name=&password=
+ *       Registers a service for web terminal access (called by PHP backend).
+ *   GET /ttyd/stop?service_id=
+ *       Removes console registration.
+ *
+ * Web Terminal:
+ *   GET /console/:serviceId → xterm.js page
+ *   WS  /console/:serviceId → SSH session via ssh2 library
+ *
+ * The PHP app proxies /console/ → here (see proxy-console.conf).
+ */
+
 const express = require('express');
 const http = require('http');
 const { exec } = require('child_process');

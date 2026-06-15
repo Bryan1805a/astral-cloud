@@ -1,5 +1,19 @@
 <?php
 
+/**
+ * RateLimiter — IP-based brute-force protection
+ *
+ * Tracks login/register attempts in the rate_limits table.
+ * Identifies clients by SHA1(real IP || action), handling proxies
+ * via X-Forwarded-For / X-Real-IP headers.
+ *
+ * Config:
+ *   Login:    5 attempts / 15 min window, 15 min block
+ *   Register: 3 attempts / 60 min window, 60 min block
+ *
+ * Call check() before processing, record() on failure, clear() on success.
+ * Cron calls pruneExpired() to keep the table small.
+ */
 class RateLimiter {
     private const LOGIN_MAX_ATTEMPTS     = 5;
     private const LOGIN_WINDOW_MINUTES   = 15;

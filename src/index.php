@@ -1,4 +1,14 @@
 <?php
+    /**
+     * Astral Cloud — Application Entry Point
+     *
+     * Boot sequence:
+     *   1. Load .env via config/db.php
+     *   2. Register PSR-4-style autoloader (Controllers/ + Models/)
+     *   3. Define view() helper (renders Views/ with header/footer)
+     *   4. Define CSRF helpers (generateCsrfToken, csrfField, verifyCsrfToken)
+     *   5. Wire routes → Router::dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD'])
+     */
     ini_set("display_errors", 1);
     ini_set("display_startup_errors", 1);
     error_reporting(E_ALL);

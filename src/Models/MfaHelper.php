@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * MfaHelper — RFC 6238 TOTP (Time-based One-Time Password)
+ *
+ * No external dependencies. Pure PHP implementation of:
+ *   - Base32 encode/decode for secret storage
+ *   - HMAC-SHA1 TOTP code generation (6 digits, 30-second period)
+ *   - Verification with ±1 window to handle clock drift
+ *   - otpauth:// URI generation for QR codes
+ *
+ * Compatible with Google Authenticator, Authy, and any RFC 6238 app.
+ */
 class MfaHelper {
     private const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     private const DIGITS = 6;

@@ -1,4 +1,17 @@
 <?php
+/**
+ * Service — VPS lifecycle management
+ *
+ * Flow:
+ *   provisionForOrder() is called when payment succeeds (or admin confirms).
+ *   It calls the VM Bridge to clone a base Ubuntu VM, polls for the guest IP,
+ *   sets the root password, then registers a web terminal console via TtydHelper.
+ *
+ *   completePendingProvisionings() is the cron retry loop — picks up any
+ *   services still stuck in "provisioning" (missing IP or console) and retries.
+ *
+ *   terminateForOrder() stops consoles and marks services as terminated.
+ */
 class Service {
 
     public static function setProvisioningStatus(int $serviceId, string $status): void {
@@ -47,8 +60,7 @@ class Service {
             ]);
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $error = curl_error($ch);
-            curl_close($ch);
+            $error    = curl_error($ch);
 
             if ($httpCode !== 200) {
                 error_log("[AstralCloud] VM clone failed for service #{$serviceId}: HTTP {$httpCode} - {$error}");

@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Database configuration — loads .env and provides a singleton PDO connection.
+ *
+ * loadEnv() parses KEY=VALUE pairs from the .env file at the project root.
+ * Database::getConnection() returns the shared PDO instance (lazy-init).
+ */
 function loadEnv(string $path): void {
     if (!file_exists($path)) return;
 

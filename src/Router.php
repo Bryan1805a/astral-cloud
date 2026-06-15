@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Minimalist router: maps GET/POST URLs to [ControllerClass, method] handlers.
+ * No regex params — exact path matching only.
+ */
 class Router {
     private array $routes = [];
 

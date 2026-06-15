@@ -2,6 +2,17 @@
 
 require_once __DIR__ . '/../config/vnpay.php';
 
+/**
+ * Payment — VNPay callback handling
+ *
+ * Two endpoints:
+ *   vnpayReturn — user is redirected here after VNPay payment.
+ *     Verifies the HMAC-SHA512 signature, marks payment success/failed,
+ *     triggers VM provisioning on success.
+ *
+ *   vnpayIpn — server-to-server IPN from VNPay (backup notification).
+ *     Same logic, but returns JSON response codes instead of redirects.
+ */
 class PaymentController {
     public function vnpayReturn(): void {
         if (!isset($_SESSION["user_id"])) {

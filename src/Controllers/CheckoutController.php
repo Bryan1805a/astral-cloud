@@ -2,6 +2,18 @@
 
 require_once __DIR__ . '/../config/vnpay.php';
 
+/**
+ * Checkout — cart → order → VNPay payment flow
+ *
+ * placeOrder() inside a DB transaction:
+ *   1. Locks product rows (FOR UPDATE), checks stock
+ *   2. Creates order + order_items, validates/applies voucher
+ *   3. Decrements stock, clears cart, creates payment record
+ *   4. Redirects to VNPay payment page
+ *
+ * On payment success, PaymentController::vnpayReturn() triggers
+ * Service::provisionForOrder() to clone the VM.
+ */
 class CheckoutController {
     public function index(): void {
         // Redirect user to login page if they are not login
