@@ -159,6 +159,12 @@ function taskCompleteProvisioning(): void {
     Service::completePendingProvisionings();
 }
 
+// ---- Task: Prune Expired Rate Limits ----
+function taskPruneRateLimits(): void {
+    $count = RateLimiter::pruneExpired();
+    cronLog("  Pruned {$count} expired rate limit row(s).");
+}
+
 // ---- Dispatch ----
 $task = $argv[1] ?? "all";
 
@@ -167,6 +173,7 @@ $tasks = [
     "pending-orders"           => "taskPendingOrders",
     "service-reminders"        => "taskServiceReminders",
     "complete-provisioning"    => "taskCompleteProvisioning",
+    "prune-rate-limits"        => "taskPruneRateLimits",
 ];
 
 if ($task === "all") {
