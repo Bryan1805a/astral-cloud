@@ -19,6 +19,7 @@
 }
 
 .products-section h1 { text-align:center; margin-bottom: 8px; }
+.products-section > p { text-align:center; color: #94a3b8; margin-bottom: 8px; max-width: 680px; margin: 0 auto 8px; }
 .vps-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; max-width: 1280px; margin: 32px auto 0; padding: 0 16px; }
 .vps-card { background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.10); border-radius: 24px; padding: 28px; display:flex; flex-direction:column; transition:border-color 0.3s, transform 0.3s, box-shadow 0.3s; }
 .vps-card:hover { border-color: rgba(56,189,248,0.4); transform: translateY(-2px); }
