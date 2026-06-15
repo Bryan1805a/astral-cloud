@@ -382,6 +382,24 @@ CREATE TABLE notifications (
 
 
 -- ============================================================
+-- TABLE 16: RATE_LIMITS
+-- Tracks login/register attempts for brute-force protection
+-- ============================================================
+CREATE TABLE rate_limits (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    identifier      VARCHAR(64)  NOT NULL,          -- sha1(ip||action)
+    action          VARCHAR(32)  NOT NULL,          -- 'login' or 'register'
+    attempts        INT UNSIGNED NOT NULL DEFAULT 1,
+    blocked_until   DATETIME     DEFAULT NULL,
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_identifier (identifier),
+    INDEX idx_blocked (blocked_until)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
 -- TRIGGERS
 -- ============================================================
 
@@ -565,5 +583,5 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
 -- END OF SCHEMA
--- Sum: 14 TABLE + 7 triggers
+-- Sum: 16 TABLE + 7 triggers
 -- ============================================================
