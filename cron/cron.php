@@ -167,6 +167,13 @@ function taskPruneRateLimits(): void {
     cronLog("  Pruned {$count} expired rate limit row(s).");
 }
 
+// ---- Task: Collect Resource Metrics ----
+function taskCollectMetrics(): void {
+    cronLog("Collecting resource metrics from running VMs...");
+    Service::collectMetricsForAllRunning();
+    cronLog("  Metrics collection complete.");
+}
+
 // ---- Dispatch ----
 $task = $argv[1] ?? "all";
 
@@ -176,6 +183,7 @@ $tasks = [
     "service-reminders"        => "taskServiceReminders",
     "complete-provisioning"    => "taskCompleteProvisioning",
     "prune-rate-limits"        => "taskPruneRateLimits",
+    "collect-metrics"          => "taskCollectMetrics",
 ];
 
 if ($task === "all") {

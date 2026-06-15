@@ -353,4 +353,65 @@ class Service {
         $stmt->execute([$userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // ── Resource Metrics ──────────────────────────────────────
+
+    public static function collectMetrics(int $serviceId, string $ip, string $password): bool {
+        $url = self::getBridgeUrl() . '/resources?ip=' . urlencode($ip)
+             . '&password=' . urlencode($password);
+
+        $ctx = stream_context_create(['http' => ['timeout' => 20]]);
+        $response = @file_get_contents($url, false, $ctx);
+        if ($response === false) return false;
+
+        $data = json_decode($response, true);
+        if (!$data || empty($data['success'])) return false;
+
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("
+            INSERT INTO resource_metrics
+                (service_id, cpu_load, ram_used_mb, ram_total_mb, disk_used_gb, disk_total_gb, net_rx_bytes, net_tx_bytes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            $serviceId,
+            $data['cpu']       ?? null,
+            $data['ram_used']  ?? null,
+            $data['ram_total'] ?? null,
+            $data['disk_used'] ?? null,
+            $data['disk_total']?? null,
+            $data['net_rx']    ?? 0,
+            $data['net_tx']    ?? 0,
+        ]);
+        return true;
+    }
+
+    public static function getLatestMetrics(int $serviceId): ?array {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("
+            SELECT * FROM resource_metrics
+            WHERE service_id = ?
+            ORDER BY collected_at DESC
+            LIMIT 1
+        ");
+        $stmt->execute([$serviceId]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public static function collectMetricsForAllRunning(): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("
+            SELECT id, ip_address, root_password
+            FROM services
+            WHERE status = 'running'
+              AND ip_address IS NOT NULL
+              AND ip_address != '0.0.0.0'
+        ");
+        $stmt->execute();
+        $services = $stmt->fetchAll();
+
+        foreach ($services as $srv) {
+            self::collectMetrics($srv['id'], $srv['ip_address'], $srv['root_password']);
+        }
+    }
 }

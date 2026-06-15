@@ -195,8 +195,38 @@
                                     <button type="submit" class="action-btn secondary" style="border-color:rgba(251,191,36,0.3);color:#fbbf24;">⚠ Rebuild</button>
                                 </form>
                             </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php
+                        $metrics = null;
+                        if ($currentService && $currentService['status'] === 'running') {
+                            $metrics = Service::getLatestMetrics($currentService['id']);
+                        }
+                        ?>
+                        <?php if ($metrics): ?>
+                            <div class="service-box" style="margin-top:12px;">
+                                <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Resource Usage</div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                                    <div>
+                                        <div style="font-size:11px;color:#6b7280;">CPU Load</div>
+                                        <div class="service-value" style="font-size:18px;"><?= number_format($metrics['cpu_load'], 2) ?></div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:11px;color:#6b7280;">RAM</div>
+                                        <div class="service-value" style="font-size:18px;"><?= (int)$metrics['ram_used_mb'] ?> / <?= (int)$metrics['ram_total_mb'] ?> MB</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:11px;color:#6b7280;">Disk</div>
+                                        <div class="service-value" style="font-size:14px;"><?= number_format($metrics['disk_used_gb'], 1) ?> / <?= number_format($metrics['disk_total_gb'], 1) ?> GB</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:11px;color:#6b7280;">Updated</div>
+                                        <div class="service-value" style="font-size:12px;color:#6b7280;"><?= date('H:i', strtotime($metrics['collected_at'])) ?></div>
+                                    </div>
+                                </div>
+                            </div>
                         <?php endif; ?>
-                    </div>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>

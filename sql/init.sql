@@ -4,6 +4,7 @@
 -- Tables:
 --   1. users             15. notifications
 --   2. products          16. rate_limits
+--   3. product_promotions 17. resource_metrics
 --   3. product_promotions
 --   4. vouchers          Triggers (7 total):
 --   5. cart                trg_update_tier_insert/update  — auto tier from total_spent
@@ -420,6 +421,27 @@ CREATE TABLE rate_limits (
 
 
 -- ============================================================
+-- TABLE 17: RESOURCE_METRICS
+-- Periodic CPU/RAM/disk/network snapshots per service
+-- ============================================================
+CREATE TABLE resource_metrics (
+    id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    service_id    INT UNSIGNED  NOT NULL,
+    cpu_load      DECIMAL(6,2)  DEFAULT NULL,
+    ram_used_mb   INT UNSIGNED  DEFAULT NULL,
+    ram_total_mb  INT UNSIGNED  DEFAULT NULL,
+    disk_used_gb  DECIMAL(8,2)  DEFAULT NULL,
+    disk_total_gb DECIMAL(8,2)  DEFAULT NULL,
+    net_rx_bytes  BIGINT UNSIGNED DEFAULT 0,
+    net_tx_bytes  BIGINT UNSIGNED DEFAULT 0,
+    collected_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE,
+    INDEX idx_service_time (service_id, collected_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
 -- TRIGGERS
 -- ============================================================
 
@@ -603,5 +625,5 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
 -- END OF SCHEMA
--- Sum: 16 tables + 7 triggers
+-- Sum: 17 tables + 7 triggers
 -- ============================================================

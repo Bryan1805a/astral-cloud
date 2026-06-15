@@ -206,6 +206,88 @@ app.get('/rebuild', (req, res) => {
     });
 });
 
+// ── Resource Monitoring ────────────────────────────────────────
+app.get('/resources', (req, res) => {
+    const ip       = req.query.ip || '';
+    const password = req.query.password || 'astral123';
+
+    if (!ip) return res.json({ success: false, error: 'Missing IP' });
+
+    const ssh = new SSHClient();
+    let responded = false;
+
+    const timeout = setTimeout(() => {
+        if (!responded) {
+            responded = true;
+            ssh.end();
+            res.json({ success: false, error: 'SSH timeout' });
+        }
+    }, 15000);
+
+    ssh.on('ready', function() {
+        const cmd = "echo CPU=$(awk '{print $1}' /proc/loadavg) " +
+                    "RAM=$(free -m | awk '/^Mem:/{printf \"%.0f/%.0f\",$3,$2}') " +
+                    "DISK=$(df -B1 / | awk 'NR==2{print $3\",\"$2}') " +
+                    "NET=$(cat /sys/class/net/eth0/statistics/rx_bytes 2>/dev/null || echo 0)," +
+                    "$(cat /sys/class/net/eth0/statistics/tx_bytes 2>/dev/null || echo 0)";
+
+        ssh.exec(cmd, { timeout: 8000 }, function(err, stream) {
+            if (err) {
+                clearTimeout(timeout);
+                if (!responded) { responded = true; ssh.end(); res.json({ success: false, error: err.message }); }
+                return;
+            }
+
+            let output = '';
+            stream.on('data', function(data) { output += data.toString(); });
+            stream.on('close', function() {
+                clearTimeout(timeout);
+                if (responded) return;
+                responded = true;
+                ssh.end();
+
+                const cpuMatch  = output.match(/CPU=([\d.]+)/);
+                const ramMatch  = output.match(/RAM=([\d.]+)\/([\d.]+)/);
+                const diskMatch = output.match(/DISK=(\d+),(\d+)/);
+                const netMatch  = output.match(/NET=(\d+),(\d+)/);
+
+                if (!cpuMatch || !ramMatch || !diskMatch) {
+                    return res.json({ success: false, error: 'Failed to parse metrics', raw: output });
+                }
+
+                const diskUsed  = parseInt(diskMatch[1], 10);
+                const diskTotal = parseInt(diskMatch[2], 10);
+
+                res.json({
+                    success: true,
+                    cpu:       parseFloat(cpuMatch[1]),
+                    ram_used:  parseInt(ramMatch[1], 10),
+                    ram_total: parseInt(ramMatch[2], 10),
+                    disk_used: Math.round(diskUsed / 1073741824 * 100) / 100,   // bytes → GB
+                    disk_total: Math.round(diskTotal / 1073741824 * 100) / 100,
+                    net_rx:    netMatch ? parseInt(netMatch[1], 10) : 0,       // bytes
+                    net_tx:    netMatch ? parseInt(netMatch[2], 10) : 0,
+                });
+            });
+        });
+    });
+
+    ssh.on('error', function(err) {
+        clearTimeout(timeout);
+        if (!responded) { responded = true; res.json({ success: false, error: err.message }); }
+    });
+
+    ssh.connect({
+        host: ip, port: 22, username: 'root', password: password,
+        readyTimeout: 10000,
+        algorithms: {
+            kex: ['ecdh-sha2-nistp256','ecdh-sha2-nistp384','ecdh-sha2-nistp521','diffie-hellman-group-exchange-sha256','diffie-hellman-group14-sha256','diffie-hellman-group14-sha1'],
+            cipher: ['aes128-ctr','aes192-ctr','aes256-ctr','aes128-gcm@openssh.com','aes256-gcm@openssh.com'],
+            serverHostKey: ['ssh-rsa','ecdsa-sha2-nistp256','ssh-ed25519','rsa-sha2-512','rsa-sha2-256']
+        }
+    });
+});
+
 // ── Console management API (called by PHP backend) ────────────
 app.get('/ttyd/start', (req, res) => {
     const serviceId = String(req.query.service_id || '').replace(/[^0-9]/g, '');
