@@ -254,6 +254,93 @@ class Service {
         $stmt->execute([$orderId]);
     }
 
+    // ── Lifecycle: call the bridge and return result ─────────────
+
+    private static function getOwnedService(int $serviceId, int $userId): ?array {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT * FROM services WHERE id = ? AND user_id = ?");
+        $stmt->execute([$serviceId, $userId]);
+        return $stmt->fetch() ?: null;
+    }
+
+    private static function callBridge(string $endpoint, string $hostname, ?string $password = null): array {
+        $url = self::getBridgeUrl() . "/{$endpoint}?name=" . urlencode($hostname);
+        if ($password) {
+            $url .= '&password=' . urlencode($password);
+        }
+        $ctx = stream_context_create(['http' => ['timeout' => 30]]);
+        $response = @file_get_contents($url, false, $ctx);
+
+        if ($response === false) {
+            return ['success' => false, 'error' => 'VM Bridge unreachable'];
+        }
+        $data = json_decode($response, true);
+        return is_array($data) ? $data : ['success' => false, 'error' => 'Invalid response'];
+    }
+
+    public static function stopService(int $serviceId, int $userId): array {
+        $srv = self::getOwnedService($serviceId, $userId);
+        if (!$srv) return ['success' => false, 'error' => 'Service not found'];
+
+        if ($srv['status'] === 'stopped') {
+            return ['success' => false, 'error' => 'Already stopped'];
+        }
+
+        $result = self::callBridge('stop', $srv['hostname']);
+        if ($result['success']) {
+            $pdo = Database::getConnection();
+            $pdo->prepare("UPDATE services SET status = 'stopped', provisioning_status = NULL WHERE id = ?")
+                ->execute([$serviceId]);
+        }
+        return $result;
+    }
+
+    public static function startService(int $serviceId, int $userId): array {
+        $srv = self::getOwnedService($serviceId, $userId);
+        if (!$srv) return ['success' => false, 'error' => 'Service not found'];
+
+        if ($srv['status'] === 'running') {
+            return ['success' => false, 'error' => 'Already running'];
+        }
+
+        $result = self::callBridge('start', $srv['hostname']);
+        if ($result['success']) {
+            $pdo = Database::getConnection();
+            $pdo->prepare("UPDATE services SET status = 'running', provisioning_status = 'booting' WHERE id = ?")
+                ->execute([$serviceId]);
+        }
+        return $result;
+    }
+
+    public static function restartService(int $serviceId, int $userId): array {
+        $srv = self::getOwnedService($serviceId, $userId);
+        if (!$srv) return ['success' => false, 'error' => 'Service not found'];
+
+        $result = self::callBridge('restart', $srv['hostname']);
+        if ($result['success']) {
+            $pdo = Database::getConnection();
+            $pdo->prepare("UPDATE services SET status = 'running', provisioning_status = 'booting' WHERE id = ?")
+                ->execute([$serviceId]);
+        }
+        return $result;
+    }
+
+    public static function rebuildService(int $serviceId, int $userId): array {
+        $srv = self::getOwnedService($serviceId, $userId);
+        if (!$srv) return ['success' => false, 'error' => 'Service not found'];
+
+        $password = getenv('VM_BASE_PASSWORD') ?: 'password';
+        $result = self::callBridge('rebuild', $srv['hostname'], $password);
+
+        if ($result['success']) {
+            $pdo = Database::getConnection();
+            $pdo->prepare("UPDATE services SET status = 'running', provisioning_status = 'booting', ip_address = '0.0.0.0', console_port = NULL WHERE id = ?")
+                ->execute([$serviceId]);
+            TtydHelper::stopConsole($serviceId);
+        }
+        return $result;
+    }
+
     public static function getUserServices(int $userId): array {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("

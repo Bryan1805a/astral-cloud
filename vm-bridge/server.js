@@ -128,6 +128,84 @@ app.get('/set-root-password', (req, res) => {
     });
 });
 
+// ── VM Lifecycle Management ────────────────────────────────────
+app.get('/stop', (req, res) => {
+    const vmName = safeName(req.query.name);
+    if (!vmName) return res.json({ success: false, error: 'Missing name' });
+    const { vmx } = vmPaths(vmName);
+
+    console.log(`[+] Stopping ${vmName}...`);
+    exec(`${VMRUN} stop ${vmx}`, { timeout: 60000 }, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`[-] Stop failed for ${vmName}: ${error.message}`);
+            return res.json({ success: false, error: error.message });
+        }
+        console.log(`[+] ${vmName} stopped`);
+        res.json({ success: true, message: `VM ${vmName} stopped` });
+    });
+});
+
+app.get('/start', (req, res) => {
+    const vmName = safeName(req.query.name);
+    if (!vmName) return res.json({ success: false, error: 'Missing name' });
+    const { vmx } = vmPaths(vmName);
+
+    console.log(`[+] Starting ${vmName}...`);
+    exec(`${VMRUN} start ${vmx} nogui`, { timeout: 30000 }, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`[-] Start failed for ${vmName}: ${error.message}`);
+            return res.json({ success: false, error: error.message });
+        }
+        console.log(`[+] ${vmName} started`);
+        res.json({ success: true, message: `VM ${vmName} booting` });
+    });
+});
+
+app.get('/restart', (req, res) => {
+    const vmName = safeName(req.query.name);
+    if (!vmName) return res.json({ success: false, error: 'Missing name' });
+    const { vmx } = vmPaths(vmName);
+
+    console.log(`[+] Restarting ${vmName}...`);
+    exec(`${VMRUN} reset ${vmx}`, { timeout: 60000 }, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`[-] Restart failed for ${vmName}: ${error.message}`);
+            return res.json({ success: false, error: error.message });
+        }
+        console.log(`[+] ${vmName} restarted`);
+        res.json({ success: true, message: `VM ${vmName} restarting` });
+    });
+});
+
+app.get('/rebuild', (req, res) => {
+    const vmName  = safeName(req.query.name);
+    const password = safeName(req.query.password) || 'astral123';
+
+    if (!vmName) return res.json({ success: false, error: 'Missing name' });
+    const { dir, vmx } = vmPaths(vmName);
+
+    console.log(`[+] Rebuilding ${vmName}...`);
+
+    exec(`${VMRUN} stop ${vmx}`, { timeout: 60000 }, () => {
+        exec(`rmdir /s /q "${dir}" 2>nul`, { timeout: 10000 }, () => {
+            exec(`${VMRUN} clone ${BASE_VM} ${vmx} linked -snapshot=Base_Snapshot -cloneName=${vmName}`, (cloneErr) => {
+                if (cloneErr) {
+                    console.error(`[-] Rebuild clone failed for ${vmName}: ${cloneErr.message}`);
+                    return res.json({ success: false, error: cloneErr.message });
+                }
+                exec(`${VMRUN} start ${vmx} nogui`, (startErr) => {
+                    if (startErr) {
+                        console.error(`[-] Rebuild start failed for ${vmName}: ${startErr.message}`);
+                        return res.json({ success: false, error: startErr.message });
+                    }
+                    console.log(`[+] ${vmName} rebuilt and started`);
+                    res.json({ success: true, message: `VM ${vmName} rebuilt — booting with fresh image` });
+                });
+            });
+        });
+    });
+});
+
 // ── Console management API (called by PHP backend) ────────────
 app.get('/ttyd/start', (req, res) => {
     const serviceId = String(req.query.service_id || '').replace(/[^0-9]/g, '');

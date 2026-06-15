@@ -63,11 +63,30 @@
             <a href="/" class="back-link">← Back to Home</a>
         </div>
 
-        <?php if (isset($_GET['msg']) && $_GET['msg'] === 'cancelled'): ?>
-            <div class="alert-box alert-success">✓ Order cancelled successfully! Voucher code (if any) has been refunded.</div>
-        <?php endif; ?>
-        <?php if (isset($_GET['err']) && $_GET['err'] === 'cannot_cancel'): ?>
-            <div class="alert-box alert-error">✕ This order cannot be canceled (it has been processed or does not exist).</div>
+        <?php
+        $msg = $_GET['msg'] ?? '';
+        $err = $_GET['err'] ?? '';
+        $msgMap = [
+            'cancelled'    => ['success', '✓ Order cancelled successfully! Voucher code (if any) has been refunded.'],
+            'stopped'      => ['success', '✓ VPS stopped successfully.'],
+            'started'      => ['success', '✓ VPS is booting — IP and console will be available shortly.'],
+            'restarted'    => ['success', '✓ VPS is restarting. Console will reconnect shortly.'],
+            'rebuilding'   => ['success', '✓ VPS is rebuilding from base image. This may take a few minutes.'],
+        ];
+        $displayMsg = '';
+        $msgType    = '';
+        if ($msg && isset($msgMap[$msg])) {
+            [$msgType, $displayMsg] = $msgMap[$msg];
+        } elseif ($msg) {
+            $msgType = 'error';
+            $displayMsg = '✕ ' . htmlspecialchars($msg);
+        } elseif ($err === 'cannot_cancel') {
+            $msgType = 'error';
+            $displayMsg = '✕ This order cannot be canceled.';
+        }
+        ?>
+        <?php if ($displayMsg): ?>
+            <div class="alert-box <?= $msgType === 'success' ? 'alert-success' : 'alert-error' ?>"><?= $displayMsg ?></div>
         <?php endif; ?>
 
         <?php if (empty($orders)): ?>
@@ -149,6 +168,34 @@
                                 <button class="action-btn secondary" disabled>Waiting...</button>
                             <?php endif; ?>
                         </div>
+
+                        <?php if ($currentService && ($currentService['status'] === 'running' || $currentService['status'] === 'stopped')): ?>
+                            <div class="order-actions" style="margin-top:8px;">
+                                <?php if ($currentService['status'] === 'running'): ?>
+                                    <form action="/service/stop" method="POST" style="flex:1;" onsubmit="return confirm('Stop this VPS?');">
+                                        <?= csrfField() ?>
+                                        <input type="hidden" name="service_id" value="<?= (int)$currentService['id'] ?>">
+                                        <button type="submit" class="action-btn danger">⏹ Stop</button>
+                                    </form>
+                                    <form action="/service/restart" method="POST" style="flex:1;" onsubmit="return confirm('Restart this VPS?');">
+                                        <?= csrfField() ?>
+                                        <input type="hidden" name="service_id" value="<?= (int)$currentService['id'] ?>">
+                                        <button type="submit" class="action-btn secondary">↻ Restart</button>
+                                    </form>
+                                <?php else: ?>
+                                    <form action="/service/start" method="POST" style="flex:1;">
+                                        <?= csrfField() ?>
+                                        <input type="hidden" name="service_id" value="<?= (int)$currentService['id'] ?>">
+                                        <button type="submit" class="action-btn primary">▶ Start</button>
+                                    </form>
+                                <?php endif; ?>
+                                <form action="/service/rebuild" method="POST" style="flex:1;" onsubmit="return confirm('Rebuild will DESTROY this VPS and re-clone from the base image. All data will be lost. Continue?');">
+                                    <?= csrfField() ?>
+                                    <input type="hidden" name="service_id" value="<?= (int)$currentService['id'] ?>">
+                                    <button type="submit" class="action-btn secondary" style="border-color:rgba(251,191,36,0.3);color:#fbbf24;">⚠ Rebuild</button>
+                                </form>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>

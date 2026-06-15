@@ -115,6 +115,11 @@
     $router->get("/orders/invoice",                 [OrderController::class, "invoice"]);
     $router->post("/orders/cancel",                 [OrderController::class, "cancel"]);
 
+    $router->post("/service/stop",                  [ServiceController::class, "stop"]);
+    $router->post("/service/start",                 [ServiceController::class, "start"]);
+    $router->post("/service/restart",               [ServiceController::class, "restart"]);
+    $router->post("/service/rebuild",               [ServiceController::class, "rebuild"]);
+
     $router->get("/inbox",                          [InboxController::class, "index"]);
     $router->post("/inbox/read",                    [InboxController::class, "markRead"]);
 
