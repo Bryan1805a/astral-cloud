@@ -247,7 +247,7 @@ class Service {
         }
 
         $stmt = $pdo->prepare("
-            UPDATE services SET status = 'terminated', console_port = NULL, provisioning_status = NULL
+            UPDATE services SET status = 'terminated', console_port = NULL
             WHERE order_item_id IN (SELECT id FROM order_items WHERE order_id = ?)
               AND status NOT IN ('terminated')
         ");
@@ -289,7 +289,7 @@ class Service {
         $result = self::callBridge('stop', $srv['hostname']);
         if ($result['success']) {
             $pdo = Database::getConnection();
-            $pdo->prepare("UPDATE services SET status = 'stopped', provisioning_status = NULL WHERE id = ?")
+            $pdo->prepare("UPDATE services SET status = 'stopped' WHERE id = ?")
                 ->execute([$serviceId]);
         }
         return $result;
