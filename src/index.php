@@ -78,6 +78,11 @@
     $router->get("/reset-password",                 [PasswordResetController::class, "reset"]);
     $router->post("/reset-password",                [PasswordResetController::class, "reset"]);
 
+    $router->get("/mfa-verify",                     [AuthController::class, "mfaVerify"]);
+    $router->post("/mfa-verify",                    [AuthController::class, "mfaVerify"]);
+    $router->get("/mfa-setup",                      [ProfileController::class, "setupMfa"]);
+    $router->post("/mfa-setup",                     [ProfileController::class, "setupMfa"]);
+
     $router->get("/cart",                           [CartController::class, "index"]);
     $router->post("/cart/add",                      [CartController::class, "add"]);
     $router->post("/cart/remove",                   [CartController::class, "remove"]);
