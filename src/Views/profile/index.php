@@ -66,7 +66,7 @@
     </div>
 
     <!-- Change Password -->
-    <div class="glass-card">
+    <div class="glass-card mb-4">
         <h3 style="font-size:18px;font-weight:700;margin-bottom:24px;">Change Password</h3>
         <form action="/profile/update" method="POST">
             <?= csrfField() ?>
@@ -85,6 +85,37 @@
             </div>
             <button type="submit" class="btn-primary w-100" style="border-radius:12px;">Update Password</button>
         </form>
+    </div>
+
+    <?php
+        $mfaEnabled = !empty($user['mfa_secret']) && $user['mfa_enabled'] == 1;
+    ?>
+
+    <!-- MFA Section -->
+    <div class="glass-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+                <h3 style="font-size:18px;font-weight:700;margin:0;">Two-Factor Authentication</h3>
+                <p style="color:#6b7280;font-size:13px;margin:4px 0 0;">
+                    <?= $mfaEnabled ? 'MFA is currently <span style="color:#4ade80;">enabled</span>.' : 'Add an extra layer of security to your account.' ?>
+                </p>
+            </div>
+            <?php if ($mfaEnabled): ?>
+                <form action="/profile/update" method="POST" style="display:flex;align-items:center;gap:8px;">
+                    <?= csrfField() ?>
+                    <input type="hidden" name="action" value="disable_mfa">
+                    <input type="text" name="mfa_code" placeholder="MFA code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" required
+                           style="width:100px;text-align:center;font-family:'Courier New',monospace;font-size:16px;letter-spacing:4px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px;border-radius:8px;">
+                    <button type="submit" class="action-btn danger" style="padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;background:transparent;border:1px solid rgba(239,68,68,0.3);color:#ef4444;cursor:pointer;">Disable</button>
+                </form>
+            <?php else: ?>
+                <form action="/profile/update" method="POST">
+                    <?= csrfField() ?>
+                    <input type="hidden" name="action" value="enable_mfa">
+                    <button type="submit" class="action-btn primary" style="padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;background:#38bdf8;color:#000;border:none;cursor:pointer;">Enable MFA</button>
+                </form>
+            <?php endif; ?>
+        </div>
     </div>
 
 </div>
