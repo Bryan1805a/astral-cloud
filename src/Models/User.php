@@ -4,7 +4,7 @@ class User {
     // Find user by Email
     public static function findByEmail(string $email): ?array {
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare("SELECT id, name, email, password, role, tier, is_locked, is_verified FROM users WHERE email = :email LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, name, email, password, role, tier, is_locked, is_verified, mfa_secret, mfa_enabled FROM users WHERE email = :email LIMIT 1");
         $stmt->execute(['email' => $email]);
         return $stmt->fetch() ?: null;
     }
@@ -117,7 +117,7 @@ class User {
     // Get full profile for profile page
     public static function getProfile(int $id): ?array {
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare("SELECT id, name, email, password, phone, role, tier, total_spent, created_at FROM users WHERE id = :id LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, name, email, password, phone, role, tier, total_spent, mfa_secret, mfa_enabled, created_at FROM users WHERE id = :id LIMIT 1");
         $stmt->execute(['id' => $id]);
         return $stmt->fetch() ?: null;
     }
@@ -143,6 +143,36 @@ class User {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("UPDATE users SET reset_token = NULL, reset_token_expires = NULL WHERE id = :id");
         $stmt->execute(['id' => $id]);
+    }
+
+    // MFA: Enable TOTP
+    public static function enableMfa(int $id, string $secret): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE users SET mfa_secret = :secret, mfa_enabled = 1 WHERE id = :id");
+        $stmt->execute(['secret' => $secret, 'id' => $id]);
+    }
+
+    // MFA: Disable TOTP
+    public static function disableMfa(int $id): void {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE users SET mfa_secret = NULL, mfa_enabled = 0 WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+    }
+
+    // MFA: Check if MFA is enabled for user
+    public static function isMfaEnabled(int $id): bool {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT mfa_enabled FROM users WHERE id = ? LIMIT 1");
+        $stmt->execute([$id]);
+        return (bool) ($stmt->fetchColumn() ?? false);
+    }
+
+    // MFA: Get user's MFA secret
+    public static function getMfaSecret(int $id): ?string {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT mfa_secret FROM users WHERE id = ? LIMIT 1");
+        $stmt->execute([$id]);
+        return $stmt->fetchColumn() ?: null;
     }
 
     // Force-set new password (for reset flow, no current password needed)
