@@ -177,21 +177,21 @@
                 </div>
 
                 <div class="card-actions" style="margin-top:auto;">
+                    <button type="button" class="reviews-btn" data-product="<?= $plan['id'] ?>">
+                        <?= $reviewCount > 0 ? 'Reviews (' . $reviewCount . ')' : 'Reviews' ?>
+                    </button>
                     <form action="/cart/add" method="POST" class="js-add-cart">
                         <input type="hidden" name="_csrf_token" value="<?= generateCsrfToken() ?>">
                         <input type="hidden" name="product_id" value="<?= $plan['id'] ?>">
                         <button type="submit" class="plan-btn w-100">Add to Cart</button>
                     </form>
-                    <button type="button" class="reviews-btn" data-product="<?= $plan['id'] ?>">
-                        <?= $reviewCount > 0 ? 'Reviews (' . $reviewCount . ')' : 'Reviews' ?>
-                    </button>
                 </div>
             </div>
         <?php endforeach; ?>
     </div>
 
     <!-- Reviews Modal (floating window) -->
-    <div class="review-modal-overlay" id="review-modal" style="display:none;">
+    <div class="review-modal-overlay" id="review-modal">
         <div class="review-modal">
             <div class="review-modal-header">
                 <h3 id="review-modal-title">Reviews</h3>
@@ -220,7 +220,10 @@
                         <textarea name="comment" id="review-comment" rows="4" placeholder="Share your experience... (min 10 characters)" required></textarea>
                     </div>
                     <div class="review-form-error" id="review-error" style="display:none;"></div>
-                    <button type="submit" class="plan-btn" style="width:100%;">Submit Review</button>
+                    <div class="review-form-buttons">
+                        <button type="button" class="review-cancel-btn" id="review-cancel-btn">Cancel</button>
+                        <button type="submit" class="plan-btn">Submit Review</button>
+                    </div>
                 </form>
             </div>
             <?php endif; ?>

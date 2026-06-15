@@ -121,6 +121,23 @@ document.addEventListener('DOMContentLoaded', function () {
     var reviewModalTitle = document.getElementById('review-modal-title');
     var reviewModalReviews = document.getElementById('review-modal-reviews');
     var reviewModalForm = document.getElementById('review-modal-form');
+    var reviewCancelBtn = document.getElementById('review-cancel-btn');
+
+    function openModal() {
+        reviewModal.style.display = 'flex';
+        requestAnimationFrame(function () {
+            reviewModal.classList.add('visible');
+        });
+    }
+
+    function closeModal() {
+        reviewModal.classList.remove('visible');
+        setTimeout(function () {
+            if (!reviewModal.classList.contains('visible')) {
+                reviewModal.style.display = 'none';
+            }
+        }, 260);
+    }
 
     function renderStars(rating) {
         var html = '';
@@ -173,21 +190,31 @@ document.addEventListener('DOMContentLoaded', function () {
             if (reviewModalForm) {
                 reviewModalForm.style.display = canReviewData ? 'block' : 'none';
             }
+            if (reviewError) reviewError.style.display = 'none';
 
-            reviewModal.style.display = 'flex';
+            openModal();
         });
     });
 
     if (reviewModalClose) {
-        reviewModalClose.addEventListener('click', function () {
-            reviewModal.style.display = 'none';
-        });
-        reviewModal.addEventListener('click', function (e) {
-            if (e.target === reviewModal) {
-                reviewModal.style.display = 'none';
-            }
-        });
+        reviewModalClose.addEventListener('click', closeModal);
     }
+
+    if (reviewCancelBtn) {
+        reviewCancelBtn.addEventListener('click', closeModal);
+    }
+
+    reviewModal.addEventListener('click', function (e) {
+        if (e.target === reviewModal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && reviewModal.classList.contains('visible')) {
+            closeModal();
+        }
+    });
 
     if (reviewForm) {
         reviewForm.addEventListener('submit', function (e) {
@@ -204,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data.success) {
-                    reviewModal.style.display = 'none';
+                    closeModal();
                     showToast(data.message, 'success');
                     setTimeout(function () { location.reload(); }, 1000);
                 } else {
