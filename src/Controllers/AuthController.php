@@ -23,6 +23,17 @@ class AuthController {
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             verifyCsrfToken();
+
+            $rateLimitError = RateLimiter::check("login");
+            if ($rateLimitError) {
+                view("auth/login", [
+                    "error"   => $rateLimitError,
+                    "success" => "",
+                    "title"   => "Log in | Astral Cloud",
+                ]);
+                return;
+            }
+
             $email    = trim($_POST["email"] ?? "");
             $password = $_POST["password"] ?? "";
 
@@ -39,6 +50,7 @@ class AuthController {
                         $error = "Your account has not been verified. Please check your email inbox.";
                     }
                     elseif (!empty($user["mfa_secret"]) && $user["mfa_enabled"] == 1) {
+                        RateLimiter::clear("login");
                         $_SESSION["_mfa_pending"] = [
                             "user_id"   => $user["id"],
                             "user_name" => $user["name"],
@@ -51,6 +63,7 @@ class AuthController {
                         exit;
                     }
                     else {
+                        RateLimiter::clear("login");
                         $_SESSION["user_id"]    = $user["id"];
                         $_SESSION["user_name"]  = $user["name"];
                         $_SESSION["user_role"]  = $user["role"];
@@ -65,6 +78,7 @@ class AuthController {
                 }
                 else {
                     $error = "Incorrect email or password.";
+                    RateLimiter::record("login");
                 }
             }
         }
@@ -83,6 +97,17 @@ class AuthController {
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             verifyCsrfToken();
+
+            $rateLimitError = RateLimiter::check("register");
+            if ($rateLimitError) {
+                view("auth/register", [
+                    "error"   => $rateLimitError,
+                    "success" => "",
+                    "title"   => "Registration | Astral Cloud",
+                ]);
+                return;
+            }
+
             $name             = trim($_POST["name"] ?? "");
             $email            = trim($_POST["email"] ?? "");
             $phone            = trim($_POST["phone"] ?? "");
@@ -115,6 +140,8 @@ class AuthController {
                             "password" => $password,
                             "phone"    => $phone ?: null,
                         ], $token);
+
+                        RateLimiter::clear("register");
 
                         AuditLog::log("auth.register", "user", (int) Database::getConnection()->lastInsertId(),
                             "New account registered: {$name} ({$email})"
@@ -215,6 +242,10 @@ class AuthController {
                     $error = "A system error has occurred. Please try again later.";
                 }
             }
+        }
+
+        if ($_SERVER["REQUEST_METHOD"] === "POST" && $error) {
+            RateLimiter::record("register");
         }
 
         view("auth/register", [
