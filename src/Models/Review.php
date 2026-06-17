@@ -1,4 +1,8 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
+
 class Review {
     // Get all reviews + user information + product information
     public static function getAllForAdmin(): array {
@@ -11,7 +15,7 @@ class Review {
             ORDER BY r.created_at DESC
         ";
 
-        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        return $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Change review status
@@ -43,7 +47,7 @@ class Review {
             ORDER BY r.created_at DESC
         ");
         $stmt->execute([$productId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Check if a user can review a product (has a success order and hasn't already reviewed it)

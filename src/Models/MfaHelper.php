@@ -1,4 +1,5 @@
 <?php
+namespace App\Models;
 
 /**
  * MfaHelper — RFC 6238 TOTP (Time-based One-Time Password)

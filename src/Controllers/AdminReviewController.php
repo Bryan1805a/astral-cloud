@@ -1,6 +1,12 @@
 <?php
 
-class AdminReviewController {
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AuditLog;
+use App\Models\Review;
+
+class AdminReviewController extends Controller {
     private function checkAdmin() {
         if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {
             header("Location: /login");

@@ -42,6 +42,20 @@
                 <div class="alert alert-success">✓ Order status updated successfully!</div>
             <?php endif; ?>
 
+            <?php if (isset($_GET['err'])): ?>
+                <div class="alert alert-danger">
+                    <?php if ($_GET['err'] === 'invalid_transition'): ?>
+                        ✗ Cannot change status in that direction. Orders can only move forward or be cancelled.
+                    <?php elseif ($_GET['err'] === 'cancel_failed'): ?>
+                        ✗ Failed to cancel the order. Please try again.
+                    <?php elseif ($_GET['err'] === 'not_found'): ?>
+                        ✗ Order not found.
+                    <?php else: ?>
+                        ✗ An error occurred.
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
             <div style="background:#151515;border-radius:24px;border:1px solid rgba(255,255,255,0.12);overflow:hidden;">
                 <div class="table-responsive">
                     <table class="admin-table">

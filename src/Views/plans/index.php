@@ -55,13 +55,11 @@
             var p = particles[i];
             p.update();
 
-            // Draw particle
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
             ctx.fillStyle = PARTICLE_COLOR;
             ctx.fill();
 
-            // Line from mouse to nearby particle
             var dx = mouse.x - p.x;
             var dy = mouse.y - p.y;
             var dist = Math.sqrt(dx * dx + dy * dy);
@@ -83,58 +81,30 @@
 })();
 </script>
 
-<!-- HERO -->
-<section class="page-section hero-section">
-    <div class="hero-content">
-        <div>
-            <h1>Cloud VPS that makes your <br><span>PROJECT</span><br>FASTER!</h1>
-            <p>Astral Cloud provides high-performance VPS, fast deployment, stable security, and easy management for students, developers, and businesses.</p>
-            <div class="hero-buttons">
-                <a href="#plans" class="btn-white">View VPS Plans</a>
-                <a href="/register" class="btn-outline">Get Started</a>
-            </div>
-        </div>
-    </div>
-    <div class="hero-visual">
-        <div class="orb orb-one"></div>
-        <div class="server-shape">
-            <span></span><span></span><span></span>
-        </div>
-    </div>
-</section>
-
-<!-- ABOUT -->
-<section id="about" class="page-section about-section">
-    <h2>Why Astral Cloud?</h2>
-    <p>We simulate a modern VPS rental and management system, helping users find server packages, place orders, make demo payments, and track activation status.</p>
-    <div class="stats">
-        <div class="stat-card"><span></span><h3>99.9%</h3><p>Uptime</p><small>Always-on infrastructure for stable VPS performance.</small></div>
-        <div class="stat-card"><span></span><h3>NVMe</h3><p>SSD Storage</p><small>Ultra-fast storage for websites, APIs and applications.</small></div>
-        <div class="stat-card"><span></span><h3>24/7</h3><p>Support</p><small>Professional assistance whenever you need help.</small></div>
-        <div class="stat-card"><span></span><h3>DDoS</h3><p>Protection</p><small>Advanced protection against malicious attacks.</small></div>
-    </div>
-</section>
-
 <!-- PACKAGES PREVIEW -->
 <section id="features" class="page-section package-section">
     <h2>Our VPS Packages</h2>
     <p>Popular VPS packages for a variety of usage needs.</p>
     <div class="package-grid">
-        <div class="package-card">
-            <div class="package-icon">🧊</div><h3>Basic</h3>
-            <p>2GB RAM / 1 CPU / 40GB SSD</p><strong>99.000 VND/month</strong>
-            <a href="#plans">View plan</a>
-        </div>
-        <div class="package-card">
-            <div class="package-icon">💠</div><h3>Pro</h3>
-            <p>4GB RAM / 2 CPU / 80GB SSD</p><strong>199.000 VND/month</strong>
-            <a href="#plans">View plan</a>
-        </div>
-        <div class="package-card">
-            <div class="package-icon">🔷</div><h3>Enterprise</h3>
-            <p>8GB RAM / 4 CPU / 160GB SSD</p><strong>399.000 VND/month</strong>
-            <a href="#plans">View plan</a>
-        </div>
+        <?php foreach ($featured_plans as $plan): ?>
+            <div class="package-card">
+                <div class="package-icon">
+                    <?php
+                    $icon = str_contains(strtolower($plan['name']), 'starter') ? '🧊'
+                        : (str_contains(strtolower($plan['name']), 'basic') ? '🧊'
+                        : (str_contains(strtolower($plan['name']), 'pro') ? '💠'
+                        : (str_contains(strtolower($plan['name']), 'gaming') ? '🎮'
+                        : (str_contains(strtolower($plan['name']), 'business') ? '🔷'
+                        : (str_contains(strtolower($plan['name']), 'enterprise') ? '⚡' : '🖥')))));
+                    ?>
+                    <?= $icon ?>
+                </div>
+                <h3><?= htmlspecialchars($plan['name']) ?></h3>
+                <p><?= htmlspecialchars($plan['ram']) ?> / <?= htmlspecialchars($plan['cpu']) ?> / <?= htmlspecialchars($plan['storage']) ?></p>
+                <strong><?= number_format($plan['price'], 0, ',', '.') ?> VND/month</strong>
+                <a href="/product?slug=<?= urlencode($plan['slug']) ?>">View plan</a>
+            </div>
+        <?php endforeach; ?>
     </div>
 </section>
 
@@ -142,6 +112,32 @@
 <section id="plans" class="products-section">
     <h1>All VPS Plans</h1>
     <p>Choose the VPS package that suits your needs.</p>
+
+    <div class="plans-controls">
+        <form method="GET" action="/plans#plans" class="plans-search-form">
+            <input type="text" name="search" placeholder="Search plans..." value="<?= htmlspecialchars($search) ?>" class="plans-search-input">
+            <select name="sort" class="plans-sort-select" onchange="this.form.submit()">
+                <option value="price_asc" <?= $sort === 'price_asc' ? 'selected' : '' ?>>Price: Low → High</option>
+                <option value="price_desc" <?= $sort === 'price_desc' ? 'selected' : '' ?>>Price: High → Low</option>
+                <option value="rating" <?= $sort === 'rating' ? 'selected' : '' ?>>Highest Rated</option>
+                <option value="name" <?= $sort === 'name' ? 'selected' : '' ?>>Name: A → Z</option>
+            </select>
+            <button type="submit" class="plans-search-btn">Search</button>
+            <?php if ($search): ?>
+                <a href="/plans#plans" class="plans-clear-btn">Clear</a>
+            <?php endif; ?>
+        </form>
+    </div>
+
+    <?php if ($search): ?>
+        <p style="text-align:center;color:#6b7280;font-size:13px;margin-bottom:20px;">
+            Results for "<strong><?= htmlspecialchars($search) ?></strong>" — <?= count($vps_plans) ?> product(s) found
+        </p>
+    <?php endif; ?>
+
+    <?php if (empty($vps_plans)): ?>
+        <p style="text-align:center;color:#6b7280;padding:40px;">No VPS plans match your search.</p>
+    <?php else: ?>
     <div class="vps-grid">
         <?php foreach ($vps_plans as $plan): ?>
             <?php
@@ -189,6 +185,36 @@
             </div>
         <?php endforeach; ?>
     </div>
+    <?php endif; ?>
+
+    <?php
+    $queryParams = '';
+    if ($search) $queryParams .= '&search=' . urlencode($search);
+    if ($sort && $sort !== 'price_asc') $queryParams .= '&sort=' . urlencode($sort);
+    ?>
+    <?php if ($total_pages > 1): ?>
+    <div class="pagination">
+        <?php if ($page > 1): ?>
+            <a href="/plans?page=<?= $page - 1 ?><?= $queryParams ?>#plans" class="pagination-btn">&laquo; Prev</a>
+        <?php else: ?>
+            <span class="pagination-btn disabled">&laquo; Prev</span>
+        <?php endif; ?>
+
+        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+            <?php if ($i === $page): ?>
+                <span class="pagination-btn active"><?= $i ?></span>
+            <?php else: ?>
+                <a href="/plans?page=<?= $i ?><?= $queryParams ?>#plans" class="pagination-btn"><?= $i ?></a>
+            <?php endif; ?>
+        <?php endfor; ?>
+
+        <?php if ($page < $total_pages): ?>
+            <a href="/plans?page=<?= $page + 1 ?><?= $queryParams ?>#plans" class="pagination-btn">Next &raquo;</a>
+        <?php else: ?>
+            <span class="pagination-btn disabled">Next &raquo;</span>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
     <!-- Reviews Modal (floating window) -->
     <div class="review-modal-overlay" id="review-modal">
@@ -227,28 +253,6 @@
                 </form>
             </div>
             <?php endif; ?>
-        </div>
-    </div>
-</section>
-
-<!-- BLOG -->
-<section id="blog" class="page-section blog-section">
-    <h2>Cloud Knowledge</h2>
-    <div class="blog-grid">
-        <div class="blog-card">
-            <div class="blog-icon"></div><h3>What is VPS?</h3>
-            <p>Learn how virtual private servers work in a cloud environment.</p>
-            <a href="#" class="blog-link">Read More →</a>
-        </div>
-        <div class="blog-card">
-            <div class="blog-icon"></div><h3>Choosing the Right VPS Plan</h3>
-            <p>Understand how RAM, CPU, SSD and bandwidth affect performance.</p>
-            <a href="#" class="blog-link">Read More →</a>
-        </div>
-        <div class="blog-card">
-            <div class="blog-icon"></div><h3>Server Security Guide</h3>
-            <p>Basic practices to keep your VPS safer and more reliable.</p>
-            <a href="#" class="blog-link">Read More →</a>
         </div>
     </div>
 </section>

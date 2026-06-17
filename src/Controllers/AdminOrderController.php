@@ -1,6 +1,14 @@
 <?php
 
-class AdminOrderController {
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Core\Database;
+use App\Models\AuditLog;
+use App\Models\Order;
+use App\Models\Service;
+
+class AdminOrderController extends Controller {
     // Check if user has admin role
     private function checkAdmin() {
         if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {
@@ -19,6 +27,16 @@ class AdminOrderController {
         require_once __DIR__ . "/../Views/admin/orders/index.php";
     }
 
+    // Order lifecycle — only forward progress or cancellation is allowed
+    private const ALLOWED_TRANSITIONS = [
+        'pending'       => ['confirmed', 'cancelled'],
+        'confirmed'     => ['provisioning', 'cancelled'],
+        'provisioning'  => ['active', 'cancelled'],
+        'active'        => ['success', 'cancelled'],
+        'success'       => ['cancelled'],
+        'cancelled'     => [],
+    ];
+
     // Update order function
     public function update() {
         $this->checkAdmin();
@@ -34,6 +52,12 @@ class AdminOrderController {
             if ($orderId > 0 && in_array($status, $validStatuses)) {
                 $order = Order::findById($orderId);
                 $oldStatus = $order["status"] ?? "unknown";
+
+                $allowed = self::ALLOWED_TRANSITIONS[$oldStatus] ?? [];
+                if ($status !== $oldStatus && !in_array($status, $allowed)) {
+                    header("Location: /admin/orders?err=invalid_transition");
+                    exit;
+                }
 
                 if ($status === "cancelled" && $oldStatus !== "cancelled") {
                     $pdo = Database::getConnection();

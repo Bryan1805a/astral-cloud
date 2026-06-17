@@ -1,4 +1,7 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
 
 class Payment {
     public static function create(int $orderId, float $amount, string $method, ?string $transactionCode = null, string $status = 'pending', ?string $note = null): int {

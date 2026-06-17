@@ -1,4 +1,7 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
 
 /**
  * RateLimiter — IP-based brute-force protection

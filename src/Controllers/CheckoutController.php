@@ -1,5 +1,18 @@
 <?php
 
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Core\Database;
+use App\Models\AuditLog;
+use App\Models\Cart;
+use App\Models\MailHelper;
+use App\Models\Order;
+use App\Models\Payment;
+use App\Models\Service;
+use App\Models\User;
+use App\Models\Voucher;
+
 require_once __DIR__ . '/../config/vnpay.php';
 
 /**
@@ -14,7 +27,7 @@ require_once __DIR__ . '/../config/vnpay.php';
  * On payment success, PaymentController::vnpayReturn() triggers
  * Service::provisionForOrder() to clone the VM.
  */
-class CheckoutController {
+class CheckoutController extends Controller {
     public function index(): void {
         // Redirect user to login page if they are not login
         if (!isset($_SESSION["user_id"])) {

@@ -1,5 +1,12 @@
 <?php
-class AdminVoucherController {
+
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AuditLog;
+use App\Models\Voucher;
+
+class AdminVoucherController extends Controller {
     private function checkAdmin() {
         if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {
             header("Location: /login");

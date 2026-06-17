@@ -1,5 +1,12 @@
 <?php
-class ConsoleController {
+
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Core\Database;
+use App\Models\TtydHelper;
+
+class ConsoleController extends Controller {
     public function index() {
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");

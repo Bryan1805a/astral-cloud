@@ -1,6 +1,12 @@
 <?php
 
-class ReviewController {
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AuditLog;
+use App\Models\Review;
+
+class ReviewController extends Controller {
     public function submit(): void {
         if (!isset($_SESSION["user_id"])) {
             if (isAjaxRequest()) {

@@ -1,6 +1,12 @@
 <?php
 
-class AdminDashboardController {
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Core\Database;
+use App\Models\Report;
+
+class AdminDashboardController extends Controller {
     private function checkAdmin() {
         if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {
             header("Location: /login");

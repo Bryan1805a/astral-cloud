@@ -1,6 +1,13 @@
 <?php
 
-class AdminEmailController {
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AdminEmail;
+use App\Models\AuditLog;
+use App\Models\User;
+
+class AdminEmailController extends Controller {
     private function checkAdmin() {
         if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {
             header("Location: /login");

@@ -1,4 +1,7 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
 
 class User {
     // Find user by Email
@@ -48,7 +51,7 @@ class User {
             ORDER BY created_at DESC
         ";
         
-        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        return $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Change user account status
@@ -82,7 +85,7 @@ class User {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("SELECT * FROM users WHERE verification_token = ? AND is_verified = 0");
         $stmt->execute([$token]);
-        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
     }
 
     // Activate account

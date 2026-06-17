@@ -1,5 +1,13 @@
 <?php
 
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AuditLog;
+use App\Models\Order;
+use App\Models\Payment;
+use App\Models\Service;
+
 require_once __DIR__ . '/../config/vnpay.php';
 
 /**
@@ -13,7 +21,7 @@ require_once __DIR__ . '/../config/vnpay.php';
  *   vnpayIpn — server-to-server IPN from VNPay (backup notification).
  *     Same logic, but returns JSON response codes instead of redirects.
  */
-class PaymentController {
+class PaymentController extends Controller {
     public function vnpayReturn(): void {
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");

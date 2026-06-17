@@ -1,4 +1,5 @@
 <?php
+namespace App\Models;
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -32,7 +33,7 @@ class MailHelper {
             ];
 
             return $mail;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             error_log("MailHelper: failed to create mailer: " . $e->getMessage());
             return null;
         }
@@ -49,7 +50,7 @@ class MailHelper {
             $mail->Body    = $bodyHtml;
             $mail->send();
             return true;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             error_log("MailHelper: send failed to {$toEmail}: " . $e->getMessage());
 
             // Retry with STARTTLS on port 587
@@ -64,7 +65,7 @@ class MailHelper {
                 $mail2->Body    = $bodyHtml;
                 $mail2->send();
                 return true;
-            } catch (Exception $e2) {
+            } catch (\Exception $e2) {
                 error_log("MailHelper: retry also failed: " . $e2->getMessage());
                 return false;
             }

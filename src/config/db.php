@@ -1,10 +1,7 @@
 <?php
 
 /**
- * Database configuration — loads .env and provides a singleton PDO connection.
- *
- * loadEnv() parses KEY=VALUE pairs from the .env file at the project root.
- * Database::getConnection() returns the shared PDO instance (lazy-init).
+ * Environment loader — parses KEY=VALUE pairs from .env into $_ENV and putenv().
  */
 function loadEnv(string $path): void {
     if (!file_exists($path)) return;
@@ -31,29 +28,3 @@ function loadEnv(string $path): void {
 }
 
 loadEnv(__DIR__ . "/../../.env");
-
-class Database {
-    private static ?PDO $instance = null;
-
-    public static function getConnection(): PDO {
-        if (self::$instance === null) {
-            $host = getenv("DB_HOST") ?: "db";
-            $db   = getenv("DB_NAME") ?: "astral_cloud";
-            $user = getenv("DB_USER") ?: "astral_user";
-            $pass = getenv("DB_PASS");
-
-            if (!$pass) {
-                die("DB_PASS not set in environment. Copy .env.example to .env and configure your credentials.");
-            }
-
-            $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
-
-            self::$instance = new PDO($dsn, $user, $pass, [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES   => false,
-            ]);
-        }
-        return self::$instance;
-    }
-}

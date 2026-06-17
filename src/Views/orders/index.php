@@ -132,11 +132,44 @@
                             }
                             ?>
 
+                            <?php if (!$currentService && in_array($status, ['confirmed', 'provisioning', 'active'])): ?>
+                                <div class="service-box" style="display:flex;align-items:center;gap:10px;">
+                                    <span style="font-size:16px;">🔄</span>
+                                    <span style="font-size:13px;color:#6b7280;">Service is being prepared. Refresh shortly.</span>
+                                </div>
+                            <?php endif; ?>
+
                             <?php if ($currentService): ?>
                                 <div class="service-box">
+                                    <?php
+                                    $ip = $currentService['ip_address'];
+                                    $provStatus = $currentService['provisioning_status'] ?? 'pending';
+                                    $isReady = $provStatus === 'ready';
+                                    $hasIp = $ip !== '0.0.0.0' && !empty($ip);
+                                    ?>
+                                    <?php if (!$isReady): ?>
+                                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 14px;background:rgba(56,189,248,0.08);border-radius:12px;border:1px solid rgba(56,189,248,0.15);">
+                                            <span style="font-size:16px;">⏳</span>
+                                            <div>
+                                                <div style="font-size:13px;font-weight:700;color:#38bdf8;">Provisioning in progress</div>
+                                                <div style="font-size:11px;color:#6b7280;margin-top:2px;">
+                                                    Status: <?= match($provStatus) {
+                                                        'pending' => 'Queued',
+                                                        'creating_vm' => 'Creating VM',
+                                                        'booting' => 'Booting OS',
+                                                        'waiting_ip' => 'Waiting for network',
+                                                        'preparing_console' => 'Setting up console',
+                                                        default => ucfirst($provStatus)
+                                                    } ?> — This completes automatically. Please refresh in a moment.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
                                     <div class="service-row">
                                         <span class="service-label">IP Address:</span>
-                                        <span class="service-value" style="color:#4ade80;"><?= htmlspecialchars($currentService['ip_address']) ?></span>
+                                        <span class="service-value" style="color:<?= $hasIp ? '#4ade80' : '#6b7280' ?>;">
+                                            <?= $hasIp ? htmlspecialchars($ip) : 'Assigning...' ?>
+                                        </span>
                                     </div>
                                     <div class="service-row">
                                         <span class="service-label">OS:</span>

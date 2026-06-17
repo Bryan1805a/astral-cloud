@@ -1,4 +1,7 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
 
 class Order {
     // Create order and save to database
@@ -57,7 +60,7 @@ class Order {
         ";
         $stmt = $pdo->prepare($sql);
         $stmt->execute(["user_id" => $userId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Cancel order
@@ -95,7 +98,7 @@ class Order {
 
             $pdo->commit();
             return True;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $pdo->rollBack();
             return false;
         }
@@ -118,7 +121,7 @@ class Order {
             JOIN order_items oi ON o.id = oi.order_id
             ORDER BY o.created_at DESC
         ";
-        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        return $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Update order status (Only for admin)

@@ -1,6 +1,13 @@
 <?php
 
-class OrderController {
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AuditLog;
+use App\Models\Order;
+use App\Models\Service;
+
+class OrderController extends Controller {
     public function index() {
         // Check login
         if (!isset($_SESSION["user_id"])) {

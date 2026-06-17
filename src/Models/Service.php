@@ -1,4 +1,8 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
+
 /**
  * Service — VPS lifecycle management
  *
@@ -351,7 +355,7 @@ class Service {
             ORDER BY s.created_at DESC
         ");
         $stmt->execute([$userId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // ── Resource Metrics ──────────────────────────────────────

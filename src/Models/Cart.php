@@ -1,4 +1,7 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
 
 class Cart {
     public static function getUserCart(int $userId): array {

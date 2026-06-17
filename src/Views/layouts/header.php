@@ -23,10 +23,10 @@
         </a>
         <div class="nav-menu">
             <a href="/">HOME</a>
-            <a href="/#about">ABOUT</a>
-            <a href="/#features">FEATURES</a>
-            <a href="/#plans">VPS PLANS</a>
-            <a href="/#blog">BLOG</a>
+            <a href="/plans">FEATURES</a>
+            <a href="/plans#plans">VPS PLANS</a>
+            <a href="/docs">DOCS</a>
+            <a href="/blog">BLOG</a>
         </div>
         <div class="nav-actions">
             <?php if (isset($_SESSION['user_id'])): ?>
@@ -45,7 +45,14 @@
                     <div class="user-dropdown-menu" style="display:none;position:absolute;right:0;top:110%;min-width:180px;background:#151515;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:8px;z-index:10000;backdrop-filter:blur(18px);">
                         <a href="/profile" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">My Profile</a>
                         <a href="/orders" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">My Orders</a>
-                        <a href="/inbox" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">Inbox</a>
+                        <a href="/inbox" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;display:flex;align-items:center;justify-content:space-between;">
+                            Inbox
+                            <?php
+                            $unreadCount = \App\Models\AdminEmail::getUnreadCount($_SESSION['user_id']);
+                            if ($unreadCount > 0): ?>
+                                <span style="background:#ef4444;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;"><?= $unreadCount > 99 ? '99+' : $unreadCount ?></span>
+                            <?php endif; ?>
+                        </a>
                         <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 8px;"></div>
                         <a href="/logout" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#ef4444;transition:all 0.15s;">Logout</a>
                     </div>

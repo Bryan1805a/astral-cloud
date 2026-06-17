@@ -1,161 +1,141 @@
 <?php
     /**
-     * Astral Cloud — Application Entry Point
-     *
-     * Boot sequence:
-     *   1. Load .env via config/db.php
-     *   2. Register PSR-4-style autoloader (Controllers/ + Models/)
-     *   3. Define view() helper (renders Views/ with header/footer)
-     *   4. Define CSRF helpers (generateCsrfToken, csrfField, verifyCsrfToken)
-     *   5. Wire routes → Router::dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD'])
+     * Astral Cloud — Application Entry Point (OOP MVC)
      */
-    ini_set("display_errors", 1);
-    ini_set("display_startup_errors", 1);
+
+    use App\Core\Router;
+    use App\Core\Response;
+
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
 
     session_start();
 
-    require_once __DIR__ . "/../vendor/autoload.php";
-    require_once __DIR__ . "/config/db.php";
+    require_once __DIR__ . '/../vendor/autoload.php';
+    require_once __DIR__ . '/config/db.php';
 
-    spl_autoload_register(function ($class) {
-        $paths = [
-            __DIR__ . "/Controllers/" . $class . ".php",
-            __DIR__ . "/Models/" . $class . ".php",
-        ];
-        foreach ($paths as $path) {
-            if (file_exists($path)) {
-                require_once $path;
-                return;
-            }
-        }
-    });
+    // ── Global helpers (compatibility shims for legacy controllers) ──
+    $_response = new Response();
 
     function view(string $view, array $data = []): void {
-        extract($data);
-        require __DIR__ . "/Views/layouts/header.php";
-        require __DIR__ . "/Views/{$view}.php";
-        require __DIR__ . "/Views/layouts/footer.php";
+        global $_response;
+        $_response->render($view, $data);
     }
 
     function generateCsrfToken(): string {
-        if (empty($_SESSION['_csrf_token'])) {
-            $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
-        }
-        return $_SESSION['_csrf_token'];
+        global $_response;
+        return $_response->csrfToken();
     }
 
     function csrfField(): string {
-        return '<input type="hidden" name="_csrf_token" value="' . generateCsrfToken() . '">';
+        global $_response;
+        return $_response->csrfField();
     }
 
     function verifyCsrfToken(): void {
-        $token = $_POST['_csrf_token'] ?? '';
-        if (empty($token) || !hash_equals($_SESSION['_csrf_token'] ?? '', $token)) {
-            http_response_code(419);
-            die("<h2 style='color:red;text-align:center;margin-top:50px;'>419 - CSRF token validation failed. Please go back and try again.</h2>");
-        }
+        global $_response;
+        $_response->verifyCsrf(new \App\Core\Request());
     }
 
     function jsonResponse(array $data, int $status = 200): void {
-        http_response_code($status);
-        header("Content-Type: application/json");
-        echo json_encode($data);
-        exit;
+        global $_response;
+        $_response->json($data, $status);
     }
 
     function isAjaxRequest(): bool {
-        return isset($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) === "xmlhttprequest";
+        return (new \App\Core\Request())->isAjaxRequest();
     }
-
-    require_once __DIR__ . "/Router.php";
 
     $router = new Router();
 
     // Routes for user
-    $router->get("/",                               [ProductController::class, "index"]);
+    $router->get('/',           \App\Controllers\ProductController::class, 'index');
+    $router->get('/plans',      \App\Controllers\ProductController::class, 'plans');
+    $router->get('/product',    \App\Controllers\ProductController::class, 'detail');
+    $router->get('/blog',       \App\Controllers\ProductController::class, 'blog');
+    $router->get('/docs',       \App\Controllers\ProductController::class, 'docs');
 
-    $router->get("/api/health",                     [HealthController::class, "index"]);
+    $router->get('/api/health', \App\Controllers\HealthController::class, 'index');
 
-    $router->get("/login",                          [AuthController::class, "login"]);
-    $router->post("/login",                         [AuthController::class, "login"]);
-    $router->get("/register",                       [AuthController::class, "register"]);
-    $router->post("/register",                      [AuthController::class, "register"]);
-    $router->get("/logout",                         [AuthController::class, "logout"]);
-    $router->get("/verify",                         [AuthController::class, "verify"]);
-    $router->get("/verify-otp",                     [AuthController::class, "showOtpForm"]);
-    $router->post("/verify-otp",                    [AuthController::class, "showOtpForm"]);
-    $router->get("/forgot-password",                [PasswordResetController::class, "forgot"]);
-    $router->post("/forgot-password",               [PasswordResetController::class, "forgot"]);
-    $router->get("/reset-password",                 [PasswordResetController::class, "reset"]);
-    $router->post("/reset-password",                [PasswordResetController::class, "reset"]);
+    $router->get('/login',      \App\Controllers\AuthController::class, 'login');
+    $router->post('/login',     \App\Controllers\AuthController::class, 'login');
+    $router->get('/register',   \App\Controllers\AuthController::class, 'register');
+    $router->post('/register',  \App\Controllers\AuthController::class, 'register');
+    $router->get('/logout',     \App\Controllers\AuthController::class, 'logout');
+    $router->get('/verify',     \App\Controllers\AuthController::class, 'verify');
+    $router->get('/verify-otp', \App\Controllers\AuthController::class, 'showOtpForm');
+    $router->post('/verify-otp',\App\Controllers\AuthController::class, 'showOtpForm');
+    $router->get('/forgot-password',    \App\Controllers\PasswordResetController::class, 'forgot');
+    $router->post('/forgot-password',   \App\Controllers\PasswordResetController::class, 'forgot');
+    $router->get('/reset-password',     \App\Controllers\PasswordResetController::class, 'reset');
+    $router->post('/reset-password',    \App\Controllers\PasswordResetController::class, 'reset');
 
-    $router->get("/mfa-verify",                     [AuthController::class, "mfaVerify"]);
-    $router->post("/mfa-verify",                    [AuthController::class, "mfaVerify"]);
-    $router->get("/mfa-setup",                      [ProfileController::class, "setupMfa"]);
-    $router->post("/mfa-setup",                     [ProfileController::class, "setupMfa"]);
+    $router->get('/mfa-verify',     \App\Controllers\AuthController::class, 'mfaVerify');
+    $router->post('/mfa-verify',    \App\Controllers\AuthController::class, 'mfaVerify');
+    $router->get('/mfa-setup',      \App\Controllers\ProfileController::class, 'setupMfa');
+    $router->post('/mfa-setup',     \App\Controllers\ProfileController::class, 'setupMfa');
 
-    $router->get("/cart",                           [CartController::class, "index"]);
-    $router->post("/cart/add",                      [CartController::class, "add"]);
-    $router->post("/cart/remove",                   [CartController::class, "remove"]);
-    $router->post("/cart/update",                   [CartController::class, "update"]);
-    $router->get("/cart/count",                     [CartController::class, "count"]);
+    $router->get('/cart',           \App\Controllers\CartController::class, 'index');
+    $router->post('/cart/add',      \App\Controllers\CartController::class, 'add');
+    $router->post('/cart/remove',   \App\Controllers\CartController::class, 'remove');
+    $router->post('/cart/update',   \App\Controllers\CartController::class, 'update');
+    $router->get('/cart/count',     \App\Controllers\CartController::class, 'count');
 
-    $router->get("/checkout",                       [CheckoutController::class, "index"]);
-    $router->post("/checkout/place-order",          [CheckoutController::class, "placeOrder"]);
-    $router->get("/checkout/place-order",           [CheckoutController::class, "placeOrderGet"]);
-    $router->get("/checkout/success",               [CheckoutController::class, "success"]);
-    $router->post("/checkout/validate-voucher",     [CheckoutController::class, "validateVoucher"]);
+    $router->get('/checkout',       \App\Controllers\CheckoutController::class, 'index');
+    $router->post('/checkout/place-order',      \App\Controllers\CheckoutController::class, 'placeOrder');
+    $router->get('/checkout/place-order',       \App\Controllers\CheckoutController::class, 'placeOrderGet');
+    $router->get('/checkout/success',           \App\Controllers\CheckoutController::class, 'success');
+    $router->post('/checkout/validate-voucher', \App\Controllers\CheckoutController::class, 'validateVoucher');
 
-    // Payment gateway routes
-    $router->get("/payment/vnpay-return",           [PaymentController::class, "vnpayReturn"]);
-    $router->get("/payment/vnpay-ipn",              [PaymentController::class, "vnpayIpn"]);
+    $router->get('/payment/vnpay-return',   \App\Controllers\PaymentController::class, 'vnpayReturn');
+    $router->get('/payment/vnpay-ipn',      \App\Controllers\PaymentController::class, 'vnpayIpn');
 
-    $router->get("/orders",                         [OrderController::class, "index"]);
-    $router->get("/orders/invoice",                 [OrderController::class, "invoice"]);
-    $router->post("/orders/cancel",                 [OrderController::class, "cancel"]);
+    $router->get('/orders',             \App\Controllers\OrderController::class, 'index');
+    $router->get('/orders/invoice',     \App\Controllers\OrderController::class, 'invoice');
+    $router->post('/orders/cancel',     \App\Controllers\OrderController::class, 'cancel');
 
-    $router->post("/service/stop",                  [ServiceController::class, "stop"]);
-    $router->post("/service/start",                 [ServiceController::class, "start"]);
-    $router->post("/service/restart",               [ServiceController::class, "restart"]);
-    $router->post("/service/rebuild",               [ServiceController::class, "rebuild"]);
+    $router->post('/service/stop',      \App\Controllers\ServiceController::class, 'stop');
+    $router->post('/service/start',     \App\Controllers\ServiceController::class, 'start');
+    $router->post('/service/restart',   \App\Controllers\ServiceController::class, 'restart');
+    $router->post('/service/rebuild',   \App\Controllers\ServiceController::class, 'rebuild');
 
-    $router->get("/inbox",                          [InboxController::class, "index"]);
-    $router->post("/inbox/read",                    [InboxController::class, "markRead"]);
+    $router->get('/inbox',              \App\Controllers\InboxController::class, 'index');
+    $router->post('/inbox/read',        \App\Controllers\InboxController::class, 'markRead');
 
-    $router->get("/profile",                        [ProfileController::class, "index"]);
-    $router->post("/profile/update",                [ProfileController::class, "update"]);
+    $router->get('/profile',            \App\Controllers\ProfileController::class, 'index');
+    $router->post('/profile/update',    \App\Controllers\ProfileController::class, 'update');
 
-    $router->get("/console",                        [ConsoleController::class, "index"]);
+    $router->get('/console',            \App\Controllers\ConsoleController::class, 'index');
 
     // Routes for admin
-    $router->get("/admin/orders",                   [AdminOrderController::class, "index"]);
-    $router->get("/admin/orders/invoice",           [AdminOrderController::class, "invoice"]);
-    $router->post("/admin/orders/update",           [AdminOrderController::class, "update"]);
+    $router->get('/admin/orders',           \App\Controllers\AdminOrderController::class, 'index');
+    $router->get('/admin/orders/invoice',   \App\Controllers\AdminOrderController::class, 'invoice');
+    $router->post('/admin/orders/update',   \App\Controllers\AdminOrderController::class, 'update');
 
-    $router->get("/admin/products",                 [AdminProductController::class, "index"]);
-    $router->post("/admin/products/store",          [AdminProductController::class, "store"]);
-    $router->post("/admin/products/update",         [AdminProductController::class, "update"]);
-    $router->post("/admin/products/toggle",         [AdminProductController::class, "toggle"]);
+    $router->get('/admin/products',         \App\Controllers\AdminProductController::class, 'index');
+    $router->post('/admin/products/store',  \App\Controllers\AdminProductController::class, 'store');
+    $router->post('/admin/products/update', \App\Controllers\AdminProductController::class, 'update');
+    $router->post('/admin/products/toggle', \App\Controllers\AdminProductController::class, 'toggle');
 
-    $router->get("/admin",                          [AdminDashboardController::class, "index"]);
-    $router->get("/admin/dashboard",                [AdminDashboardController::class, "index"]);
+    $router->get('/admin',                  \App\Controllers\AdminDashboardController::class, 'index');
+    $router->get('/admin/dashboard',        \App\Controllers\AdminDashboardController::class, 'index');
 
-    $router->get("/admin/users",                    [AdminUserController::class, "index"]);
-    $router->post("/admin/users/toggle-lock",       [AdminUserController::class, "toggleLock"]);
+    $router->get('/admin/users',            \App\Controllers\AdminUserController::class, 'index');
+    $router->post('/admin/users/toggle-lock', \App\Controllers\AdminUserController::class, 'toggleLock');
 
-    $router->get("/admin/vouchers",                 [AdminVoucherController::class, "index"]);
-    $router->post("/admin/vouchers/store",          [AdminVoucherController::class, "store"]);
-    $router->post("/admin/vouchers/toggle",         [AdminVoucherController::class, "toggle"]);
+    $router->get('/admin/vouchers',         \App\Controllers\AdminVoucherController::class, 'index');
+    $router->post('/admin/vouchers/store',  \App\Controllers\AdminVoucherController::class, 'store');
+    $router->post('/admin/vouchers/toggle', \App\Controllers\AdminVoucherController::class, 'toggle');
 
-    $router->get("/admin/reviews",                  [AdminReviewController::class, "index"]);
-    $router->post("/admin/reviews/toggle",           [AdminReviewController::class, "toggle"]);
+    $router->get('/admin/reviews',          \App\Controllers\AdminReviewController::class, 'index');
+    $router->post('/admin/reviews/toggle',   \App\Controllers\AdminReviewController::class, 'toggle');
 
-    $router->get("/admin/emails",                   [AdminEmailController::class, "index"]);
-    $router->post("/admin/emails/send",             [AdminEmailController::class, "send"]);
+    $router->get('/admin/emails',           \App\Controllers\AdminEmailController::class, 'index');
+    $router->post('/admin/emails/send',     \App\Controllers\AdminEmailController::class, 'send');
 
-    $router->get("/admin/audit-logs",              [AdminAuditLogController::class, "index"]);
+    $router->get('/admin/audit-logs',      \App\Controllers\AdminAuditLogController::class, 'index');
 
-    $router->post("/review/submit",                [ReviewController::class, "submit"]);
+    $router->post('/review/submit',        \App\Controllers\ReviewController::class, 'submit');
 
-    $router->dispatch($_SERVER["REQUEST_URI"], $_SERVER["REQUEST_METHOD"]);
+    $router->dispatch();

@@ -1,5 +1,11 @@
 <?php
 
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AuditLog;
+use App\Models\Service;
+
 /**
  * ServiceController — VM lifecycle actions (user-facing)
  *
@@ -7,7 +13,7 @@
  * Each action POSTs the service_id, calls the VM Bridge,
  * updates the DB, and redirects back to /orders with a message.
  */
-class ServiceController {
+class ServiceController extends Controller {
     private function requireLogin(): void {
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");

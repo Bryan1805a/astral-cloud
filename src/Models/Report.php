@@ -1,4 +1,8 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
+
 class Report {
     // Calculate monthly total
     public static function getMonthlyRevenue(): array {
@@ -21,7 +25,7 @@ class Report {
             LIMIT 12
         ";
 
-        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        return $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Get the Top 5 Bestselling Products
@@ -41,7 +45,7 @@ class Report {
             LIMIT 5
         ";
 
-        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        return $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Get the Top 5 Worst-Selling Products
@@ -61,7 +65,7 @@ class Report {
             LIMIT 5
         ";
 
-        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        return $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Get Summary stat
@@ -87,7 +91,7 @@ class Report {
             FROM orders
             GROUP BY status
             ORDER BY FIELD(status, 'pending','confirmed','provisioning','active','success','cancelled')
-        ")->fetchAll(PDO::FETCH_ASSOC);
+        ")->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public static function getServiceStatusCounts(): array {
@@ -108,7 +112,7 @@ class Report {
             LEFT JOIN users u ON a.user_id = u.id
             ORDER BY a.created_at DESC
             LIMIT {$limit}
-        ")->fetchAll(PDO::FETCH_ASSOC);
+        ")->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public static function getMonthlyComparison(): array {
@@ -155,7 +159,7 @@ class Report {
             WHERE p.is_active = 1
             GROUP BY p.id, p.name, p.price
             ORDER BY total_sold DESC
-        ")->fetchAll(PDO::FETCH_ASSOC);
+        ")->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public static function getTopCustomers(int $limit = 8): array {
@@ -171,6 +175,6 @@ class Report {
             LIMIT ?
         ");
         $stmt->execute([$limit]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

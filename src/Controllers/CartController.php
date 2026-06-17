@@ -1,6 +1,13 @@
 <?php
 
-class CartController {
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AuditLog;
+use App\Models\Cart;
+use App\Models\Product;
+
+class CartController extends Controller {
     public function index(): void {
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");

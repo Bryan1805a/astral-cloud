@@ -20,6 +20,19 @@
 
 .products-section h1 { text-align:center; margin-bottom: 8px; }
 .products-section > p { text-align:center; color: #94a3b8; margin-bottom: 8px; max-width: 680px; margin: 0 auto 8px; }
+
+.plans-controls { max-width: 1280px; margin: 20px auto 0; padding: 0 16px; }
+.plans-search-form { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.plans-search-input { padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: #e2e8f0; font-size: 13px; font-family: inherit; width: 260px; outline: none; transition: border-color 0.15s; }
+.plans-search-input:focus { border-color: #38bdf8; }
+.plans-search-input::placeholder { color: #64748b; }
+.plans-sort-select { padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: #e2e8f0; font-size: 13px; font-family: inherit; cursor: pointer; outline: none; }
+.plans-sort-select option { background: #151515; color: #e2e8f0; }
+.plans-search-btn { padding: 10px 20px; border-radius: 12px; border: none; background: #38bdf8; color: #0f172a; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+.plans-search-btn:hover { background: #7dd3fc; }
+.plans-clear-btn { padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); color: #94a3b8; font-size: 13px; text-decoration: none; font-family: inherit; transition: all 0.15s; }
+.plans-clear-btn:hover { border-color: #ef4444; color: #ef4444; }
+
 .vps-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; max-width: 1280px; margin: 32px auto 0; padding: 0 16px; }
 .vps-card { background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.10); border-radius: 24px; padding: 28px; display:flex; flex-direction:column; transition:border-color 0.3s, transform 0.3s, box-shadow 0.3s; }
 .vps-card:hover { border-color: rgba(56,189,248,0.4); transform: translateY(-2px); }
@@ -89,3 +102,9 @@
 .review-form-buttons .plan-btn { flex: 1; }
 .review-cancel-btn { padding: 12px 24px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #94a3b8; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; white-space: nowrap; }
 .review-cancel-btn:hover { background: rgba(255,255,255,0.10); color: #e2e8f0; }
+
+.pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 32px; }
+.pagination-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: #94a3b8; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+.pagination-btn:hover { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.3); color: #38bdf8; }
+.pagination-btn.active { background: #38bdf8; border-color: #38bdf8; color: #0f172a; cursor: default; }
+.pagination-btn.disabled { opacity: 0.35; pointer-events: none; }

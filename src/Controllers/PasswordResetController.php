@@ -1,6 +1,13 @@
 <?php
 
-class PasswordResetController {
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AuditLog;
+use App\Models\MailHelper;
+use App\Models\User;
+
+class PasswordResetController extends Controller {
     public function forgot(): void {
         $error   = "";
         $success = "";

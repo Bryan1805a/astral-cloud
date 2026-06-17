@@ -1,4 +1,7 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
 
 class Voucher {
     // Find voucher by Code
@@ -13,7 +16,7 @@ class Voucher {
     public static function getAll(): array {
         $pdo = Database::getConnection();
         $sql = "SELECT * FROM vouchers ORDER BY created_at DESC";
-        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        return $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Add new voucher and save to datase

@@ -1,6 +1,11 @@
 <?php
 
-class InboxController {
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AdminEmail;
+
+class InboxController extends Controller {
     // Fetch all email data from database for user who want to read it
     public function index() {
         if (!isset($_SESSION["user_id"])) {

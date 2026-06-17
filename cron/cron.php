@@ -23,19 +23,10 @@ if (PHP_SAPI !== "cli") {
 require_once __DIR__ . "/../vendor/autoload.php";
 require_once __DIR__ . "/../src/config/db.php";
 
-// ---- Bootstrap ----
-spl_autoload_register(function ($class) {
-    $paths = [
-        __DIR__ . "/../src/Controllers/" . $class . ".php",
-        __DIR__ . "/../src/Models/" . $class . ".php",
-    ];
-    foreach ($paths as $path) {
-        if (file_exists($path)) {
-            require_once $path;
-            return;
-        }
-    }
-});
+use App\Core\Database;
+use App\Models\AuditLog;
+use App\Models\RateLimiter;
+use App\Models\Service;
 
 // ---- Helpers ----
 function cronLog(string $message): void {

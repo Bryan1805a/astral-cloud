@@ -1,6 +1,13 @@
 <?php
 
-class ProfileController {
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\AuditLog;
+use App\Models\MfaHelper;
+use App\Models\User;
+
+class ProfileController extends Controller {
     public function index(): void {
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");

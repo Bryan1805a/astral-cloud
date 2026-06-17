@@ -1,4 +1,7 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
 
 class TtydHelper {
     private static function getBridgeUrl(): string {

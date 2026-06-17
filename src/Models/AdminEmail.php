@@ -1,4 +1,8 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
+
 class AdminEmail {
     // Admin send message
     public static function send(int $senderId, ?int $recipientId, string $subject, string $body): void {
@@ -20,7 +24,7 @@ class AdminEmail {
         ");
 
         $stmt->execute([$userId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // User mark read status
@@ -28,5 +32,23 @@ class AdminEmail {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("UPDATE admin_emails SET is_read = 1 WHERE id = ? AND (recipient_id = ? OR recipient_id IS NULL)");
         $stmt->execute([$emailId, $userId]);
+    }
+
+    // Count unread inbox items (admin emails + notifications)
+    public static function getUnreadCount(int $userId): int {
+        $pdo = Database::getConnection();
+
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) FROM admin_emails
+            WHERE is_read = 0 AND (recipient_id = ? OR recipient_id IS NULL)
+        ");
+        $stmt->execute([$userId]);
+        $emailCount = (int) $stmt->fetchColumn();
+
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
+        $stmt->execute([$userId]);
+        $notifCount = (int) $stmt->fetchColumn();
+
+        return $emailCount + $notifCount;
     }
 }

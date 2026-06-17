@@ -1,4 +1,7 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
 
 class AuditLog {
     public static function log(string $action, string $entityType, ?int $entityId, string $description, ?array $oldValues = null, ?array $newValues = null): void {
@@ -65,17 +68,17 @@ class AuditLog {
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public static function getDistinctActions(): array {
         $pdo = Database::getConnection();
-        return $pdo->query("SELECT DISTINCT action FROM audit_logs ORDER BY action")->fetchAll(PDO::FETCH_COLUMN);
+        return $pdo->query("SELECT DISTINCT action FROM audit_logs ORDER BY action")->fetchAll(\PDO::FETCH_COLUMN);
     }
 
     public static function getDistinctEntityTypes(): array {
         $pdo = Database::getConnection();
-        return $pdo->query("SELECT DISTINCT entity_type FROM audit_logs ORDER BY entity_type")->fetchAll(PDO::FETCH_COLUMN);
+        return $pdo->query("SELECT DISTINCT entity_type FROM audit_logs ORDER BY entity_type")->fetchAll(\PDO::FETCH_COLUMN);
     }
 
     public static function getTotalCount(?string $actionFilter = null, ?string $entityFilter = null): int {

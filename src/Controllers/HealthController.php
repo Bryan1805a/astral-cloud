@@ -1,5 +1,10 @@
 <?php
 
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Core\Database;
+
 /**
  * HealthController — system health checks
  *
@@ -8,7 +13,7 @@
  *   - vm_bridge: { ok, url, error? }
  *   - timestamp: ISO 8601
  */
-class HealthController {
+class HealthController extends Controller {
     public function index(): void {
         $checks = [
             'database'  => $this->checkDatabase(),
