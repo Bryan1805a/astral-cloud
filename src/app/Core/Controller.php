@@ -42,7 +42,7 @@ abstract class Controller
 
     protected function isLoggedIn(): bool
     {
-        return isset($this->request->session['user_id']);
+        return isset($_SESSION['user_id']);
     }
 
     protected function requireLogin(): void
@@ -63,12 +63,12 @@ abstract class Controller
 
     protected function user(string $key, mixed $default = null): mixed
     {
-        return $this->request->session[$key] ?? $default;
+        return $_SESSION[$key] ?? $default;
     }
 
     protected function userId(): ?int
     {
-        return isset($this->request->session['user_id'])
-            ? (int) $this->request->session['user_id'] : null;
+        return isset($_SESSION['user_id'])
+            ? (int) $_SESSION['user_id'] : null;
     }
 }

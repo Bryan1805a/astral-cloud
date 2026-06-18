@@ -96,8 +96,8 @@ class AdminOrderController extends Controller {
                     ["status" => $status]
                 );
 
-                // Auto provision VPS when order is confirmed or success
-                if (in_array($status, ['confirmed', 'success']) && $order) {
+                // Auto provision VPS when order is confirmed
+                if ($status === 'confirmed' && $order) {
                     Service::provisionForOrder($orderId, $order["user_id"]);
                 }
             }
