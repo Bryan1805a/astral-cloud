@@ -21,7 +21,7 @@
                             <p><?= htmlspecialchars($item['cpu']) ?> | <?= htmlspecialchars($item['ram']) ?></p>
                             <div class="qty-controls" style="margin-top:12px;">
                                 <button type="button" class="js-qty-minus" data-product-id="<?= $item['product_id'] ?>">−</button>
-                                <span class="js-qty-input"><?= $item['quantity'] ?></span>
+                                <input type="text" class="js-qty-input" value="<?= $item['quantity'] ?>" readonly style="width:30px;text-align:center;background:transparent;border:none;color:#fff;font-weight:600;font-size:14px;">
                                 <button type="button" class="js-qty-plus" data-product-id="<?= $item['product_id'] ?>">+</button>
                             </div>
                         </div>
