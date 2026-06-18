@@ -30,6 +30,8 @@ class Order {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("INSERT INTO voucher_usages (voucher_id, user_id, order_id) VALUES (?, ?, ?)");
         $stmt->execute([$voucherId, $userId, $orderId]);
+        $pdo->prepare("UPDATE vouchers SET used_count = used_count + 1 WHERE id = ?")
+            ->execute([$voucherId]);
     }
 
     // Find order by ID

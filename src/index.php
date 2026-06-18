@@ -57,6 +57,7 @@
     $router->get('/docs',       \App\Controllers\ProductController::class, 'docs');
 
     $router->get('/api/health', \App\Controllers\HealthController::class, 'index');
+    $router->get('/api/service-status', \App\Controllers\ConsoleController::class, 'status');
 
     $router->get('/login',      \App\Controllers\AuthController::class, 'login');
     $router->post('/login',     \App\Controllers\AuthController::class, 'login');

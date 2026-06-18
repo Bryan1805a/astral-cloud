@@ -506,21 +506,8 @@ END$$
 DELIMITER ;
 
 -- ------------------------------------------------------------
--- TRIGGER 3: Increase the voucher's used_count when it is used.
 -- ------------------------------------------------------------
-DELIMITER $$
-CREATE TRIGGER trg_voucher_used_count
-AFTER INSERT ON voucher_usages
-FOR EACH ROW
-BEGIN
-    UPDATE vouchers
-    SET used_count = used_count + 1
-    WHERE id = NEW.voucher_id;
-END$$
-DELIMITER ;
-
--- ------------------------------------------------------------
--- TRIGGER 4: Automatically log when an order changes status.
+-- TRIGGER 3: Automatically log when an order changes status.
 -- ------------------------------------------------------------
 DELIMITER $$
 CREATE TRIGGER trg_order_status_history

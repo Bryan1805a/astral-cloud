@@ -45,43 +45,71 @@
     <iframe class="console-iframe" src="<?= htmlspecialchars($consoleUrl) ?>" title="Web Console"></iframe>
 
 <?php elseif ($service): ?>
-    <?php
-    $steps = [
-        'creating_vm'      => ['Creating VM',       'VM is being cloned from base image'],
-        'booting'          => ['Booting VM',         'Virtual machine is starting up'],
-        'waiting_ip'       => ['Waiting for IP',     'Obtaining IP address from DHCP'],
-        'preparing_console'=> ['Preparing Console',  'Starting web terminal service'],
-        'ready'            => ['Ready',              'Console is available'],
-    ];
-    $status = $provisioningStatus ?: 'creating_vm';
-    $statusIndex = array_search($status, array_keys($steps));
-    if ($statusIndex === false) $statusIndex = 0;
-    ?>
     <div class="console-wrap">
-        <div style="text-align:center;">
-            <div style="font-size:56px;margin-bottom:16px;"><?= $statusIndex < 4 ? '⏳' : '✅' ?></div>
+        <div style="text-align:center;" id="provision-box">
+            <div style="font-size:56px;margin-bottom:16px;">⏳</div>
             <h1 style="font-size:24px;font-weight:700;margin-bottom:32px;">Provisioning Your VPS</h1>
-            <div class="step-list">
-                <?php $i = 0; foreach ($steps as $key => $step): ?>
-                    <div class="step <?= $i < $statusIndex ? 'done' : ($i === $statusIndex ? 'active' : 'pending') ?>">
-                        <span class="step-icon"><?= $i < $statusIndex ? '✓' : ($i === $statusIndex ? '▶' : '○') ?></span>
-                        <span><strong><?= $step[0] ?></strong> — <?= $step[1] ?></span>
-                        <?php if ($i === $statusIndex && $i < 4): ?>
-                            <span class="badge-progress"><span class="spinner"></span> in progress</span>
-                        <?php elseif ($i === $statusIndex && $i === 4): ?>
-                            <span class="badge-progress">done</span>
-                        <?php endif; ?>
-                    </div>
-                <?php $i++; endforeach; ?>
+            <div class="step-list" id="step-list">
+                <div class="step active">
+                    <span class="step-icon">▶</span>
+                    <span><strong>Creating VM</strong> — cloning from base image</span>
+                    <span class="badge-progress"><span class="spinner"></span> in progress</span>
+                </div>
+                <div class="step pending">
+                    <span class="step-icon">○</span>
+                    <span><strong>Booting VM</strong> — virtual machine is starting up</span>
+                </div>
+                <div class="step pending">
+                    <span class="step-icon">○</span>
+                    <span><strong>Waiting for IP</strong> — obtaining IP from DHCP</span>
+                </div>
+                <div class="step pending">
+                    <span class="step-icon">○</span>
+                    <span><strong>Preparing Console</strong> — starting web terminal</span>
+                </div>
             </div>
             <div class="cred-box">
                 <strong>root password:</strong>
                 <code><?= htmlspecialchars($service['root_password']) ?></code>
             </div>
-            <p class="text-muted mt-3">This page auto-refreshes. If provisioning takes too long, check back in a minute.</p>
+            <p class="text-muted mt-3" style="color:#6b7280;font-size:13px;">Checking status automatically...</p>
         </div>
     </div>
-    <script>setTimeout(function(){location.reload()},15000);</script>
+    <script>
+    var serviceId = <?= (int)$service['id'] ?>;
+    var steps = ['creating_vm','booting','waiting_ip','preparing_console'];
+    var labels = [
+        ['Creating VM','cloning from base image'],
+        ['Booting VM','virtual machine is starting up'],
+        ['Waiting for IP','obtaining IP from DHCP'],
+        ['Preparing Console','starting web terminal']
+    ];
+
+    function updateStatus() {
+        fetch('/api/service-status?id=' + serviceId)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.success) return;
+                if (data.ready) { window.location.href = '/console?id=' + serviceId; return; }
+                var idx = steps.indexOf(data.status);
+                if (idx === -1) idx = steps.length - 1;
+                var html = '';
+                for (var i = 0; i < steps.length; i++) {
+                    var cls = i < idx ? 'done' : (i === idx ? 'active' : 'pending');
+                    var icon = i < idx ? '\u2713' : (i === idx ? '\u25B6' : '\u25CB');
+                    html += '<div class="step ' + cls + '">';
+                    html += '<span class="step-icon">' + icon + '</span>';
+                    html += '<span><strong>' + labels[i][0] + '</strong> \u2014 ' + labels[i][1] + '</span>';
+                    if (i === idx) html += '<span class="badge-progress"><span class="spinner"></span> in progress</span>';
+                    html += '</div>';
+                }
+                document.getElementById('step-list').innerHTML = html;
+            });
+    }
+
+    setInterval(updateStatus, 5000);
+    updateStatus();
+    </script>
 
 <?php else: ?>
     <div class="console-wrap">

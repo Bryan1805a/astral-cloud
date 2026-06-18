@@ -234,7 +234,7 @@
                         <?php
                         $metrics = null;
                         if ($currentService && $currentService['status'] === 'running') {
-                            $metrics = Service::getLatestMetrics($currentService['id']);
+                            $metrics = \App\Models\Service::getLatestMetrics($currentService['id']);
                         }
                         ?>
                         <?php if ($metrics): ?>
