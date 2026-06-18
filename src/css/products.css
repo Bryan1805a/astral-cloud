@@ -34,8 +34,16 @@
 .plans-clear-btn:hover { border-color: #ef4444; color: #ef4444; }
 
 .vps-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; max-width: 1280px; margin: 32px auto 0; padding: 0 16px; }
-.vps-card { background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.10); border-radius: 24px; padding: 28px; display:flex; flex-direction:column; transition:border-color 0.3s, transform 0.3s, box-shadow 0.3s; }
+.vps-card { background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.10); border-radius: 24px; padding: 28px; display:flex; flex-direction:column; transition:border-color 0.3s, transform 0.3s, box-shadow 0.3s; position: relative; overflow: hidden; }
 .vps-card:hover { border-color: rgba(56,189,248,0.4); transform: translateY(-2px); }
+
+.plan-badge { position: absolute; top: 12px; right: 12px; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; z-index: 1; }
+.plan-badge-recommend { background: linear-gradient(135deg, #38bdf8, #2563eb); color: #fff; }
+.plan-badge-discount { background: linear-gradient(135deg, #f97316, #ef4444); color: #fff; }
+.plan-badge-oos { background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); top: 12px; left: 12px; right: auto; }
+
+.package-card { position: relative; overflow: hidden; }
+.package-card .plan-badge { top: 10px; right: 10px; }
 .vps-card h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
 .vps-card .description { font-size: 13px; color: #94a3b8; margin-bottom: 16px; line-height: 1.5; }
 .vps-card .price { font-size: 28px; font-weight: 800; color: #38bdf8; margin-bottom: 20px; }

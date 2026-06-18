@@ -38,7 +38,9 @@
                 <form action="/cart/add" method="POST" class="js-add-cart" style="margin-top:20px;">
                     <input type="hidden" name="_csrf_token" value="<?= generateCsrfToken() ?>">
                     <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                    <button type="submit" class="plan-btn" style="padding:14px 40px;font-size:15px;">Add to Cart — <?= number_format($product['price'], 0, ',', '.') ?> VND</button>
+                    <button type="submit" class="plan-btn" style="padding:14px 40px;font-size:15px;" <?= (int)$product['stock'] <= 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;padding:14px 40px;font-size:15px;"' : '' ?>>
+                        <?= (int)$product['stock'] <= 0 ? 'Out of Stock' : 'Add to Cart — ' . number_format($product['price'], 0, ',', '.') . ' VND' ?>
+                    </button>
                 </form>
             </div>
             <div class="product-detail-visual">

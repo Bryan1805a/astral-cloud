@@ -88,6 +88,14 @@
     <div class="package-grid">
         <?php foreach ($featured_plans as $plan): ?>
             <div class="package-card">
+                <?php if ($plan['slug'] === 'vps-basic'): ?>
+                    <span class="plan-badge plan-badge-recommend">Recommend</span>
+                <?php elseif ($plan['slug'] === 'vps-pro'): ?>
+                    <span class="plan-badge plan-badge-discount">50% discount for students</span>
+                <?php endif; ?>
+                <?php if ((int)$plan['stock'] <= 0): ?>
+                    <span class="plan-badge plan-badge-oos">Out of stock</span>
+                <?php endif; ?>
                 <div class="package-icon">
                     <?php
                     $icon = str_contains(strtolower($plan['name']), 'starter') ? '🧊'
@@ -148,6 +156,14 @@
             <div class="vps-card" id="plan-<?= $plan['id'] ?>"
                  data-reviews='<?= htmlspecialchars(json_encode($reviews), ENT_QUOTES, 'UTF-8') ?>'
                  data-can-review='<?= htmlspecialchars(json_encode($can_review[$plan['id']] ?? null), ENT_QUOTES, 'UTF-8') ?>'>
+                    <?php if ($plan['slug'] === 'vps-basic'): ?>
+                        <span class="plan-badge plan-badge-recommend">Recommend</span>
+                    <?php elseif ($plan['slug'] === 'vps-pro'): ?>
+                        <span class="plan-badge plan-badge-discount">50% discount for students</span>
+                    <?php endif; ?>
+                    <?php if ((int)$plan['stock'] <= 0): ?>
+                        <span class="plan-badge plan-badge-oos">Out of stock</span>
+                    <?php endif; ?>
                 <h2><?= htmlspecialchars($plan['name']) ?></h2>
                 <p class="description"><?= htmlspecialchars($plan['description']) ?></p>
                 <div class="price"><?= number_format($plan['price'], 0, ',', '.') ?> VND<span>/month</span></div>
@@ -179,7 +195,9 @@
                     <form action="/cart/add" method="POST" class="js-add-cart">
                         <input type="hidden" name="_csrf_token" value="<?= generateCsrfToken() ?>">
                         <input type="hidden" name="product_id" value="<?= $plan['id'] ?>">
-                        <button type="submit" class="plan-btn w-100">Add to Cart</button>
+                        <button type="submit" class="plan-btn w-100" <?= (int)$plan['stock'] <= 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : '' ?>>
+                            <?= (int)$plan['stock'] <= 0 ? 'Out of Stock' : 'Add to Cart' ?>
+                        </button>
                     </form>
                 </div>
             </div>
