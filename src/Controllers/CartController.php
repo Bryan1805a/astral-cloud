@@ -61,6 +61,23 @@ class CartController extends Controller {
             die("<h3 style='color:red;'>Error: The VPS package does not exist or has been discontinued.</h3>");
         }
 
+        // Check stock
+        $pdo = \App\Core\Database::getConnection();
+        $stmt = $pdo->prepare("SELECT COALESCE(SUM(quantity), 0) FROM cart WHERE user_id = ? AND product_id = ?");
+        $stmt->execute([$_SESSION["user_id"], $product_id]);
+        $cartQty = (int) $stmt->fetchColumn();
+
+        $stmt = $pdo->prepare("SELECT stock FROM products WHERE id = ?");
+        $stmt->execute([$product_id]);
+        $stock = (int) $stmt->fetchColumn();
+
+        if ($cartQty + 1 > $stock) {
+            if (isAjaxRequest()) {
+                jsonResponse(["success" => false, "message" => "Only {$stock} unit(s) available in stock."]);
+            }
+            die("<h3 style='color:red;'>Sorry, only {$stock} unit(s) of this product are available.</h3>");
+        }
+
         Cart::add($_SESSION["user_id"], $product_id);
         $count = Cart::getCartCount($_SESSION["user_id"]);
 
@@ -123,6 +140,25 @@ class CartController extends Controller {
 
         if ($product_id <= 0 || $quantity < 0) {
             jsonResponse(["success" => false, "message" => "Invalid parameters."], 400);
+        }
+
+        // Check stock
+        $product = Product::findActive($product_id);
+        if (!$product) {
+            jsonResponse(["success" => false, "message" => "Product not available."], 400);
+        }
+
+        $pdo = \App\Core\Database::getConnection();
+        $stmt = $pdo->prepare("SELECT stock FROM products WHERE id = ?");
+        $stmt->execute([$product_id]);
+        $stock = (int) $stmt->fetchColumn();
+
+        if ($quantity > $stock) {
+            jsonResponse([
+                "success" => false,
+                "message" => "Only {$stock} unit(s) available in stock.",
+                "quantity" => min(1, $stock),
+            ]);
         }
 
         Cart::updateQuantity($_SESSION["user_id"], $product_id, $quantity);

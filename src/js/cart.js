@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!confirm('Do you want to remove this package from your cart?')) return;
 
-            var row = form.closest('tr');
+            var row = form.closest('.js-cart-row');
             var formData = new FormData(form);
 
             fetch(form.action, {
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Quantity update
     document.querySelectorAll('.js-qty-minus, .js-qty-plus').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            var row = btn.closest('tr');
+            var row = btn.closest('.js-cart-row');
             var input = row.querySelector('.js-qty-input');
             var productId = btn.getAttribute('data-product-id');
             var current = parseInt(input.value, 10);
