@@ -344,7 +344,7 @@ class CheckoutController extends Controller {
 
             header("Location: " . $paymentUrl);
             exit;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $pdo->rollBack();
             die("<h3 style='color:red;'>Order error: " . $e->getMessage() . "</h3>");
         }

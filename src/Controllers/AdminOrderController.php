@@ -81,7 +81,7 @@ class AdminOrderController extends Controller {
                         Service::terminateForOrder($orderId);
 
                         $pdo->commit();
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         $pdo->rollBack();
                         header("Location: /admin/orders?err=cancel_failed");
                         exit;

@@ -52,7 +52,7 @@ class AdminVoucherController extends Controller {
                 );
                 header('Location: /admin/vouchers?msg=created');
                 exit;
-            } catch (PDOException $e) {
+            } catch (\PDOException $e) {
                 // Return error if voucher code already exists
                 die("<h3 style='color:red;'>Error: This voucher code already exists! " . $e->getMessage() . "</h3>");
             }

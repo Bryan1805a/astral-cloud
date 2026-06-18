@@ -32,7 +32,7 @@ class HealthController extends Controller {
             $pdo = Database::getConnection();
             $pdo->query("SELECT 1");
             return ['ok' => true];
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             return ['ok' => false, 'error' => $e->getMessage()];
         }
     }

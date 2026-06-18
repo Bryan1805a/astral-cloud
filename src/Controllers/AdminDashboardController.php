@@ -49,7 +49,7 @@ class AdminDashboardController extends Controller {
         try {
             Database::getConnection()->query("SELECT 1");
             $dbOk = true;
-        } catch (Throwable $e) {}
+        } catch (\Throwable $e) {}
 
         $bridgeUrl = getenv('VM_BRIDGE_URL') ?: 'http://host.docker.internal:10001';
         $bridgeOk = false;
