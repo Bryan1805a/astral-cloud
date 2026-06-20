@@ -27,7 +27,10 @@ class Service {
 
     private static function isBridgeReachable(): bool {
         $url = self::getBridgeUrl() . '/ttyd/status?service_id=0';
-        $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+        $ctx = stream_context_create([
+            'http' => ['timeout' => 5],
+            'ssl' => ['verify_peer' => false, 'verify_peer_name' => false],
+        ]);
         $result = @file_get_contents($url, false, $ctx);
         return $result !== false;
     }
@@ -156,7 +159,7 @@ class Service {
                     . '&password=' . urlencode($s['root_password'])
                     . '&order_id=0&item_id=' . $s['item_id'];
 
-                $ctx = stream_context_create(['http' => ['timeout' => 120]]);
+                $ctx = stream_context_create(['http' => ['timeout' => 120], 'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
                 $response = @file_get_contents($provisionUrl, false, $ctx);
 
                 if ($response === false) {
@@ -189,7 +192,7 @@ class Service {
 
                 foreach ($patterns as $name) {
                     $statusUrl = $vmBridgeUrl . '/status?name=' . urlencode($name);
-                    $ctx = stream_context_create(['http' => ['timeout' => 30]]);
+                    $ctx = stream_context_create(['http' => ['timeout' => 30], 'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
                     $response = @file_get_contents($statusUrl, false, $ctx);
 
                     if ($response !== false) {
@@ -272,7 +275,7 @@ class Service {
         if ($password) {
             $url .= '&password=' . urlencode($password);
         }
-        $ctx = stream_context_create(['http' => ['timeout' => 30]]);
+        $ctx = stream_context_create(['http' => ['timeout' => 30], 'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
         $response = @file_get_contents($url, false, $ctx);
 
         if ($response === false) {
@@ -364,7 +367,7 @@ class Service {
         $url = self::getBridgeUrl() . '/resources?ip=' . urlencode($ip)
              . '&password=' . urlencode($password);
 
-        $ctx = stream_context_create(['http' => ['timeout' => 20]]);
+        $ctx = stream_context_create(['http' => ['timeout' => 20], 'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
         $response = @file_get_contents($url, false, $ctx);
         if ($response === false) return false;
 
