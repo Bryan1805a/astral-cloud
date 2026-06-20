@@ -1292,6 +1292,24 @@ a {
   background: rgba(56,189,248,0.08);
 }
 
+.lang-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  font-size: 18px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.lang-switch:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.2);
+}
+
 .notif-badge {
   position: absolute;
   top: -4px;

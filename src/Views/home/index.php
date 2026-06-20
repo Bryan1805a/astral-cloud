@@ -85,11 +85,11 @@
 <section class="page-section hero-section">
     <div class="hero-content">
         <div>
-            <h1>Cloud VPS that makes your <br><span>PROJECT</span><br>FASTER!</h1>
-            <p>Astral Cloud provides high-performance VPS, fast deployment, stable security, and easy management for students, developers, and businesses.</p>
+            <h1><?= __('hero_title1') ?> <br><span>PROJECT</span><br><?= __('hero_title2') ?></h1>
+            <p><?= __('hero_sub') ?></p>
             <div class="hero-buttons">
-                <a href="/plans#plans" class="btn-white">View VPS Plans</a>
-                <a href="/register" class="btn-outline">Get Started</a>
+                <a href="/plans#plans" class="btn-white"><?= __('hero_btn_plans') ?></a>
+                <a href="/register" class="btn-outline"><?= __('hero_btn_start') ?></a>
             </div>
         </div>
     </div>
@@ -103,12 +103,12 @@
 
 <!-- ABOUT -->
 <section id="about" class="page-section about-section">
-    <h2>Why Astral Cloud?</h2>
-    <p>We simulate a modern VPS rental and management system, helping users find server packages, place orders, make demo payments, and track activation status.</p>
+    <h2><?= __('about_title') ?></h2>
+    <p><?= __('about_desc') ?></p>
     <div class="stats">
-        <div class="stat-card"><span></span><h3>99.9%</h3><p>Uptime</p><small>Always-on infrastructure for stable VPS performance.</small></div>
-        <div class="stat-card"><span></span><h3>NVMe</h3><p>SSD Storage</p><small>Ultra-fast storage for websites, APIs and applications.</small></div>
-        <div class="stat-card"><span></span><h3>24/7</h3><p>Support</p><small>Professional assistance whenever you need help.</small></div>
-        <div class="stat-card"><span></span><h3>DDoS</h3><p>Protection</p><small>Advanced protection against malicious attacks.</small></div>
+        <div class="stat-card"><span></span><h3>99.9%</h3><p><?= __('about_uptime') ?></p><small><?= __('about_uptime_desc') ?></small></div>
+        <div class="stat-card"><span></span><h3>NVMe</h3><p><?= __('about_storage') ?></p><small><?= __('about_storage_desc') ?></small></div>
+        <div class="stat-card"><span></span><h3>24/7</h3><p><?= __('about_support') ?></p><small><?= __('about_support_desc') ?></small></div>
+        <div class="stat-card"><span></span><h3>DDoS</h3><p><?= __('about_ddos') ?></p><small><?= __('about_ddos_desc') ?></small></div>
     </div>
 </section>

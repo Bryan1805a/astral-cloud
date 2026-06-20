@@ -3,33 +3,33 @@
         <div class="footer-brand">
             <div class="footer-logo">A</div>
             <h3>Astral Cloud</h3>
-            <p>High-performance VPS hosting for students, developers, and businesses. Deploy your server in minutes.</p>
+            <p><?= __('footer_tagline') ?></p>
         </div>
         <div class="footer-links">
             <div class="footer-col">
-                <h4>Platform</h4>
-                <a href="/plans">VPS Plans</a>
-                <a href="/docs">Documentation</a>
-                <a href="/blog">Blog</a>
+                <h4><?= __('footer_platform') ?></h4>
+                <a href="/plans"><?= __('nav_plans') ?></a>
+                <a href="/docs"><?= __('nav_docs') ?></a>
+                <a href="/blog"><?= __('nav_blog') ?></a>
             </div>
             <div class="footer-col">
-                <h4>Account</h4>
-                <a href="/login">Login</a>
-                <a href="/register">Register</a>
-                <a href="/orders">My Orders</a>
-                <a href="/profile">Profile</a>
+                <h4><?= __('footer_account') ?></h4>
+                <a href="/login"><?= __('nav_login') ?></a>
+                <a href="/register"><?= __('nav_register') ?></a>
+                <a href="/orders"><?= __('nav_orders') ?></a>
+                <a href="/profile"><?= __('nav_profile') ?></a>
             </div>
             <div class="footer-col">
-                <h4>Support</h4>
-                <a href="/docs#faq">FAQ</a>
-                <a href="/docs#connect">Getting Started</a>
-                <a href="/docs#commands">Linux Commands</a>
+                <h4><?= __('footer_support') ?></h4>
+                <a href="/docs#faq"><?= __('docs_faq') ?></a>
+                <a href="/docs#connect"><?= __('docs_started') ?></a>
+                <a href="/docs#commands"><?= __('docs_commands') ?></a>
             </div>
         </div>
     </div>
     <div class="footer-bottom">
-        <span>&copy; <?= date('Y') ?> Astral Cloud. All rights reserved.</span>
-        <span>Powered by PHP + MySQL + VMware</span>
+        <span>&copy; <?= date('Y') ?> <?= __('footer_copyright') ?></span>
+        <span><?= __('footer_powered') ?></span>
     </div>
 </footer>
 

@@ -22,13 +22,16 @@
             <span>Astral Cloud</span>
         </a>
         <div class="nav-menu">
-            <a href="/">HOME</a>
-            <a href="/plans">FEATURES</a>
-            <a href="/plans#plans">VPS PLANS</a>
-            <a href="/docs">DOCS</a>
-            <a href="/blog">BLOG</a>
+            <a href="/"><?= __('nav_home') ?></a>
+            <a href="/plans"><?= __('nav_features') ?></a>
+            <a href="/plans#plans"><?= __('nav_plans') ?></a>
+            <a href="/docs"><?= __('nav_docs') ?></a>
+            <a href="/blog"><?= __('nav_blog') ?></a>
         </div>
         <div class="nav-actions">
+            <a href="?lang=<?= ($GLOBALS['lang'] ?? 'en') === 'en' ? 'vi' : 'en' ?>" class="lang-switch" title="<?= __('lang_switch') ?>">
+                <?= ($GLOBALS['lang'] ?? 'en') === 'en' ? '🇻🇳' : '🇬🇧' ?>
+            </a>
             <?php if (isset($_SESSION['user_id'])): ?>
                 <?php
                 $notifCount = \App\Models\AdminEmail::getUnreadCount($_SESSION['user_id']);
@@ -43,10 +46,10 @@
                     <?php endif; ?>
                 </a>
                 <a href="/cart" class="btn-live" style="display:flex;align-items:center;gap:6px;">
-                    Cart <span id="cart-badge" style="background:#ef4444;color:#fff;border-radius:999px;padding:2px 8px;font-size:11px;display:none;">0</span>
+                    <?= __('nav_cart') ?> <span id="cart-badge" style="background:#ef4444;color:#fff;border-radius:999px;padding:2px 8px;font-size:11px;display:none;">0</span>
                 </a>
                 <?php if ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'staff'): ?>
-                    <a href="/admin" class="btn-live">Admin</a>
+                    <a href="/admin" class="btn-live"><?= __('nav_admin') ?></a>
                 <?php endif; ?>
                 <div class="user-dropdown" style="position:relative;">
                     <button class="user-dropdown-btn" style="display:flex;align-items:center;gap:8px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#fff;padding:8px 16px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">
@@ -55,10 +58,10 @@
                         <svg width="10" height="6" viewBox="0 0 10 6" style="margin-left:4px;"><path d="M1 1l4 4 4-4" stroke="#6b7280" stroke-width="1.5" fill="none"/></svg>
                     </button>
                     <div class="user-dropdown-menu" style="display:none;position:absolute;right:0;top:110%;min-width:180px;background:#151515;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:8px;z-index:10000;backdrop-filter:blur(18px);">
-                        <a href="/profile" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">My Profile</a>
-                        <a href="/orders" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;">My Orders</a>
+                        <a href="/profile" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;"><?= __('nav_profile') ?></a>
+                        <a href="/orders" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;"><?= __('nav_orders') ?></a>
                         <a href="/inbox" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#b8b8b8;transition:all 0.15s;display:flex;align-items:center;justify-content:space-between;">
-                            Inbox
+                            <?= __('nav_inbox') ?>
                             <?php
                             $unreadCount = \App\Models\AdminEmail::getUnreadCount($_SESSION['user_id']);
                             if ($unreadCount > 0): ?>
@@ -66,12 +69,12 @@
                             <?php endif; ?>
                         </a>
                         <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 8px;"></div>
-                        <a href="/logout" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#ef4444;transition:all 0.15s;">Logout</a>
+                        <a href="/logout" style="display:block;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:#ef4444;transition:all 0.15s;"><?= __('nav_logout') ?></a>
                     </div>
                 </div>
             <?php else: ?>
-                <a href="/register" class="btn-start">Start now</a>
-                <a href="/login" class="btn-live">Login</a>
+                <a href="/register" class="btn-start"><?= __('nav_register') ?></a>
+                <a href="/login" class="btn-live"><?= __('nav_login') ?></a>
             <?php endif; ?>
         </div>
     </div>
