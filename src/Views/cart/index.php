@@ -1,14 +1,14 @@
 <section class="cart-section">
-    <h1>Shopping Cart</h1>
+    <h1><?= __('cart_title') ?></h1>
 
     <div id="cart-empty-state"<?= empty($cart_items) ? '' : ' style="display:none;"' ?>>
         <div class="cart-item">
             <div>
-                <h2>Cart is empty</h2>
-                <p>Select a VPS package to get started.</p>
+                <h2><?= __('cart_empty') ?></h2>
+                <p><?= __('cart_empty_sub') ?></p>
             </div>
         </div>
-        <a href="/" class="checkout-btn" style="display:inline-block;margin-top:16px;">Browse VPS Plans</a>
+        <a href="/" class="checkout-btn" style="display:inline-block;margin-top:16px;"><?= __('cart_browse') ?></a>
     </div>
 
     <div id="cart-content"<?= empty($cart_items) ? ' style="display:none;"' : '' ?>>
@@ -38,11 +38,11 @@
                 <?php endforeach; ?>
             </div>
             <div class="cart-summary">
-                <h3>Order Summary</h3>
-                <div class="summary-row"><span>Estimated price:</span><span id="cart-subtotal-amount"><?= number_format($total_price, 0, ',', '.') ?> VND</span></div>
-                <div class="summary-row"><span>VAT (0%):</span><span>0 VND</span></div>
-                <div class="total-row"><span>Total:</span><span id="cart-total-amount"><?= number_format($total_price, 0, ',', '.') ?> VND</span></div>
-                <a href="/checkout" class="checkout-btn">Proceed to Checkout</a>
+                <h3><?= __('cart_summary') ?></h3>
+                <div class="summary-row"><span><?= __('cart_estimated') ?></span><span id="cart-subtotal-amount"><?= number_format($total_price, 0, ',', '.') ?> VND</span></div>
+                <div class="summary-row"><span><?= __('cart_vat') ?></span><span>0 VND</span></div>
+                <div class="total-row"><span><?= __('cart_total') ?></span><span id="cart-total-amount"><?= number_format($total_price, 0, ',', '.') ?> VND</span></div>
+                <a href="/checkout" class="checkout-btn"><?= __('cart_checkout') ?></a>
             </div>
         </div>
     </div>

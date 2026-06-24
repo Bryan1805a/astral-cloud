@@ -59,8 +59,8 @@
 <body>
     <div class="orders-wrap">
         <div class="orders-header">
-            <h1>Your <span>Services</span></h1>
-            <a href="/" class="back-link">← Back to Home</a>
+            <h1><?= __('orders_title') ?></h1>
+            <a href="/" class="back-link"><?= __('orders_back') ?></a>
         </div>
 
         <?php
@@ -92,9 +92,9 @@
         <?php if (empty($orders)): ?>
             <div class="empty-state">
                 <div style="font-size:56px;margin-bottom:16px;">📦</div>
-                <h2>You have no active services yet</h2>
-                <p>Choose a VPS plan to get started.</p>
-                <a href="/" class="action-btn primary" style="display:inline-block;padding:12px 32px;">Create a VPS now</a>
+                <h2><?= __('orders_empty') ?></h2>
+                <p><?= __('orders_empty_sub') ?></p>
+                <a href="/" class="action-btn primary" style="display:inline-block;padding:12px 32px;"><?= __('orders_create') ?></a>
             </div>
         <?php else: ?>
             <div class="grid-3">
@@ -146,59 +146,59 @@
                                     $provStatus = $currentService['provisioning_status'] ?? 'pending';
                                     $isReady = $provStatus === 'ready';
                                     $hasIp = $ip !== '0.0.0.0' && !empty($ip);
+                                    $provLabels = [
+                                        'pending' => __('orders_queued'),
+                                        'creating_vm' => __('orders_creating'),
+                                        'booting' => __('orders_booting'),
+                                        'waiting_ip' => __('orders_waiting_ip'),
+                                        'preparing_console' => __('orders_preparing'),
+                                    ];
                                     ?>
                                     <?php if (!$isReady): ?>
                                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 14px;background:rgba(56,189,248,0.08);border-radius:12px;border:1px solid rgba(56,189,248,0.15);">
                                             <span style="font-size:16px;">⏳</span>
                                             <div>
-                                                <div style="font-size:13px;font-weight:700;color:#38bdf8;">Provisioning in progress</div>
+                                                <div style="font-size:13px;font-weight:700;color:#38bdf8;"><?= __('orders_provisioning') ?></div>
                                                 <div style="font-size:11px;color:#6b7280;margin-top:2px;">
-                                                    Status: <?= match($provStatus) {
-                                                        'pending' => 'Queued',
-                                                        'creating_vm' => 'Creating VM',
-                                                        'booting' => 'Booting OS',
-                                                        'waiting_ip' => 'Waiting for network',
-                                                        'preparing_console' => 'Setting up console',
-                                                        default => ucfirst($provStatus)
-                                                    } ?> — This completes automatically. Please refresh in a moment.
+                                                    Status: <?= $provLabels[$provStatus] ?? ucfirst($provStatus) ?> — <?= __('orders_auto') ?>
                                                 </div>
                                             </div>
                                         </div>
                                     <?php endif; ?>
                                     <div class="service-row">
-                                        <span class="service-label">IP Address:</span>
+                                        <span class="service-label"><?= __('orders_ip') ?></span>
                                         <span class="service-value" style="color:<?= $hasIp ? '#4ade80' : '#6b7280' ?>;">
-                                            <?= $hasIp ? htmlspecialchars($ip) : 'Assigning...' ?>
+                                            <?= $hasIp ? htmlspecialchars($ip) : __('orders_assigning') ?>
                                         </span>
                                     </div>
                                     <div class="service-row">
-                                        <span class="service-label">OS:</span>
+                                        <span class="service-label"><?= __('orders_os') ?></span>
                                         <span class="service-value"><?= htmlspecialchars($currentService['os']) ?></span>
                                     </div>
                                     <div class="service-row">
-                                        <span class="service-label">Root Password:</span>
+                                        <span class="service-label"><?= __('orders_password') ?></span>
                                         <div class="pwd-wrap">
                                             <input type="password" value="<?= htmlspecialchars($currentService['root_password']) ?>" readonly id="pwd-<?= $currentService['id'] ?>">
-                                            <button class="pwd-toggle" type="button" onclick="const p=document.getElementById('pwd-<?= $currentService['id'] ?>');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'Show':'Hide';">Show</button>
+                                            <button class="pwd-toggle" type="button" onclick="const p=document.getElementById('pwd-<?= $currentService['id'] ?>');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'<?= __('orders_show') ?>':'<?= __('orders_hide') ?>';"><?= __('orders_show') ?></button>
                                         </div>
                                     </div>
-                                    <div class="service-expiry">Expires: <?= date('d/m/Y', strtotime($currentService['expiry_date'])) ?></div>
+                                    <div class="service-expiry"><?= __('orders_expires') ?> <?= date('d/m/Y', strtotime($currentService['expiry_date'])) ?></div>
                                 </div>
                             <?php endif; ?>
                         </div>
 
                         <div class="order-actions">
-                            <a href="/orders/invoice?id=<?= $order['order_id'] ?>" class="action-btn secondary">Invoice</a>
+                            <a href="/orders/invoice?id=<?= $order['order_id'] ?>" class="action-btn secondary"><?= __('orders_invoice') ?></a>
                             <?php if ($status === 'success' || $status === 'active'): ?>
-                                <button class="action-btn primary" onclick="window.location.href='/console?id=<?= $currentService ? (int)$currentService['id'] : 0 ?>'">▶ Console</button>
+                                <button class="action-btn primary" onclick="window.location.href='/console?id=<?= $currentService ? (int)$currentService['id'] : 0 ?>'"><?= __('orders_console') ?></button>
                             <?php elseif ($status === 'pending'): ?>
                                 <form action="/orders/cancel" method="POST" style="flex:1;" onsubmit="return confirm('Are you sure you want to cancel this order?');">
                                     <?= csrfField() ?>
                                     <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['order_id']) ?>">
-                                    <button type="submit" class="action-btn danger" style="width:100%;">✕ Cancel</button>
+                                    <button type="submit" class="action-btn danger" style="width:100%;"><?= __('orders_cancel') ?></button>
                                 </form>
                             <?php else: ?>
-                                <button class="action-btn secondary" disabled>Waiting...</button>
+                                <button class="action-btn secondary" disabled><?= __('orders_waiting') ?></button>
                             <?php endif; ?>
                         </div>
 
@@ -208,24 +208,24 @@
                                     <form action="/service/stop" method="POST" style="flex:1;" onsubmit="return confirm('Stop this VPS?');">
                                         <?= csrfField() ?>
                                         <input type="hidden" name="service_id" value="<?= (int)$currentService['id'] ?>">
-                                        <button type="submit" class="action-btn danger">⏹ Stop</button>
+                                        <button type="submit" class="action-btn danger"><?= __('orders_stop') ?></button>
                                     </form>
                                     <form action="/service/restart" method="POST" style="flex:1;" onsubmit="return confirm('Restart this VPS?');">
                                         <?= csrfField() ?>
                                         <input type="hidden" name="service_id" value="<?= (int)$currentService['id'] ?>">
-                                        <button type="submit" class="action-btn secondary">↻ Restart</button>
+                                        <button type="submit" class="action-btn secondary"><?= __('orders_restart') ?></button>
                                     </form>
                                 <?php else: ?>
                                     <form action="/service/start" method="POST" style="flex:1;">
                                         <?= csrfField() ?>
                                         <input type="hidden" name="service_id" value="<?= (int)$currentService['id'] ?>">
-                                        <button type="submit" class="action-btn primary">▶ Start</button>
+                                        <button type="submit" class="action-btn primary"><?= __('orders_start') ?></button>
                                     </form>
                                 <?php endif; ?>
                                 <form action="/service/rebuild" method="POST" style="flex:1;" onsubmit="return confirm('Rebuild will DESTROY this VPS and re-clone from the base image. All data will be lost. Continue?');">
                                     <?= csrfField() ?>
                                     <input type="hidden" name="service_id" value="<?= (int)$currentService['id'] ?>">
-                                    <button type="submit" class="action-btn secondary" style="border-color:rgba(251,191,36,0.3);color:#fbbf24;">⚠ Rebuild</button>
+                                    <button type="submit" class="action-btn secondary" style="border-color:rgba(251,191,36,0.3);color:#fbbf24;"><?= __('orders_rebuild') ?></button>
                                 </form>
                             </div>
                             <?php endif; ?>
@@ -239,22 +239,22 @@
                         ?>
                         <?php if ($metrics): ?>
                             <div class="service-box" style="margin-top:12px;">
-                                <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Resource Usage</div>
+                                <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"><?= __('orders_resource') ?></div>
                                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                                     <div>
-                                        <div style="font-size:11px;color:#6b7280;">CPU Load</div>
+                                        <div style="font-size:11px;color:#6b7280;"><?= __('orders_cpu') ?></div>
                                         <div class="service-value" style="font-size:18px;"><?= number_format($metrics['cpu_load'], 2) ?></div>
                                     </div>
                                     <div>
-                                        <div style="font-size:11px;color:#6b7280;">RAM</div>
+                                        <div style="font-size:11px;color:#6b7280;"><?= __('orders_ram') ?></div>
                                         <div class="service-value" style="font-size:18px;"><?= (int)$metrics['ram_used_mb'] ?> / <?= (int)$metrics['ram_total_mb'] ?> MB</div>
                                     </div>
                                     <div>
-                                        <div style="font-size:11px;color:#6b7280;">Disk</div>
+                                        <div style="font-size:11px;color:#6b7280;"><?= __('orders_disk') ?></div>
                                         <div class="service-value" style="font-size:14px;"><?= number_format($metrics['disk_used_gb'], 1) ?> / <?= number_format($metrics['disk_total_gb'], 1) ?> GB</div>
                                     </div>
                                     <div>
-                                        <div style="font-size:11px;color:#6b7280;">Updated</div>
+                                        <div style="font-size:11px;color:#6b7280;"><?= __('orders_updated') ?></div>
                                         <div class="service-value" style="font-size:12px;color:#6b7280;"><?= date('H:i', strtotime($metrics['collected_at'])) ?></div>
                                     </div>
                                 </div>

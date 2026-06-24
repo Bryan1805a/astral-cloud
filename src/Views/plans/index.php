@@ -245,13 +245,13 @@
             <?php if (isset($_SESSION['user_id'])): ?>
             <div class="review-modal-form" id="review-modal-form" style="display:none;">
                 <hr class="review-modal-divider">
-                <h4>Write a Review</h4>
+                <h4><?= __('review_write') ?></h4>
                 <form id="review-form" method="POST" action="/review/submit">
                     <input type="hidden" name="_csrf_token" value="<?= generateCsrfToken() ?>">
                     <input type="hidden" name="product_id" id="review-product-id">
                     <input type="hidden" name="order_id" id="review-order-id">
                     <div class="review-form-group">
-                        <label>Rating</label>
+                        <label><?= __('review_rating') ?></label>
                         <div class="review-rating-select">
                             <?php for ($i = 5; $i >= 1; $i--): ?>
                                 <input type="radio" name="rating" value="<?= $i ?>" id="rv-star-<?= $i ?>" <?= $i === 5 ? 'required' : '' ?>>
@@ -260,13 +260,13 @@
                         </div>
                     </div>
                     <div class="review-form-group">
-                        <label for="review-comment">Your Review</label>
-                        <textarea name="comment" id="review-comment" rows="4" placeholder="Share your experience... (min 10 characters)" required></textarea>
+                        <label for="review-comment"><?= __('review_comment') ?></label>
+                        <textarea name="comment" id="review-comment" rows="4" placeholder="<?= __('review_placeholder') ?>" required></textarea>
                     </div>
                     <div class="review-form-error" id="review-error" style="display:none;"></div>
                     <div class="review-form-buttons">
-                        <button type="button" class="review-cancel-btn" id="review-cancel-btn">Cancel</button>
-                        <button type="submit" class="plan-btn">Submit Review</button>
+                        <button type="button" class="review-cancel-btn" id="review-cancel-btn"><?= __('review_cancel') ?></button>
+                        <button type="submit" class="plan-btn"><?= __('review_submit') ?></button>
                     </div>
                 </form>
             </div>
