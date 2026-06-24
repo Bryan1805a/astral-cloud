@@ -33,7 +33,7 @@ class AdminOrderController extends Controller {
         'confirmed'     => ['provisioning', 'cancelled'],
         'provisioning'  => ['active', 'cancelled'],
         'active'        => ['success', 'cancelled'],
-        'success'       => ['cancelled'],
+        'success'       => [],
         'cancelled'     => [],
     ];
 
