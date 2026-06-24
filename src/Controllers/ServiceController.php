@@ -14,7 +14,7 @@ use App\Models\Service;
  * updates the DB, and redirects back to /orders with a message.
  */
 class ServiceController extends Controller {
-    private function requireLogin(): void {
+    protected function requireLogin(): void {
         if (!isset($_SESSION["user_id"])) {
             header("Location: /login");
             exit;
