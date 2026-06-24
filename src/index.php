@@ -108,7 +108,8 @@
     $router->get('/profile',            \App\Controllers\ProfileController::class, 'index');
     $router->post('/profile/update',    \App\Controllers\ProfileController::class, 'update');
 
-    $router->get('/console',            \App\Controllers\ConsoleController::class, 'index');
+    $router->get('/console', \App\Controllers\ConsoleController::class, 'index');
+    $router->get('/vps',     \App\Controllers\ServiceController::class, 'detail');
 
     // Routes for admin
     $router->get('/admin/orders',           \App\Controllers\AdminOrderController::class, 'index');

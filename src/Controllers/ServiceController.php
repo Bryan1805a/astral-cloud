@@ -88,4 +88,50 @@ class ServiceController extends Controller {
         header("Location: /orders?msg={$msg}");
         exit;
     }
+
+    public function detail(): void {
+        if (!isset($_SESSION["user_id"])) {
+            header("Location: /login");
+            exit;
+        }
+
+        $serviceId = (int) ($_GET["id"] ?? 0);
+        if ($serviceId <= 0) { header("Location: /orders"); exit; }
+
+        $pdo = \App\Core\Database::getConnection();
+        $stmt = $pdo->prepare("
+            SELECT s.*, oi.product_name, oi.product_cpu, oi.product_ram
+            FROM services s
+            JOIN order_items oi ON s.order_item_id = oi.id
+            WHERE s.id = ? AND s.user_id = ?
+        ");
+        $stmt->execute([$serviceId, $_SESSION["user_id"]]);
+        $service = $stmt->fetch();
+
+        if (!$service) { header("Location: /orders"); exit; }
+
+        $metrics = null;
+        if ($service['status'] === 'running') {
+            $metrics = Service::getLatestMetrics($serviceId);
+        }
+
+        // Get recent activity
+        $stmt = $pdo->prepare("
+            SELECT action, description, created_at
+            FROM audit_logs
+            WHERE entity_type = 'service' AND entity_id = ?
+            ORDER BY created_at DESC
+            LIMIT 20
+        ");
+        $stmt->execute([$serviceId]);
+        $activity = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        view('vps/index', [
+            'service'  => $service,
+            'metrics'  => $metrics,
+            'activity' => $activity,
+            'css'      => ['products'],
+            'title'    => htmlspecialchars($service['hostname']) . ' | Astral Cloud',
+        ]);
+    }
 }

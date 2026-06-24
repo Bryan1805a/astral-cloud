@@ -189,6 +189,9 @@
 
                         <div class="order-actions">
                             <a href="/orders/invoice?id=<?= $order['order_id'] ?>" class="action-btn secondary"><?= __('orders_invoice') ?></a>
+                            <?php if ($currentService): ?>
+                                <a href="/vps?id=<?= (int)$currentService['id'] ?>" class="action-btn secondary" style="color:#38bdf8;border-color:rgba(56,189,248,0.25);">Detail</a>
+                            <?php endif; ?>
                             <?php if ($status === 'success' || $status === 'active'): ?>
                                 <button class="action-btn primary" onclick="window.location.href='/console?id=<?= $currentService ? (int)$currentService['id'] : 0 ?>'"><?= __('orders_console') ?></button>
                             <?php elseif ($status === 'pending'): ?>
